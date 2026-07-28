@@ -1,0 +1,36 @@
+name: bet-2026-mfclrtmb-hessian-pack
+description: Compact a merged Hessian dependency to the verified full matrix, metadata, and matching final PAR needed for mfclrtmb MCMC.
+command: bash mcmc/inst/kflow/pack-mfclrtmb-hessian.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+resources:
+  cpus: 1
+  memory: 2GB
+  disk: 10GB
+exclude_machines: []
+exclude_slots: []
+input_jobs: []
+env:
+  MCMC_SOURCE_JOB: ""
+  MCMC_MODEL_SELECTOR: ""
+  MCMC_ROOT: ""
+tags:
+  stage: mcmc
+  species: BET
+  assessment_year: "2026"
+  role: hessian-preconditioner
+  site: suva
+output_patterns:
+  - outputs/hessian-preconditioner/**
+metadata:
+  job_config:
+    optional:
+      - MCMC_SOURCE_JOB
+      - MCMC_MODEL_SELECTOR
+      - MCMC_ROOT
+      - BASE_MODEL_JOB
+      - MODEL_BASE_INPUT_JOB
+      - ATTACH_OUTPUT_MODE

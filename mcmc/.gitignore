@@ -1,0 +1,6 @@
+.Rhistory
+.RData
+*.tar.gz
+!vendor/mfclrtmb_0.3.1.tar.gz
+outputs/
+work/
