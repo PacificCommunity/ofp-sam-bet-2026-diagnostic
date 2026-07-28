@@ -91,13 +91,158 @@ if (!is.list(info) ||
   stop("The selected Hessian is not verified positive definite", call. = FALSE)
 }
 
+native_indepvar <- file.path(source_dir, "indepvar.rpt")
+if (!file.exists(native_indepvar)) {
+  message(
+    "[mfclrtmb-hessian-pack source-job=",
+    source_job,
+    "] generating the direct native MFCL parameter-order manifest"
+  )
+  model_input_dirs <- unique(c(
+    file.path(dirname(source_dir), "mfcl-inputs"),
+    dirname(list.files(
+      input_root,
+      pattern = paste0("^", root_name, "[.]frq$"),
+      recursive = TRUE,
+      full.names = TRUE
+    ))
+  ))
+  model_input_dirs <- model_input_dirs[
+    dir.exists(model_input_dirs) &
+      file.exists(file.path(model_input_dirs, paste0(root_name, ".frq"))) &
+      file.exists(file.path(model_input_dirs, paste0(root_name, ".ini")))
+  ]
+  if (nzchar(model_selector)) {
+    selected_dirs <- model_input_dirs[
+      grepl(model_selector, model_input_dirs, fixed = TRUE)
+    ]
+    if (length(selected_dirs)) {
+      model_input_dirs <- selected_dirs
+    }
+  }
+  if (!length(model_input_dirs)) {
+    stop(
+      "Could not locate the matching native MFCL model inputs needed to ",
+      "generate indepvar.rpt",
+      call. = FALSE
+    )
+  }
+  input_signatures <- vapply(model_input_dirs, function(path) {
+    files <- list.files(
+      path,
+      pattern = paste0("^", root_name, "[.]"),
+      full.names = TRUE
+    )
+    paste(vapply(sort(files), sha256_file, character(1L)), collapse = "::")
+  }, character(1L))
+  model_input_dirs <- model_input_dirs[
+    !duplicated(input_signatures)
+  ]
+  if (length(model_input_dirs) != 1L) {
+    stop(
+      "Found multiple distinct native model-input sets; set ",
+      "MCMC_MODEL_SELECTOR to select one",
+      call. = FALSE
+    )
+  }
+
+  native_exe <- Sys.getenv("MFCL_EXE", "/home/mfcl/mfclo64")
+  if (!file.exists(native_exe)) {
+    native_exe <- Sys.which("mfclo64")
+  }
+  if (!nzchar(native_exe) || !file.exists(native_exe)) {
+    stop("MFCL_EXE does not identify a usable native MFCL executable",
+         call. = FALSE)
+  }
+
+  eval_dir <- tempfile("mfclrtmb-native-order-")
+  dir.create(eval_dir, recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(eval_dir, recursive = TRUE, force = TRUE), add = TRUE)
+  input_files <- list.files(
+    model_input_dirs[[1L]],
+    pattern = paste0("^", root_name, "[.]"),
+    full.names = TRUE
+  )
+  support_files <- file.path(
+    model_input_dirs[[1L]],
+    c("mfcl.cfg", "selblocks.dat")
+  )
+  input_files <- c(input_files, support_files[file.exists(support_files)])
+  copied <- file.copy(
+    input_files,
+    eval_dir,
+    overwrite = TRUE,
+    copy.date = TRUE
+  )
+  if (!all(copied) ||
+      !file.copy(
+        required[["final_par"]],
+        file.path(eval_dir, "final.par"),
+        overwrite = TRUE,
+        copy.date = TRUE
+      )) {
+    stop("Could not stage the native MFCL order-manifest evaluation",
+         call. = FALSE)
+  }
+  if (!file.exists(file.path(eval_dir, "mfcl.cfg"))) {
+    writeLines(c("100000000", "850000000", "1500000000"),
+               file.path(eval_dir, "mfcl.cfg"))
+  }
+
+  old_dir <- getwd()
+  on.exit(setwd(old_dir), add = TRUE)
+  setwd(eval_dir)
+  log_file <- file.path(eval_dir, "native-order.log")
+  status <- system2(
+    native_exe,
+    c(
+      paste0(root_name, ".frq"),
+      "final.par",
+      "eval.par",
+      "-switch", "1", "1", "0", "1", "246", "1"
+    ),
+    stdout = log_file,
+    stderr = log_file
+  )
+  setwd(old_dir)
+  if (!identical(as.integer(status), 0L) ||
+      !file.exists(file.path(eval_dir, "indepvar.rpt"))) {
+    detail <- if (file.exists(log_file)) {
+      paste(tail(readLines(log_file, warn = FALSE), 30L), collapse = "\n")
+    } else {
+      ""
+    }
+    stop(
+      "Native MFCL failed to generate indepvar.rpt",
+      if (nzchar(detail)) paste0(":\n", detail) else "",
+      call. = FALSE
+    )
+  }
+  native_indepvar <- file.path(eval_dir, "indepvar.rpt")
+}
+
+indep_fields <- strsplit(
+  trimws(readLines(native_indepvar, warn = FALSE)[-1L]),
+  "[[:space:]]+"
+)
+indep_labels <- vapply(indep_fields, `[`, character(1L), 2L)
+info_labels <- as.character(info$diagnostics$parameter_table$par)
+if (!identical(indep_labels, info_labels)) {
+  stop(
+    "Direct native indepvar.rpt order does not match hessian_info.rds",
+    call. = FALSE
+  )
+}
+
 bundle_dir <- file.path(output_root, "hessian-preconditioner")
 dir.create(bundle_dir, recursive = TRUE, showWarnings = FALSE)
 destinations <- c(
   hessian = file.path(bundle_dir, paste0(root_name, ".hes")),
   hessian_info = file.path(bundle_dir, "hessian_info.rds"),
-  final_par = file.path(bundle_dir, "final.par")
+  final_par = file.path(bundle_dir, "final.par"),
+  indepvar = file.path(bundle_dir, "indepvar.rpt")
 )
+required <- c(required, indepvar = native_indepvar)
 for (name in names(required)) {
   if (!file.copy(required[[name]], destinations[[name]], overwrite = TRUE)) {
     stop("Failed to copy ", required[[name]], call. = FALSE)

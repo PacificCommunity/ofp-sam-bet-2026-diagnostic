@@ -360,258 +360,170 @@ utils::write.csv(
   row.names = FALSE
 )
 
-native_family <- function(labels) {
-  value <- rep(NA_character_, length(labels))
-  value[grepl("^region_rec_diffs", labels)] <-
-    "regional_recruitment_variation"
-  value[grepl("^recr[(]", labels)] <- "recruit_dev"
-  value[grepl("^bs_selcoff_gp:", labels)] <- "selectivity_coff"
-  value[grepl("^diff_coffs", labels)] <- "diff_coffs"
-  value[grepl("^tag_fish_rep", labels)] <- "tag_fish_rep_group"
-  value[labels == "fish_pars(4)"] <- "tag_fish_par"
-  value[grepl("^fish_pars[(](22|23)[)]", labels)] <- "size_fish_par"
-  value[grepl("^region_pars", labels)] <- "region_parameters_row1"
-  value[labels == "sv(21)"] <- "seasonal_growth_sv21"
-  value[grepl("^vb_coff", labels)] <- "vb_coff"
-  value[grepl("^var_coff", labels)] <- "var_coff"
-  value[labels == "totpop"] <- "log_mean_recruitment"
-  value
-}
-
-read_native_indepvar <- function(path) {
-  rows <- strsplit(trimws(readLines(path, warn = FALSE)[-1L]), "[[:space:]]+")
-  data.frame(
-    index = as.integer(vapply(rows, `[`, character(1L), 1L)),
-    label = vapply(rows, `[`, character(1L), 2L),
-    estimate = as.numeric(vapply(rows, `[`, character(1L), 3L)),
-    stringsAsFactors = FALSE
-  )
-}
-
 native_covariance <- NULL
 if (identical(preconditioner, "native")) {
-message(log_prefix, " Loading the verified native MFCL Hessian")
-hes_header <- getFromNamespace(".mfclrtmb_hes_header", "mfclrtmb")
-read_hes <- getFromNamespace(".mfclrtmb_read_hes_file", "mfclrtmb")
-hes_candidates <- list.files(
-  input_root,
-  pattern = "[.]hes$",
-  recursive = TRUE,
-  full.names = TRUE
-)
-hes_candidates <- hes_candidates[
-  basename(hes_candidates) == paste0(root_name, ".hes")
-]
-hes_headers <- lapply(hes_candidates, function(path) {
-  tryCatch(hes_header(path), error = function(e) NULL)
-})
-full_hes <- hes_candidates[vapply(
-  hes_headers,
-  function(value) {
-    is.list(value) &&
-      isTRUE(value$full) &&
-      identical(as.integer(value$npar), n_parameters)
-  },
-  logical(1L)
-)]
-if (length(full_hes) != 1L) {
-  stop(
-    "Expected exactly one full ",
-    n_parameters,
-    " x ",
-    n_parameters,
-    " native ",
-    root_name,
-    ".hes input; found ",
-    length(full_hes),
-    call. = FALSE
+  message(log_prefix, " Loading and exactly mapping the native MFCL Hessian")
+  hes_header <- getFromNamespace(".mfclrtmb_hes_header", "mfclrtmb")
+  hes_candidates <- list.files(
+    input_root,
+    pattern = "[.]hes$",
+    recursive = TRUE,
+    full.names = TRUE
   )
-}
-hessian_final_par <- file.path(dirname(full_hes[[1L]]), "final.par")
-if (!file.exists(hessian_final_par) ||
-    !identical(sha256_file(hessian_final_par), actual_par_sha)) {
-  stop(
-    "Native Hessian final PAR does not match the selected source model",
-    call. = FALSE
-  )
-}
-
-hessian_info_files <- list.files(
-  input_root,
-  pattern = "^hessian_info[.]rds$",
-  recursive = TRUE,
-  full.names = TRUE
-)
-hessian_infos <- lapply(hessian_info_files, function(path) {
-  tryCatch(readRDS(path), error = function(e) NULL)
-})
-valid_info <- vapply(seq_along(hessian_infos), function(i) {
-  value <- hessian_infos[[i]]
-  is.list(value) &&
-    identical(dirname(hessian_info_files[[i]]), dirname(full_hes[[1L]])) &&
-    identical(as.integer(value$meta$npars), n_parameters) &&
-    identical(as.character(value$eigen$hessian_status), "PDH") &&
-    identical(as.integer(value$eigen$n_negative_eigenvalues), 0L) &&
-    identical(as.integer(value$eigen$n_zero_eigenvalues), 0L) &&
-    nrow(value$diagnostics$parameter_table) == n_parameters
-}, logical(1L))
-if (!any(valid_info)) {
-  stop("No verified PDH hessian_info.rds accompanies the full Hessian", call. = FALSE)
-}
-hessian_info <- hessian_infos[[which(valid_info)[[1L]]]]
-native_labels <- as.character(hessian_info$diagnostics$parameter_table$par)
-native_families <- native_family(native_labels)
-rtmb_names <- names(fit$par)
-if (anyNA(native_families) || anyNA(rtmb_names)) {
-  stop("Could not classify every native/RTMB Hessian parameter", call. = FALSE)
-}
-
-native_index_for_rtmb <- integer(length(rtmb_names))
-for (family in unique(rtmb_names)) {
-  rtmb_index <- which(rtmb_names == family)
-  native_index <- which(native_families == family)
-  if (length(rtmb_index) != length(native_index)) {
+  hes_candidates <- hes_candidates[
+    basename(hes_candidates) == paste0(root_name, ".hes")
+  ]
+  hes_headers <- lapply(hes_candidates, function(path) {
+    tryCatch(hes_header(path), error = function(e) NULL)
+  })
+  full_hes <- hes_candidates[vapply(
+    hes_headers,
+    function(value) {
+      is.list(value) &&
+        isTRUE(value$full) &&
+        identical(as.integer(value$npar), n_parameters)
+    },
+    logical(1L)
+  )]
+  if (length(full_hes) != 1L) {
     stop(
-      "Native/RTMB parameter-count mismatch for ", family, ": ",
-      length(native_index), " versus ", length(rtmb_index),
+      "Expected exactly one full ",
+      n_parameters,
+      " x ",
+      n_parameters,
+      " native ",
+      root_name,
+      ".hes input; found ",
+      length(full_hes),
       call. = FALSE
     )
   }
-  native_index_for_rtmb[rtmb_index] <- native_index
-}
 
-# MFCL writes diff_coffs row-major, whereas the RTMB vector is the ordinary R
-# column-major flattening of the same matrix. Derive the dimensions from the
-# labels so the mapping works for other model grids.
-rtmb_diff <- which(rtmb_names == "diff_coffs")
-native_diff <- which(native_families == "diff_coffs")
-diff_match <- regexec(
-  "^diff_coffs[(]([0-9]+),([0-9]+)[)]$",
-  native_labels[native_diff]
-)
-diff_parts <- regmatches(native_labels[native_diff], diff_match)
-if (!length(rtmb_diff) ||
-    length(rtmb_diff) != length(native_diff) ||
-    any(lengths(diff_parts) != 3L)) {
-  stop("Could not derive the native diff_coffs dimensions", call. = FALSE)
-}
-diff_row_native <- as.integer(vapply(diff_parts, `[`, character(1L), 2L))
-diff_col_native <- as.integer(vapply(diff_parts, `[`, character(1L), 3L))
-n_diff_rows <- max(diff_row_native)
-n_diff_cols <- max(diff_col_native)
-if (n_diff_rows * n_diff_cols != length(rtmb_diff)) {
-  stop("Native diff_coffs labels do not form a complete matrix", call. = FALSE)
-}
-diff_k <- seq_along(rtmb_diff)
-diff_row <- (diff_k - 1L) %% n_diff_rows + 1L
-diff_col <- (diff_k - 1L) %/% n_diff_rows + 1L
-diff_target <- paste(diff_row, diff_col, sep = ":")
-diff_native_key <- paste(diff_row_native, diff_col_native, sep = ":")
-native_diff_occurrence <- match(diff_target, diff_native_key)
-if (anyNA(native_diff_occurrence)) {
-  stop("Could not map every RTMB diff_coffs element to MFCL order", call. = FALSE)
-}
-native_index_for_rtmb[rtmb_diff] <- native_diff[native_diff_occurrence]
-
-if (!identical(
-  sort(native_index_for_rtmb),
-  seq_len(n_parameters)
-)) {
-  stop("Native-to-RTMB Hessian map is not a complete permutation", call. = FALSE)
-}
-
-rtmb_rows <- getFromNamespace(
-  ".mfcl_output_parameter_rows",
-  "mfclrtmb"
-)(fit$rtmb, par = fit$par, grad = fit$gradient)
-indep_candidates <- list.files(
-  input_root,
-  pattern = "^indepvar[.]rpt$",
-  recursive = TRUE,
-  full.names = TRUE
-)
-native_indep <- NULL
-for (path in indep_candidates) {
-  value <- tryCatch(read_native_indepvar(path), error = function(e) NULL)
-  if (!is.null(value) &&
-      nrow(value) == n_parameters &&
-      identical(as.character(value$label), native_labels)) {
-    native_indep <- value
-    break
-  }
-}
-estimate_error <- NA_real_
-if (!is.null(native_indep)) {
-  estimate_error <- max(abs(
-    rtmb_rows$estimate -
-      native_indep$estimate[native_index_for_rtmb]
-  ))
-  if (!is.finite(estimate_error) || estimate_error > 1e-4) {
+  hessian_dir <- dirname(full_hes[[1L]])
+  hessian_final_par <- file.path(hessian_dir, "final.par")
+  hessian_info_file <- file.path(hessian_dir, "hessian_info.rds")
+  native_indepvar_file <- file.path(hessian_dir, "indepvar.rpt")
+  native_xinit_file <- file.path(hessian_dir, "xinit.rpt")
+  required_hessian_files <- c(
+    final_par = hessian_final_par
+  )
+  missing_hessian_files <- required_hessian_files[
+    !file.exists(required_hessian_files)
+  ]
+  if (length(missing_hessian_files)) {
     stop(
-      "Native-to-RTMB Hessian map failed the final-PAR estimate check: ",
-      estimate_error,
+      "Native Hessian bundle is missing: ",
+      paste(names(missing_hessian_files), collapse = ", "),
       call. = FALSE
     )
   }
-}
+  if (!file.exists(native_indepvar_file) &&
+      !file.exists(native_xinit_file)) {
+    stop(
+      "Native Hessian bundle requires indepvar.rpt or xinit.rpt for exact ",
+      "model-specific parameter order",
+      call. = FALSE
+    )
+  }
+  if (!identical(sha256_file(hessian_final_par), actual_par_sha)) {
+    stop(
+      "Native Hessian final PAR does not match the selected source model",
+      call. = FALSE
+    )
+  }
 
-native_hessian <- read_hes(full_hes)$hessian
-symmetry_error <- max(abs(native_hessian - t(native_hessian)))
-rtmb_hessian <- native_hessian[
-  native_index_for_rtmb,
-  native_index_for_rtmb,
-  drop = FALSE
-]
-rtmb_hessian <- (rtmb_hessian + t(rtmb_hessian)) / 2
-hessian_chol <- tryCatch(
-  chol(rtmb_hessian),
-  error = function(e) NULL
-)
-if (is.null(hessian_chol)) {
-  stop("Permuted native Hessian is not positive definite", call. = FALSE)
-}
-native_covariance <- chol2inv(hessian_chol)
-if (!all(is.finite(native_covariance)) ||
-    any(diag(native_covariance) <= 0)) {
-  stop("Native Hessian inverse is invalid", call. = FALSE)
-}
+  imported_hessian <- mfclrtmb_import_native_hessian(
+    fit,
+    hessian = full_hes[[1L]],
+    hessian_info = if (file.exists(hessian_info_file)) {
+      hessian_info_file
+    } else {
+      NULL
+    },
+    native_final_par = hessian_final_par,
+    source_par = final_par,
+    indepvar = if (file.exists(native_indepvar_file)) {
+      native_indepvar_file
+    } else {
+      NULL
+    },
+    xinit = if (file.exists(native_xinit_file)) {
+      native_xinit_file
+    } else {
+      NULL
+    },
+    require_order_manifest = TRUE,
+    require_pdh = TRUE,
+    check_final_par = TRUE
+  )
+  rtmb_hessian <- imported_hessian$hessian
+  hessian_chol <- chol(rtmb_hessian)
+  native_covariance <- chol2inv(hessian_chol)
+  if (!all(is.finite(native_covariance)) ||
+      any(diag(native_covariance) <= 0)) {
+    stop("Native Hessian inverse is invalid", call. = FALSE)
+  }
 
-hessian_map <- data.frame(
-  rtmb_index = seq_along(rtmb_names),
-  rtmb_name = rtmb_names,
-  native_index = native_index_for_rtmb,
-  native_label = native_labels[native_index_for_rtmb],
-  rtmb_estimate = rtmb_rows$estimate,
-  native_estimate = if (!is.null(native_indep)) {
-    native_indep$estimate[native_index_for_rtmb]
+  utils::write.csv(
+    imported_hessian$map,
+    file.path(diagnostic_dir, "native-hessian-parameter-map.csv"),
+    row.names = FALSE
+  )
+  hessian_info <- if (file.exists(hessian_info_file)) {
+    readRDS(hessian_info_file)
   } else {
-    NA_real_
-  },
-  stringsAsFactors = FALSE
-)
-utils::write.csv(
-  hessian_map,
-  file.path(diagnostic_dir, "native-hessian-parameter-map.csv"),
-  row.names = FALSE
-)
-hessian_summary <- data.frame(
-  source_file = full_hes,
-  n_parameters = nrow(rtmb_hessian),
-  status = hessian_info$eigen$hessian_status,
-  negative_eigenvalues = hessian_info$eigen$n_negative_eigenvalues,
-  zero_eigenvalues = hessian_info$eigen$n_zero_eigenvalues,
-  minimum_eigenvalue = hessian_info$eigen$minimum_eigenvalue,
-  maximum_eigenvalue = hessian_info$eigen$maximum_eigenvalue,
-  condition_number = hessian_info$eigen$positive_condition_number,
-  native_symmetry_error = symmetry_error,
-  mapped_estimate_max_abs_error = estimate_error,
-  stringsAsFactors = FALSE
-)
-utils::write.csv(
-  hessian_summary,
-  file.path(diagnostic_dir, "native-hessian-preconditioner.csv"),
-  row.names = FALSE
-)
+    NULL
+  }
+  hessian_summary <- data.frame(
+    source_file = full_hes[[1L]],
+    n_parameters = nrow(rtmb_hessian),
+    native_order_source =
+      imported_hessian$checks$native_order_source,
+    complete_permutation =
+      imported_hessian$checks$complete_permutation,
+    exact_semantic_labels =
+      imported_hessian$checks$exact_semantic_labels,
+    hessian_info_cross_check =
+      imported_hessian$checks$hessian_info_cross_check,
+    status = imported_hessian$checks$native_hessian_status,
+    negative_eigenvalues = if (is.null(hessian_info)) {
+      NA_integer_
+    } else {
+      hessian_info$eigen$n_negative_eigenvalues
+    },
+    zero_eigenvalues = if (is.null(hessian_info)) {
+      NA_integer_
+    } else {
+      hessian_info$eigen$n_zero_eigenvalues
+    },
+    minimum_eigenvalue = if (is.null(hessian_info)) {
+      NA_real_
+    } else {
+      hessian_info$eigen$minimum_eigenvalue
+    },
+    maximum_eigenvalue = if (is.null(hessian_info)) {
+      NA_real_
+    } else {
+      hessian_info$eigen$maximum_eigenvalue
+    },
+    condition_number = if (is.null(hessian_info)) {
+      NA_real_
+    } else {
+      hessian_info$eigen$positive_condition_number
+    },
+    native_symmetry_error =
+      imported_hessian$checks$symmetry_error,
+    mapped_estimate_max_abs_error =
+      imported_hessian$checks$transformed_estimate_error,
+    final_par_match =
+      imported_hessian$checks$final_par_match,
+    stringsAsFactors = FALSE
+  )
+  utils::write.csv(
+    hessian_summary,
+    file.path(diagnostic_dir, "native-hessian-preconditioner.csv"),
+    row.names = FALSE
+  )
 } else {
   message(
     log_prefix,

@@ -1,5 +1,5 @@
 name: bet-2026-mfclrtmb-hessian-pack
-description: Compact a merged Hessian dependency to the verified full matrix, metadata, and matching final PAR needed for mfclrtmb MCMC.
+description: Compact a merged Hessian dependency to the verified full matrix, metadata, matching final PAR, and direct native parameter-order manifest needed for mfclrtmb MCMC.
 command: bash mcmc/inst/kflow/pack-mfclrtmb-hessian.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow@sha256:7b9dc95f535025a42109ac958c4faa3af96592cd19510ac0be15af4478eccf27
 remote_host: suva

@@ -188,7 +188,7 @@ def main() -> int:
         pack_payload = {
             "repo": REPO,
             "branch": args.branch,
-            "input_jobs": [args.hessian_job],
+            "input_jobs": list(dict.fromkeys([args.hessian_job, args.source_job])),
             "env": base_env,
             "batch_name": f"job{args.source_job}-mfclrtmb-hessian-pack",
             "tags": {

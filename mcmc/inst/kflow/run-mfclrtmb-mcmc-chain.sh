@@ -13,8 +13,8 @@ export MKL_NUM_THREADS=1
 export VECLIB_MAXIMUM_THREADS=1
 export NUMEXPR_NUM_THREADS=1
 
-mfclrtmb_tarball="${MFCLRTMB_TARBALL:-mcmc/vendor/mfclrtmb_0.3.1.tar.gz}"
-mfclrtmb_sha256="${MFCLRTMB_SHA256:-13c1919d1f92291b2cfc88fdbb98d210544cfc2b5a62b6eb23f384211a734a89}"
+mfclrtmb_tarball="${MFCLRTMB_TARBALL:-mcmc/vendor/mfclrtmb_0.3.2.tar.gz}"
+mfclrtmb_sha256="${MFCLRTMB_SHA256:-852368b0084f5881577625bf89a571e9dc6218d5567bc7371b5403b60999bfcb}"
 
 if [[ ! -f "$mfclrtmb_tarball" ]]; then
   echo "[mfclrtmb-mcmc] Missing bundled mfclrtmb source: $mfclrtmb_tarball" >&2
@@ -28,7 +28,7 @@ if [[ "$actual_sha256" != "$mfclrtmb_sha256" ]]; then
   exit 1
 fi
 
-echo "[mfclrtmb-mcmc] Installing bundled standalone mfclrtmb v0.3.1"
+echo "[mfclrtmb-mcmc] Installing bundled standalone mfclrtmb v0.3.2"
 Rscript --vanilla - <<'RS'
 repos <- c(
   andrjohns = "https://andrjohns.r-universe.dev",

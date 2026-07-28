@@ -14,8 +14,8 @@ exclude_machines: []
 exclude_slots: []
 input_jobs: []
 env:
-  MFCLRTMB_TARBALL: mcmc/vendor/mfclrtmb_0.3.1.tar.gz
-  MFCLRTMB_SHA256: 13c1919d1f92291b2cfc88fdbb98d210544cfc2b5a62b6eb23f384211a734a89
+  MFCLRTMB_TARBALL: mcmc/vendor/mfclrtmb_0.3.2.tar.gz
+  MFCLRTMB_SHA256: 852368b0084f5881577625bf89a571e9dc6218d5567bc7371b5403b60999bfcb
   MCMC_SOURCE_JOB: ""
   MCMC_MODEL_SELECTOR: ""
   MCMC_ROOT: ""
