@@ -325,4 +325,3 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except (RuntimeError, urllib.error.URLError) as error:
         raise SystemExit(f"ERROR: {error}")
-
