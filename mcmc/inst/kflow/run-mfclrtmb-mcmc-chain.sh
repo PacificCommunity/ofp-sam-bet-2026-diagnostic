@@ -45,7 +45,7 @@ if (length(missing_binary)) {
 if (!requireNamespace("SparseNUTS", quietly = TRUE)) {
   remotes::install_github(
     "noaa-afsc/SparseNUTS",
-    dependencies = TRUE,
+    dependencies = NA,
     upgrade = "never"
   )
 }
