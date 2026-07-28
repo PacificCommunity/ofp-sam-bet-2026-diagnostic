@@ -9,6 +9,30 @@ The exact `mfclrtmb` v0.3.1 source release used by the workers is bundled in
 `vendor/` with a checked SHA-256. This makes Kflow execution reproducible and
 avoids requiring runtime OAuth access to the private package repository.
 
+`scripts/submit-kflow-pipeline.py` registers all three tasks and submits the
+complete dependency graph from one command. A server-side smoke test can be
+run first:
+
+```bash
+python3 mcmc/scripts/submit-kflow-pipeline.py \
+  --source-job SOURCE_JOB \
+  --hessian-job FULL_HESSIAN_JOB \
+  --model-selector MODEL_LABEL \
+  --model-root MODEL_ROOT \
+  --stage smoke
+```
+
+After the smoke job completes, reuse its compact pack for the full workflow:
+
+```bash
+python3 mcmc/scripts/submit-kflow-pipeline.py \
+  --source-job SOURCE_JOB \
+  --hessian-pack-job COMPACT_PACK_JOB \
+  --model-selector MODEL_LABEL \
+  --model-root MODEL_ROOT \
+  --stage full
+```
+
 At submission time, provide:
 
 - `MCMC_SOURCE_JOB`: the fitted-model Kflow job number;
