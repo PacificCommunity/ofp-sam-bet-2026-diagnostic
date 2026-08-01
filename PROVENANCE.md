@@ -29,6 +29,11 @@ phase.
 | 2 | `fish_pars(23)` | 2410802 | 8 | 0.1 |
 | 5 | Regional-index selectivity coefficients | 2413829 | 25 | 0.1 |
 
+No new parameter family is activated in Phases 3, 4 or 6–11, so those phases
+use the preceding phase PAR unchanged. If a normal mfclkit jitter baseline PAR
+is present, the embedded seed-23 checkpoints are skipped to prevent double
+perturbation.
+
 The original dynamic mapping used mfclkit 0.0.0.9040 at commit
 `34c56de25afecdd13e9f8e94f2e421e37d9c2f9b` and FLR4MFCL 1.7.2. Because
 mfclkit is private, this public repository uses the exact archived checkpoint
@@ -40,6 +45,17 @@ verified checkpoint from being applied.
 ## Runtime record
 
 The reference fit completed in the pinned tuna-flow v2.5 image recorded in the
-root README. Its output archive supplied the committed final PAR, compact model
-payload, summaries and seed checkpoints. The raw MFCL executable is not copied
-into Git; it remains available inside the public pinned container image.
+root README. Its output supplied the committed final PAR, compact model payload,
+summaries and seed checkpoints. The exact statically linked Linux x86-64 MFCL
+executable from that image is also committed at repository root; other systems
+use the same executable through the pinned Docker image.
+
+## Hessian record
+
+The native Hessian was evaluated in 70 complete partitions and stitched with
+MFCL into the committed full 1,997 by 1,997 `bet.hes`. The binary header and
+size were validated after reconstruction. The completed eigen analysis found
+1,997 positive, zero negative and zero zero eigenvalues: status PDH,
+reliability HIGH, minimum eigenvalue 1.62641e-07. Public RDS files retain the
+scientific contents but use portable relative paths instead of scheduler work
+directories.

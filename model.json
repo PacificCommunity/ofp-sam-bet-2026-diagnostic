@@ -4,5 +4,13 @@
   "assessment_year": 2026,
   "source_seed": 23,
   "source_model_key": "K020-tau-not-estimated-sel20c-f10-ndpen-weak-seed23-base",
+  "hessian": {
+    "parameters": 1997,
+    "partitions": 70,
+    "status": "PDH",
+    "negative_eigenvalues": 0,
+    "zero_eigenvalues": 0,
+    "minimum_eigenvalue": 1.62641e-07
+  },
   "docker_image": "ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360"
 }

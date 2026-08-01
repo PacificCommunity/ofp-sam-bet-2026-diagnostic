@@ -18,6 +18,11 @@ if [[ $mode == fit ]]; then
   observed=$(sha256sum final.par | awk '{print $1}')
   expected=6a7a4489ec40fa8223c9c3aac831a46c4eaa810654a35af0a537cf6b04fb2eed
   printf 'Reference final PAR: %s\nObserved final PAR:  %s\n' "$expected" "$observed"
+  if [[ $observed == "$expected" ]]; then
+    "$repo_root/restore-hessian" "$run_dir"
+  else
+    echo "Archived Hessian not restored because this fit differs from the reference final PAR."
+  fi
 elif [[ $mode == final ]]; then
   cp "$repo_root/results/reference/final.par" final.par
   set +e
@@ -33,6 +38,7 @@ MFCL_SWITCHES
   fi
   test -s evaluated.par
   echo "Reference final.par evaluated successfully."
+  "$repo_root/restore-hessian" "$run_dir"
 else
   echo "Unknown run mode: $mode" >&2
   exit 2

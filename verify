@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eu
 root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+(cd "$root" && sha256sum -c BUNDLED.sha256)
 (cd "$root/model" && sha256sum -c MANIFEST.sha256)
 (cd "$root/results/reference" && sha256sum -c SHA256SUMS)
-echo "Diagnostic model inputs and reference results: verified."
+echo "Bundled MFCL executable, model inputs and reference results: verified."

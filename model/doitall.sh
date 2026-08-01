@@ -139,8 +139,8 @@ echo "DM controls: Nmax=$dm_nmax; grouped fish_pars(22) fixed at $dm_concentrati
 
 $program_path bet.frq bet.ini 00.par -makepar
 
-# Job 18518 fixed the eight grouped fish_pars(22) concentration intercepts
-# after they had converged to their upper bound (7) in Job 18400. Set all
+# The diagnostic model fixes the eight grouped fish_pars(22) concentration
+# intercepts after they had converged to their upper bound (7). Set all
 # fishery copies explicitly before applying the same G8 grouping and flag 69=0.
 awk -v concentration="$dm_concentration" '
   /^# extra fishery parameters/ { in_fish = 1; print; next }
@@ -405,7 +405,7 @@ $program_path bet.frq 00.dm-fixed.par 01.par -file - <<PHASE1
   -32 75 2  # Index R4 youngest age classes fixed at zero selectivity
   -33 75 2  # Index R5 youngest age classes fixed at zero selectivity
   1 320 5  # use tail-compressed DM when the first-to-last-positive observed span contains at least five bins
-  1 342 25  # Job 18518 DM effective-sample-size upper bound
+  1 342 25  # diagnostic-model DM effective-sample-size upper bound
   -1 68 1  # G8PSSET DM group for F1
   -2 68 1  # G8PSSET DM group for F2
   -3 68 1  # G8PSSET DM group for F3
@@ -439,7 +439,7 @@ $program_path bet.frq 00.dm-fixed.par 01.par -file - <<PHASE1
   -31 68 8  # G8PSSET DM group for F31
   -32 68 8  # G8PSSET DM group for F32
   -33 68 8  # G8PSSET DM group for F33
-  -999 69 0  # fix grouped fish_pars(22) concentration intercepts at 7, as in Job 18518
+  -999 69 0  # fix grouped fish_pars(22) concentration intercepts at 7
   -999 89 0  # stage relative sample-size exponent fixed at zero
 PHASE1
 
@@ -686,7 +686,7 @@ PHASE9
 
 # Parest flag 111 remains 4 (negative binomial), while fish flags 43/44
 # remain zero and fish_pars(4) is not opened as an independent variable.
-# All Job 17805 controls applied above remain unchanged.
+# All inherited diagnostic-model controls applied above remain unchanged.
 $program_path bet.frq 09.par 10.par -file - <<PHASE10_NO_TAU_EST
   1 1 10000
   1 50 $phase10_11_convergence
@@ -755,7 +755,7 @@ if [ "$parest_111" != 4 ] || [ "$parest_121" != 0 ] ||
    [ "$dm22_active" != 0 ] || [ "$dm23_active" != 8 ] ||
    [ "$dm_control_summary" != "33,8,0,33" ] ||
    [ "$estimated_tau_count" != 0 ] || [ "$active_tau_fisheries" != 0 ]; then
-  echo "Final fit did not retain the required Job 18518 DM and negative-binomial tau-not-estimated controls." >&2
+  echo "Final fit did not retain the required DM and negative-binomial tau-not-estimated controls." >&2
   exit 44
 fi
 if ! awk -v observed="$final_m" 'BEGIN {

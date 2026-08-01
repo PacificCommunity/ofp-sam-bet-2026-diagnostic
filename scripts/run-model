@@ -22,13 +22,17 @@ if [ -e "$run_dir" ] && [ "$(find "$run_dir" -mindepth 1 -maxdepth 1 -print -qui
 fi
 mkdir -p "$run_dir"
 
-if [ -z "${PROGRAM_PATH:-}" ] && [ -x "$root/mfclo64" ]; then
-  PROGRAM_PATH=$root/mfclo64
-elif [ -z "${PROGRAM_PATH:-}" ] && command -v mfclo64 >/dev/null 2>&1; then
-  PROGRAM_PATH=$(command -v mfclo64)
+if [ "${USE_DOCKER:-0}" != 1 ] && [ -z "${PROGRAM_PATH:-}" ]; then
+  system=$(uname -s 2>/dev/null || true)
+  machine=$(uname -m 2>/dev/null || true)
+  if [ "$system" = Linux ] && { [ "$machine" = x86_64 ] || [ "$machine" = amd64 ]; } && [ -x "$root/mfclo64" ]; then
+    PROGRAM_PATH=$root/mfclo64
+  elif command -v mfclo64 >/dev/null 2>&1; then
+    PROGRAM_PATH=$(command -v mfclo64)
+  fi
 fi
 
-if [ -n "${PROGRAM_PATH:-}" ]; then
+if [ "${USE_DOCKER:-0}" != 1 ] && [ -n "${PROGRAM_PATH:-}" ]; then
   if [ ! -x "$PROGRAM_PATH" ]; then
     echo "MFCL executable is not executable: $PROGRAM_PATH" >&2
     exit 2
