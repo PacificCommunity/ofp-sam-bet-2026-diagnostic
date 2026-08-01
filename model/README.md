@@ -7,7 +7,7 @@ MFCL executable.
 
 `doitall.sh` starts with `bet.ini -makepar`, runs all eleven estimation phases,
 and applies the archived seed-23 checkpoints at Phases 1, 2 and 5 only after
-their input hashes match Job 19835. The fitted output is `11.par`; the root
-runner also saves it as `final.par`.
+their input hashes match the reference fit. The fitted output is `11.par`; the
+root runner also saves it as `final.par`.
 
 Run `../verify` before fitting to validate `MANIFEST.sha256`.

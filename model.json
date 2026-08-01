@@ -2,8 +2,6 @@
   "name": "Diagnostic model",
   "species": "BET",
   "assessment_year": 2026,
-  "source_job": 19835,
-  "scientific_parent_job": 19325,
   "source_seed": 23,
   "source_model_key": "K020-tau-not-estimated-sel20c-f10-ndpen-weak-seed23-base",
   "docker_image": "ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360"

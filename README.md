@@ -1,8 +1,8 @@
 # BET 2026 Diagnostic model
 
-Public, standalone reconstruction of the BET 2026 diagnostic model fitted in
-Kflow Job 19835. The repository contains the frozen MFCL inputs, deterministic
-seed-23 initialization, fitted `final.par`, and compact R payload.
+Public, standalone reconstruction of the BET 2026 diagnostic model. The
+repository contains the frozen MFCL inputs, deterministic seed-23
+initialization, fitted `final.par`, and compact R payload.
 
 ## Run the complete fit
 
@@ -19,19 +19,34 @@ Windows PowerShell users can run:
 .\doitall.ps1
 ```
 
-The pinned Job 19835 Docker image supplies the exact MFCL executable. Results
-are written to `run/`; frozen files in `model/` are never modified. A complete
-fit can take several hours.
+The pinned Docker image supplies the exact MFCL executable. Results are written
+to `run/`; frozen files in `model/` are never modified. A complete fit can take
+several hours.
 
-Linux users who already have the MFCL executable may run without Docker:
+### Linux without Docker
+
+The MFCL executable is not distributed in this public repository. Linux users
+who have a compatible `mfclo64` can put it in the repository root and run the
+same command:
+
+```sh
+cp /path/to/mfclo64 ./mfclo64
+chmod +x ./mfclo64
+./doitall
+```
+
+The runner also finds `mfclo64` on `PATH`, or accepts an explicit location:
 
 ```sh
 PROGRAM_PATH=/absolute/path/to/mfclo64 ./doitall
 ```
 
+For byte-for-byte reproducibility, use the executable SHA-256 recorded below.
+If no local executable is found, the runner uses Docker automatically.
+
 ## Run the fitted final PAR
 
-To evaluate the included Job 19835 fit without refitting:
+To evaluate the included reference fit without refitting:
 
 ```sh
 ./run-final
@@ -44,12 +59,15 @@ or, in Windows PowerShell:
 ```
 
 This copies `results/reference/final.par` into `final-run/` and performs a
-zero-iteration MFCL evaluation to regenerate reports. It does not estimate the
-model again.
+zero-iteration MFCL evaluation. It regenerates the standard fitted-model
+outputs, including `evaluated.par`, `ests.rep`, `plot-evaluated.par.rep`,
+`catch.rep`, `tag.rep`, CPUE, selectivity, fishing-mortality and residual files.
+It does not re-estimate the model or recreate phase histories, optimization
+logs, Hessians or other estimation-only files.
 
 ## Reference fit
 
-| Item | Job 19835 value |
+| Item | Reference value |
 |---|---:|
 | Objective | 89054.3397838085 |
 | Maximum gradient | 9.2968286e-05 |
@@ -58,11 +76,11 @@ model again.
 
 The fitted files are in [`results/reference/`](results/reference/README.md).
 
-> **Seed 23 note.** Seed 23 was the best-objective converged jitter from Job
-> 19325; it was not the lowest-depletion run. The complete fit applies its
-> CV=0.1 perturbation once when parameters first become available: seed 23 at
-> Phase 1, derived seed 2410802 at Phase 2, and derived seed 2413829 at Phase 5.
-> The archived checkpoints are hash-verified before use.
+> **Seed 23 note.** Seed 23 was the best-objective converged jitter selected for
+> this diagnostic model; it was not the lowest-depletion run. The complete fit
+> applies its CV=0.1 perturbation once when parameters first become available:
+> seed 23 at Phase 1, derived seed 2410802 at Phase 2, and derived seed 2413829
+> at Phase 5. The archived checkpoints are hash-verified before use.
 
 ## Exact runtime
 

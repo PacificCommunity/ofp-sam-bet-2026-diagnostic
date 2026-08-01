@@ -10,11 +10,11 @@ if [ ! -x "$program_path" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Deterministic Job 19325 seed-23 base initialization
+# Deterministic seed-23 base initialization
 # ---------------------------------------------------------------------------
 # This is the exact CV=0.1 active-parameter perturbation path used by the
-# converged Job 19325 seed-23 fit. Parameters already represented after Phase
-# 1 are initialized there. The eight DM CEST parameters first represented in
+# selected best-objective converged seed-23 fit. Parameters already represented
+# after Phase 1 are initialized there. The eight DM CEST parameters represented in
 # Phase 2 and the 25 regional-index selectivity coefficients first represented
 # after the Phase-5 group split are initialized immediately before their first
 # optimization. A parameter is initialized once, never once per phase.
@@ -30,9 +30,9 @@ if [ -s mfk_phase1_baseline.par ] || [ -s mfk_fitted_baseline.par ]; then
   echo "Existing jitter resume detected: seed-23 base initialization will not be applied again."
 fi
 
-# Job 19835 archived the exact Phase 1, 2 and 5 seed-23 checkpoints. Reusing
-# those byte-verified checkpoints removes the private mfclkit runtime
-# dependency while retaining the fitted path.
+# The exact Phase 1, 2 and 5 seed-23 checkpoints are archived here. Reusing
+# those byte-verified checkpoints removes the private mfclkit runtime dependency
+# while retaining the fitted path.
 seed23_initialize()
 {
   mode=$1

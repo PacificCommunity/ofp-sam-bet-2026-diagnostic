@@ -1,4 +1,4 @@
-# Job 19835 fitted result
+# Reference fitted result
 
 - `final.par`: fitted MFCL parameter file; use `./run-final` from the repository root.
 - `fit-summary.csv`: objective, gradient, terminal depletion and provenance.
@@ -8,5 +8,5 @@
 - `seed23-initialization-summary.csv`: Phase 1, 2 and 5 seed audit.
 - `tag-tau-audit.csv`: retained tag, DM and natural-mortality controls.
 
-These files came directly from completed Kflow Job 19835. Use `../../verify`
+These files came directly from the completed reference fit. Use `../../verify`
 to validate their committed SHA-256 checksums.

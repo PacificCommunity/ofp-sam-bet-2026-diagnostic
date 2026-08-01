@@ -1,5 +1,5 @@
 name: ofp-sam-bet-2026-diagnostic
-description: Reproduce the public BET 2026 Diagnostic model from frozen Job 19835 inputs.
+description: Reproduce the public BET 2026 Diagnostic model from frozen inputs.
 command: bash run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
 remote_host: suva
@@ -14,7 +14,7 @@ exclude_machines: []
 exclude_slots: []
 env:
   JOB_TITLE: Diagnostic model
-  JOB_DESCRIPTION: Public standalone reconstruction of BET 2026 Kflow Job 19835.
+  JOB_DESCRIPTION: Public standalone BET 2026 Diagnostic model.
   MODEL_LABEL: Diagnostic model
   JOB_KEY: diagnostic-model
   FLOW_GROUP: bet-2026-diagnostic
@@ -28,11 +28,9 @@ tags:
   stage: diagnostic-model
   species: BET
   assessment_year: "2026"
-  source_job: "19835"
 output_patterns:
   - outputs/**
 metadata:
   public_reproducible_model: true
-  source_job: "19835"
   source_seed: "23"
   model_label: Diagnostic model
