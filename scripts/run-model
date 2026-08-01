@@ -1,0 +1,48 @@
+#!/bin/sh
+set -eu
+
+mode=${1:-}
+case "$mode" in
+  fit|final) ;;
+  *) echo "Usage: scripts/run-model fit|final" >&2; exit 2 ;;
+esac
+
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+image=ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
+"$root/verify"
+default_dir=run
+[ "$mode" = final ] && default_dir=final-run
+run_dir=${RUN_DIR:-$root/$default_dir}
+case "$run_dir" in /*) ;; *) run_dir=$root/$run_dir ;; esac
+
+if [ -e "$run_dir" ] && [ "$(find "$run_dir" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
+  echo "Run directory is not empty: $run_dir" >&2
+  echo "Choose a fresh directory, for example RUN_DIR=run-2 ./doitall" >&2
+  exit 2
+fi
+mkdir -p "$run_dir"
+
+if [ -n "${PROGRAM_PATH:-}" ]; then
+  if [ ! -x "$PROGRAM_PATH" ]; then
+    echo "MFCL executable is not executable: $PROGRAM_PATH" >&2
+    exit 2
+  fi
+  REPO_ROOT="$root" RUN_DIR="$run_dir" PROGRAM_PATH="$PROGRAM_PATH" \
+    bash "$root/scripts/container-run" "$mode"
+else
+  if ! command -v docker >/dev/null 2>&1; then
+    echo "Docker was not found. Install Docker Desktop/Engine or set PROGRAM_PATH." >&2
+    exit 2
+  fi
+  docker run --rm \
+    --user "$(id -u):$(id -g)" \
+    --entrypoint /bin/bash \
+    --mount "type=bind,src=$root,dst=/repo,readonly" \
+    --mount "type=bind,src=$run_dir,dst=/work" \
+    --workdir /work \
+    -e REPO_ROOT=/repo \
+    -e RUN_DIR=/work \
+    -e HOME=/tmp \
+    -e PROGRAM_PATH=/home/mfcl/mfclo64 \
+    "$image" /repo/scripts/container-run "$mode"
+fi

@@ -1,0 +1,11 @@
+# MFCL files are checksum-locked scientific artifacts. Preserve their bytes
+# and suppress misleading line-oriented diffs.
+model/bet.* -text -diff
+model/checkpoints/*.par -text -diff
+results/reference/final.par -text -diff
+*.rds -text -diff
+
+*.sh text eol=lf
+doitall text eol=lf
+run-final text eol=lf
+verify text eol=lf

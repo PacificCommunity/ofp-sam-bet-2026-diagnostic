@@ -1,0 +1,39 @@
+#!/bin/bash
+set -euo pipefail
+
+mode=${1:?fit or final is required}
+repo_root=${REPO_ROOT:?REPO_ROOT is required}
+run_dir=${RUN_DIR:?RUN_DIR is required}
+program_path=${PROGRAM_PATH:?PROGRAM_PATH is required}
+
+cp -R "$repo_root/model/." "$run_dir/"
+cd "$run_dir"
+chmod +x doitall.sh
+
+if [[ $mode == fit ]]; then
+  PROGRAM_PATH="$program_path" ./doitall.sh 2>&1 | tee mfcl.log
+  test -s 11.par
+  cp 11.par final.par
+  sha256sum final.par > final.par.sha256
+  observed=$(sha256sum final.par | awk '{print $1}')
+  expected=6a7a4489ec40fa8223c9c3aac831a46c4eaa810654a35af0a537cf6b04fb2eed
+  printf 'Reference final PAR: %s\nObserved final PAR:  %s\n' "$expected" "$observed"
+elif [[ $mode == final ]]; then
+  cp "$repo_root/results/reference/final.par" final.par
+  set +e
+  "$program_path" bet.frq final.par evaluated.par -file - 2>&1 <<'MFCL_SWITCHES' | tee mfcl-final.log
+  1 1 0
+  1 246 1
+MFCL_SWITCHES
+  status=${PIPESTATUS[0]}
+  set -e
+  if [[ $status -ne 0 && $status -ne 3 ]]; then
+    echo "MFCL final-PAR evaluation failed with status $status." >&2
+    exit "$status"
+  fi
+  test -s evaluated.par
+  echo "Reference final.par evaluated successfully."
+else
+  echo "Unknown run mode: $mode" >&2
+  exit 2
+fi

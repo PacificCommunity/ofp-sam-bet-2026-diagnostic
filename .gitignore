@@ -2,3 +2,7 @@
 .RData
 outputs/
 work/
+run/
+run-*/
+final-run/
+final-run-*/

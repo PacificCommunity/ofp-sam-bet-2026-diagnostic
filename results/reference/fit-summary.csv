@@ -1,0 +1,2 @@
+model,source_job,source_seed,objective,max_gradient,terminal_depletion_2024,final_par_sha256,status
+Diagnostic model,19835,23,89054.3397838085,9.29682860375776e-05,0.328795504582,6a7a4489ec40fa8223c9c3aac831a46c4eaa810654a35af0a537cf6b04fb2eed,completed

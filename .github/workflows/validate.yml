@@ -1,0 +1,22 @@
+name: Validate Diagnostic model
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify frozen files
+        run: ./verify
+      - name: Check scripts
+        run: |
+          sh -n doitall run-final verify scripts/run-model model/doitall.sh
+          bash -n scripts/container-run run.sh
+      - name: Evaluate the reference final PAR
+        run: ./run-final
+      - name: Confirm the reference objective
+        run: grep -F "Total func      89054.339783808" final-run/mfcl-final.log
