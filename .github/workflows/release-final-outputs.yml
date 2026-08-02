@@ -67,14 +67,6 @@ jobs:
 
           mkdir -p "dist/stage/$standalone_name"
           cp -a model/. "dist/stage/$standalone_name/"
-          mv "dist/stage/$standalone_name/doitall.sh" \
-            "dist/stage/$standalone_name/.doitall-core"
-          sed -i \
-            's/seed23_initialization=${SEED23_INITIALIZATION:-1}/seed23_initialization=${SEED23_INITIALIZATION:-0}/' \
-            "dist/stage/$standalone_name/.doitall-core"
-          grep -F \
-            'seed23_initialization=${SEED23_INITIALIZATION:-0}' \
-            "dist/stage/$standalone_name/.doitall-core"
           rm -f \
             "dist/stage/$standalone_name/MANIFEST.sha256" \
             "dist/stage/$standalone_name/README.md"
@@ -88,8 +80,7 @@ jobs:
             "dist/stage/$standalone_name/mfclo64" \
             "dist/stage/$standalone_name/run-final" \
             "dist/stage/$standalone_name/doitall.sh" \
-            "dist/stage/$standalone_name/doitall-seed23.sh" \
-            "dist/stage/$standalone_name/.doitall-core"
+            "dist/stage/$standalone_name/doitall-seed23.sh"
 
           (
             cd "dist/stage/$standalone_name"
@@ -100,7 +91,14 @@ jobs:
             test -s plot-evaluated.par.rep
             test -s catch.rep
             test -s tag.rep
-            sh -n run-final doitall.sh doitall-seed23.sh .doitall-core
+            sh -n run-final doitall.sh doitall-seed23.sh
+            if grep -Eiq 'seed.?23|PROGRAM_PATH|program_path|doitall-core' doitall.sh; then
+              echo "The standard doitall.sh contains seed-23 or external-program logic." >&2
+              exit 1
+            fi
+            grep -F 'seed23_initialization=${SEED23_INITIALIZATION:-1}' doitall-seed23.sh
+            test "$(grep -c '^\./mfclo64 bet.frq' doitall.sh)" -eq 12
+            test "$(grep -c '^\./mfclo64 bet.frq' doitall-seed23.sh)" -eq 12
             sha256sum final.par > final.par.sha256
             find . -type f ! -name SHA256SUMS -print0 \
               | LC_ALL=C sort -z \
