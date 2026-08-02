@@ -15,7 +15,7 @@ export R_LIBS_USER=$report_lib
 
 # Local development uses the source checkout directly. Kflow installs the
 # exact public mfclshiny revision only when the container does not already
-# provide the regional conditional age-at-length report API.
+# provide the regional age-length growth and uncertainty report API.
 if [ ! -d "${MFCLSHINY_REPO:-}" ]; then
   Rscript --vanilla - <<'RS'
 lib <- Sys.getenv("R_LIBS_USER")
@@ -23,15 +23,11 @@ dir.create(lib, recursive = TRUE, showWarnings = FALSE)
 .libPaths(unique(c(lib, .libPaths())))
 required_ref <- Sys.getenv(
   "MFCLSHINY_GITHUB_REF",
-  "987bb5d76efa513d82612ad73583ba614c535508"
+  "c861bce8c1d8c769d12d897e035765765880bafd"
 )
 has_api <- requireNamespace("mfclshiny", quietly = TRUE) &&
-  "plot_mfcl_age_length_fit" %in% getNamespaceExports("mfclshiny") &&
-  any(grepl(
-    "region_mean_age",
-    deparse(get("plot_mfcl_age_length_fit", envir = asNamespace("mfclshiny"))),
-    fixed = TRUE
-  ))
+  all(c("plot_mfcl_age_length_fit", "plot_mfcl_age_length_growth") %in%
+    getNamespaceExports("mfclshiny"))
 if (!has_api) {
   if (!requireNamespace("remotes", quietly = TRUE)) {
     install.packages("remotes", lib = lib, repos = "https://cloud.r-project.org")

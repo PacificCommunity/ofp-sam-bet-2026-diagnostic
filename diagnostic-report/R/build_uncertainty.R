@@ -247,4 +247,296 @@ if (file.exists(hessian_file)) {
 }
 if (file.exists(fit_file)) invisible(file.copy(fit_file, file.path(table_dir, "fit-summary.csv"), overwrite = TRUE))
 
+read_native_hessian <- function(path) {
+  if (!file.exists(path)) stop("Missing native MFCL Hessian: ", path, call. = FALSE)
+  con <- file(path, "rb")
+  on.exit(close(con), add = TRUE)
+  n <- readBin(con, integer(), n = 1L, size = 4L, endian = .Platform$endian)
+  values <- readBin(con, numeric(), n = n * n, size = 8L, endian = .Platform$endian)
+  if (!is.finite(n) || n < 1L || length(values) != n * n) {
+    stop("Native MFCL Hessian is incomplete or has an invalid dimension.", call. = FALSE)
+  }
+  hessian <- matrix(values, nrow = n, ncol = n, byrow = TRUE)
+  # MFCL itself averages the two finite-difference triangles before its
+  # eigendecomposition (ongoing-development src/newl9.cpp).
+  (hessian + t(hessian)) / 2
+}
+
+mfcl_bound_jacobian <- function(value, lower, upper, scale, constant = 1.570795) {
+  internal <- scale * asin(2 * (value - lower) / (upper - lower) - 1) / constant
+  (upper - lower) / 2 * cos(internal / scale * constant) * constant / scale
+}
+
+mfcl_bound_inverse <- function(value, lower, upper, scale, constant = 1.570795) {
+  scale * asin(2 * (value - lower) / (upper - lower) - 1) / constant
+}
+
+mfcl_bound_forward <- function(internal, lower, upper, scale, constant = 1.570795) {
+  lower + (upper - lower) * (sin(internal / scale * constant) + 1) / 2
+}
+
+growth_schedule <- function(parameters, n_age) {
+  age <- seq_len(n_age)
+  rho <- exp(-parameters[[3L]])
+  relative_growth <- (1 - rho^(age - 1)) / (1 - rho^(n_age - 1))
+  mean_length <- parameters[[1L]] + (parameters[[2L]] - parameters[[1L]]) * relative_growth
+  sd_length <- parameters[[4L]] * exp(parameters[[5L]] * (-1 + 2 * relative_growth))
+  data.frame(age = age, mean_length = mean_length, sd_length = sd_length)
+}
+
+numeric_gradient <- function(fn, parameters) {
+  vapply(seq_along(parameters), function(index) {
+    step <- max(abs(parameters[[index]]), 1) * 1e-6
+    upper <- lower <- parameters
+    upper[[index]] <- upper[[index]] + step
+    lower[[index]] <- lower[[index]] - step
+    (fn(upper) - fn(lower)) / (2 * step)
+  }, numeric(1))
+}
+
+delta_se <- function(gradient, covariance) {
+  sqrt(max(0, drop(t(gradient) %*% covariance %*% gradient)))
+}
+
+build_growth_uncertainty <- function(model_dir,
+                                     hessian_path,
+                                     hessian_metadata,
+                                     draws = 100000L,
+                                     seed = 20260803L) {
+  if (!requireNamespace("FLR4MFCL", quietly = TRUE)) {
+    stop("FLR4MFCL is required for growth uncertainty.", call. = FALSE)
+  }
+  par_path <- file.path(model_dir, "evaluated.par")
+  rep_path <- file.path(model_dir, "plot-evaluated.par.rep")
+  par <- FLR4MFCL::read.MFCLPar(par_path)
+  rep <- FLR4MFCL::read.MFCLRep(rep_path)
+  vb <- FLR4MFCL::growth(par)
+  variance <- FLR4MFCL::growth_var_pars(par)
+  estimate <- c(as.numeric(vb[, "est"]), as.numeric(variance[, "ini"]))
+  lower <- c(as.numeric(vb[, "min"]), as.numeric(variance[, "min"]))
+  upper <- c(as.numeric(vb[, "max"]), as.numeric(variance[, "max"]))
+  names(estimate) <- names(lower) <- names(upper) <- c("L1", "L40", "K", "SD scale", "SD gradient")
+
+  flag_387 <- tryCatch(FLR4MFCL::flagval(par, 1, 387)$value[[1L]], error = function(e) 0)
+  growth_scale <- if (isTRUE(flag_387 != 0)) 3000 else 1000
+  bound_scale <- c(1000, growth_scale, growth_scale, 1000, 1000)
+
+  labels <- hessian_metadata$diagnostics$parameter_table$par
+  target <- c("vb_coff(1)", "vb_coff(2)", "vb_coff(3)", "var_coff(1)", "var_coff(2)")
+  index <- match(target, labels)
+  if (anyNA(index) || anyDuplicated(index)) {
+    stop("Could not uniquely match all five active growth parameters to the Hessian.", call. = FALSE)
+  }
+
+  hessian <- read_native_hessian(hessian_path)
+  if (nrow(hessian) != length(labels)) {
+    stop("Hessian dimension does not match its parameter map.", call. = FALSE)
+  }
+  rhs <- matrix(0, nrow(hessian), length(index))
+  rhs[cbind(index, seq_along(index))] <- 1
+  covariance_internal <- tryCatch({
+    chol_hessian <- chol(hessian)
+    backsolve(chol_hessian, forwardsolve(t(chol_hessian), rhs))
+  }, error = function(e) solve(hessian, rhs))
+  covariance_internal <- covariance_internal[index, , drop = FALSE]
+  covariance_internal <- (covariance_internal + t(covariance_internal)) / 2
+  internal_estimate <- mfcl_bound_inverse(estimate, lower, upper, bound_scale)
+  jacobian <- mfcl_bound_jacobian(estimate, lower, upper, bound_scale)
+  covariance <- outer(jacobian, jacobian) * covariance_internal
+  covariance <- (covariance + t(covariance)) / 2
+
+  draws <- suppressWarnings(as.integer(draws[[1L]]))
+  seed <- suppressWarnings(as.integer(seed[[1L]]))
+  if (!is.finite(draws) || draws < 10000L) stop("At least 10,000 Hessian draws are required.", call. = FALSE)
+  if (!is.finite(seed)) seed <- 20260803L
+  set.seed(seed)
+  normal_draws <- matrix(stats::rnorm(draws * length(index)), nrow = draws, ncol = length(index))
+  internal_draws <- sweep(normal_draws %*% chol(covariance_internal), 2, internal_estimate, "+")
+  outside_bounds <- colSums(abs(sweep(internal_draws, 2, bound_scale, "/")) >= 0.9999)
+  if (any(outside_bounds > 0L)) {
+    stop("Hessian draws reached the penalized edge of an MFCL bound.", call. = FALSE)
+  }
+  parameter_draws <- vapply(seq_along(index), function(column) {
+    mfcl_bound_forward(
+      internal_draws[, column], lower[[column]], upper[[column]], bound_scale[[column]]
+    )
+  }, numeric(draws))
+  colnames(parameter_draws) <- names(estimate)
+
+  fitted <- growth_schedule(estimate, n_age = 40L)
+  report_mean <- suppressWarnings(as.numeric(c(aperm(FLR4MFCL::mean_laa(rep), c(4, 1, 2, 3, 5, 6)))))
+  report_sd <- suppressWarnings(as.numeric(c(aperm(FLR4MFCL::sd_laa(rep), c(4, 1, 2, 3, 5, 6)))))
+  if (length(report_mean) < 40L || length(report_sd) < 40L ||
+      max(abs(fitted$mean_length - report_mean[seq_len(40L)])) > 1e-3 ||
+      max(abs(fitted$sd_length - report_sd[seq_len(40L)])) > 1e-3) {
+    stop("Reconstructed mean/SD length-at-age does not match the native MFCL report.", call. = FALSE)
+  }
+
+  rows <- lapply(seq_len(nrow(fitted)), function(age) {
+    mean_fn <- function(x) growth_schedule(x, 40L)$mean_length[[age]]
+    sd_fn <- function(x) growth_schedule(x, 40L)$sd_length[[age]]
+    lower_fn <- function(x) mean_fn(x) - 1.96 * sd_fn(x)
+    upper_fn <- function(x) mean_fn(x) + 1.96 * sd_fn(x)
+    rho_draw <- exp(-parameter_draws[, 3L])
+    relative_growth_draw <- (1 - rho_draw^(age - 1)) / (1 - rho_draw^39)
+    mean_draw <- parameter_draws[, 1L] +
+      (parameter_draws[, 2L] - parameter_draws[, 1L]) * relative_growth_draw
+    sd_draw <- parameter_draws[, 4L] *
+      exp(parameter_draws[, 5L] * (-1 + 2 * relative_growth_draw))
+    lower_draw <- mean_draw - 1.96 * sd_draw
+    upper_draw <- mean_draw + 1.96 * sd_draw
+    mean_interval <- stats::quantile(mean_draw, c(0.025, 0.975), names = FALSE, type = 8)
+    sd_interval <- stats::quantile(sd_draw, c(0.025, 0.975), names = FALSE, type = 8)
+    lower_interval <- stats::quantile(lower_draw, c(0.025, 0.975), names = FALSE, type = 8)
+    upper_interval <- stats::quantile(upper_draw, c(0.025, 0.975), names = FALSE, type = 8)
+    distribution_lower <- lower_fn(estimate)
+    distribution_upper <- upper_fn(estimate)
+    data.frame(
+      age = age,
+      mean_length = mean_fn(estimate),
+      mean_se = stats::sd(mean_draw),
+      mean_lower = mean_interval[[1L]],
+      mean_upper = mean_interval[[2L]],
+      sd_length = sd_fn(estimate),
+      sd_se = stats::sd(sd_draw),
+      sd_lower = sd_interval[[1L]],
+      sd_upper = sd_interval[[2L]],
+      distribution_lower = distribution_lower,
+      distribution_upper = distribution_upper,
+      distribution_lower_se = stats::sd(lower_draw),
+      distribution_upper_se = stats::sd(upper_draw),
+      distribution_lower_ci = lower_interval[[1L]],
+      distribution_lower_ci_upper = lower_interval[[2L]],
+      distribution_upper_ci_lower = upper_interval[[1L]],
+      distribution_upper_ci = upper_interval[[2L]],
+      stringsAsFactors = FALSE
+    )
+  })
+  curve <- do.call(rbind, rows)
+  delta_curve <- do.call(rbind, lapply(seq_len(nrow(fitted)), function(age) {
+    mean_fn <- function(x) growth_schedule(x, 40L)$mean_length[[age]]
+    sd_fn <- function(x) growth_schedule(x, 40L)$sd_length[[age]]
+    lower_fn <- function(x) mean_fn(x) - 1.96 * sd_fn(x)
+    upper_fn <- function(x) mean_fn(x) + 1.96 * sd_fn(x)
+    mean_se <- delta_se(numeric_gradient(mean_fn, estimate), covariance)
+    sd_se <- delta_se(numeric_gradient(sd_fn, estimate), covariance)
+    lower_se <- delta_se(numeric_gradient(lower_fn, estimate), covariance)
+    upper_se <- delta_se(numeric_gradient(upper_fn, estimate), covariance)
+    data.frame(
+      age = age,
+      mean_lower = mean_fn(estimate) - 1.96 * mean_se,
+      mean_upper = mean_fn(estimate) + 1.96 * mean_se,
+      sd_lower = pmax(0, sd_fn(estimate) - 1.96 * sd_se),
+      sd_upper = sd_fn(estimate) + 1.96 * sd_se,
+      distribution_lower_ci = lower_fn(estimate) - 1.96 * lower_se,
+      distribution_lower_ci_upper = lower_fn(estimate) + 1.96 * lower_se,
+      distribution_upper_ci_lower = upper_fn(estimate) - 1.96 * upper_se,
+      distribution_upper_ci = upper_fn(estimate) + 1.96 * upper_se
+    )
+  }))
+  interval_columns <- setdiff(names(delta_curve), "age")
+  delta_comparison <- data.frame(
+    endpoint = interval_columns,
+    maximum_absolute_difference_cm = vapply(
+      interval_columns,
+      function(column) max(abs(curve[[column]] - delta_curve[[column]])),
+      numeric(1)
+    ),
+    stringsAsFactors = FALSE
+  )
+  parameter_se <- apply(parameter_draws, 2, stats::sd)
+  parameter_interval <- apply(parameter_draws, 2, stats::quantile, probs = c(0.025, 0.975), names = FALSE, type = 8)
+  parameter_table <- data.frame(
+    parameter = names(estimate),
+    estimate = estimate,
+    standard_error = parameter_se,
+    lower_95 = parameter_interval[1L, ],
+    upper_95 = parameter_interval[2L, ],
+    lower_bound = lower,
+    upper_bound = upper,
+    stringsAsFactors = FALSE
+  )
+  list(
+    curve = curve,
+    parameters = parameter_table,
+    covariance = covariance,
+    covariance_internal = covariance_internal,
+    internal_estimate = internal_estimate,
+    hessian_index = index,
+    bound_scale = bound_scale,
+    interval_method = "Multivariate-normal Hessian approximation on the MFCL bounded internal scale, transformed through the native sine bounds",
+    draws = draws,
+    seed = seed,
+    draws_at_penalized_bound = outside_bounds,
+    transformed_vs_delta = delta_comparison,
+    max_report_mean_difference = max(abs(fitted$mean_length - report_mean[seq_len(40L)])),
+    max_report_sd_difference = max(abs(fitted$sd_length - report_sd[seq_len(40L)]))
+  )
+}
+
+if (file.exists(hessian_file)) {
+  native_hessian_file <- file.path(repo_root, "results", "reference", "hessian", "bet.hes")
+  growth_uncertainty <- build_growth_uncertainty(
+    model_dir = file.path(repo_root, "final-run-release-check"),
+    hessian_path = native_hessian_file,
+    hessian_metadata = h
+  )
+  write.csv(growth_uncertainty$curve, file.path(table_dir, "growth-curve-uncertainty.csv"), row.names = FALSE)
+  write.csv(growth_uncertainty$parameters, file.path(table_dir, "growth-parameter-uncertainty.csv"), row.names = FALSE)
+  write.csv(growth_uncertainty$transformed_vs_delta, file.path(table_dir, "growth-uncertainty-method-check.csv"), row.names = FALSE)
+  saveRDS(growth_uncertainty$covariance, file.path(table_dir, "growth-parameter-covariance.rds"), compress = "xz")
+
+  if (!requireNamespace("mfclshiny", quietly = TRUE)) {
+    stop("mfclshiny is required for the regional growth plot.", call. = FALSE)
+  }
+  age_file <- list.files(file.path(repo_root, "final-run-release-check"), pattern = "\\.age_length$", full.names = TRUE)
+  if (length(age_file) != 1L) stop("Expected one age-length input file.", call. = FALSE)
+  age_fit <- mfclshiny::summarise_mfcl_age_length_fit(
+    age_file[[1L]],
+    file.path(repo_root, "final-run-release-check", "agelengthresids.dat")
+  )
+  map_environment <- new.env(parent = baseenv())
+  sys.source(file.path(repo_root, "final-run-release-check", "fishery_map.R"), envir = map_environment)
+  growth_plot <- mfclshiny::plot_mfcl_age_length_growth(
+    age_fit,
+    growth_uncertainty$curve,
+    fishery_map = map_environment$fishery_map,
+    facet_ncol = 3L
+  ) + ggplot2::labs(
+    subtitle = paste(
+      "Observed age-length cells by region; all five growth/SD parameters and their covariance are propagated from the native MFCL Hessian"
+    )
+  )
+  uncertainty_width <- rbind(
+    data.frame(age = growth_uncertainty$curve$age, quantity = "Mean length", half_width = (growth_uncertainty$curve$mean_upper - growth_uncertainty$curve$mean_lower) / 2),
+    data.frame(age = growth_uncertainty$curve$age, quantity = "Length SD", half_width = (growth_uncertainty$curve$sd_upper - growth_uncertainty$curve$sd_lower) / 2),
+    data.frame(age = growth_uncertainty$curve$age, quantity = "Lower distribution limit", half_width = (growth_uncertainty$curve$distribution_lower_ci_upper - growth_uncertainty$curve$distribution_lower_ci) / 2),
+    data.frame(age = growth_uncertainty$curve$age, quantity = "Upper distribution limit", half_width = (growth_uncertainty$curve$distribution_upper_ci - growth_uncertainty$curve$distribution_upper_ci_lower) / 2)
+  )
+  uncertainty_width$quantity <- factor(
+    uncertainty_width$quantity,
+    levels = c("Mean length", "Length SD", "Lower distribution limit", "Upper distribution limit")
+  )
+  width_plot <- ggplot(uncertainty_width, aes(age, half_width, colour = quantity)) +
+    geom_line(linewidth = 0.72) +
+    facet_wrap(~quantity, nrow = 1, scales = "free_y") +
+    scale_colour_manual(values = c("#0077B6", "#3A7D44", "#B65C00", "#8A4F00")) +
+    labs(
+      x = "Age class", y = "95% CI half-width (cm)",
+      title = "Hessian uncertainty at the plotted curves and distribution limits"
+    ) +
+    theme_bet() +
+    theme(legend.position = "none", strip.text = element_text(face = "bold", size = 9))
+  combined_growth_plot <- patchwork::wrap_plots(
+    growth_plot, width_plot, ncol = 1, heights = c(4.3, 1.25)
+  )
+  ggsave(file.path(figure_dir, "regional-age-length-growth-uncertainty.png"), combined_growth_plot, width = 12, height = 10.2, dpi = 220, bg = "white")
+  ggsave(file.path(figure_dir, "regional-age-length-growth-uncertainty.pdf"), combined_growth_plot, width = 12, height = 10.2, device = cairo_pdf, bg = "white")
+
+  uncertainty_path <- file.path(output_dir, "diagnostic-uncertainty.rds")
+  uncertainty_payload <- readRDS(uncertainty_path)
+  uncertainty_payload$growth <- growth_uncertainty
+  saveRDS(uncertainty_payload, uncertainty_path, compress = "xz")
+}
+
 message("Wrote native MFCL uncertainty outputs to ", normalizePath(output_dir, mustWork = TRUE))

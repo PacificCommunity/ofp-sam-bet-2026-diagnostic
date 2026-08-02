@@ -32,6 +32,7 @@ fit <- read_if(file.path("tables", "fit-summary.csv"))
 hessian <- read_if(file.path("tables", "hessian-summary.csv"))
 age_fit <- read_if(file.path("mfclshiny", "tables", "age-data-fit-summary.csv"))
 age_fit_region <- read_if(file.path("mfclshiny", "tables", "age-data-fit-by-region-summary.csv"))
+growth_parameters <- read_if(file.path("tables", "growth-parameter-uncertainty.csv"))
 ```
 
 ## Assessment summary
@@ -110,6 +111,22 @@ fig("catch-by-fishery-fits")
 ## Size and age composition
 
 ```{r}
+#| fig-cap: "Observed regional age–length cells and the common fitted growth schedule; the final panel pools all regions. The blue band is the pointwise 95% confidence interval for mean length-at-age. The orange band is the fitted mean ± 1.96 SD length-at-age distribution, and the dark boundary ribbons propagate Hessian uncertainty in both distribution limits. The lower panels show the corresponding 95% CI half-widths without visual magnification."
+knitr::include_graphics(file.path("figures", "regional-age-length-growth-uncertainty.png"))
+```
+
+```{r}
+if (nrow(growth_parameters)) {
+  growth_view <- growth_parameters[c("parameter", "estimate", "standard_error", "lower_95", "upper_95")]
+  growth_view[-1] <- lapply(growth_view[-1], function(x) format(x, digits = 4))
+  names(growth_view) <- c("Parameter", "Estimate", "SE", "Lower 95%", "Upper 95%")
+  kable(growth_view, caption = "Growth and length-at-age SD parameters with bounded-scale Hessian intervals.")
+}
+```
+
+The fitted growth schedule is shared among regions; regional panels differ only in their observed age–length data. Growth intervals are multivariate Hessian intervals generated on MFCL's bounded internal parameter scale and transformed through the native sine bounds. They are not lognormal intervals. The boundary ribbons quantify uncertainty in the fitted distribution limits, not additional biological variation beyond the central orange distribution.
+
+```{r}
 #| fig-cap: "Observed and fitted length-frequency samples."
 fig("length-frequency")
 ```
@@ -135,7 +152,7 @@ fig("age-data-coverage")
 ```
 
 ```{r}
-#| fig-cap: "Observed and fitted conditional mean age by model region. Fishery estimates are weighted by the number of aged fish."
+#| fig-cap: "Conditional age-at-length fit by model region. Fitted proportions are the coloured background and observed proportions are overlaid as circles."
 fig("age-data-fit-by-region")
 ```
 
@@ -149,19 +166,14 @@ if (nrow(age_fit)) {
   kable(head(age_fit, 30), caption = "Conditional age-at-length fit summary. The complete fishery and regional tables are supplied as CSV with the report.")
 }
 if (nrow(age_fit_region)) {
-  regional_summary <- do.call(rbind, lapply(split(age_fit_region, age_fit_region$region), function(x) {
-    w <- pmax(0, x$n_aged)
-    error <- x$observed_mean_age - x$fitted_mean_age
-    data.frame(
-      Region = x$region[[1]],
-      `Fish aged` = sum(w, na.rm = TRUE),
-      `Mean bias (age class)` = weighted.mean(error, w, na.rm = TRUE),
-      `RMSE (age class)` = sqrt(weighted.mean(error^2, w, na.rm = TRUE)),
-      check.names = FALSE
-    )
-  }))
-  regional_summary[, 3:4] <- round(regional_summary[, 3:4], 3)
-  kable(regional_summary, caption = "Regional conditional age-at-length fit summary. Full annual values are supplied as CSV.")
+  regional_summary <- age_fit_region[order(age_fit_region$conditional_rmse, decreasing = TRUE), ]
+  regional_summary$conditional_rmse <- round(regional_summary$conditional_rmse, 4)
+  regional_summary$conditional_mae <- round(regional_summary$conditional_mae, 4)
+  names(regional_summary) <- c(
+    "Region", "Fish aged", "Fitted fish", "Observed age-length cells",
+    "Conditional RMSE", "Conditional MAE"
+  )
+  kable(regional_summary, caption = "Regional conditional age-at-length misfit, ordered by observed-versus-fitted conditional-proportion RMSE.")
 }
 ```
 
