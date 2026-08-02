@@ -13,6 +13,24 @@ export R_LIBS_USER=$report_lib
   sha256sum -c SHA256SUMS
 )
 
+# A local checkout may already contain the evaluated final-PAR files.  A clean
+# Kflow checkout does not, so reconstruct them deterministically from the
+# committed final PAR and inputs before building the report.  This is an
+# evaluation only; it does not refit the assessment model.
+model_dir=${DIAGNOSTIC_MODEL_DIR:-final-run-release-check}
+case "$model_dir" in
+  /*) ;;
+  *) model_dir=$report_root/$model_dir ;;
+esac
+if [ ! -s "$model_dir/evaluated.par" ] || [ ! -s "$model_dir/plot-evaluated.par.rep" ]; then
+  if [ -e "$model_dir" ] && [ "$(find "$model_dir" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
+    echo "Incomplete model directory is not empty: $model_dir" >&2
+    exit 2
+  fi
+  RUN_DIR="$model_dir" "$report_root/run-final"
+fi
+export DIAGNOSTIC_MODEL_DIR=$model_dir
+
 # Local development uses the source checkout directly. Kflow installs the
 # exact public mfclshiny revision only when the container does not already
 # provide the regional age-length growth and uncertainty report API.

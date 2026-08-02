@@ -6,6 +6,8 @@ args <- commandArgs(trailingOnly = TRUE)
 repo_root <- if (length(args) >= 1L) normalizePath(args[[1L]], mustWork = TRUE) else normalizePath(".", mustWork = TRUE)
 output_dir <- if (length(args) >= 2L) normalizePath(args[[2L]], mustWork = FALSE) else file.path(repo_root, "diagnostic-report-output")
 model_dir <- Sys.getenv("DIAGNOSTIC_MODEL_DIR", file.path(repo_root, "final-run-release-check"))
+if (!grepl("^/", model_dir)) model_dir <- file.path(repo_root, model_dir)
+model_dir <- normalizePath(model_dir, mustWork = TRUE)
 mfclshiny_repo <- Sys.getenv("MFCLSHINY_REPO", "/home/kyuhank/Desktop/SPC/mfclshiny")
 
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)

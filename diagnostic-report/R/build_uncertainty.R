@@ -6,6 +6,9 @@ args <- commandArgs(trailingOnly = TRUE)
 repo_root <- if (length(args) >= 1L) normalizePath(args[[1L]], mustWork = TRUE) else normalizePath(".", mustWork = TRUE)
 output_dir <- if (length(args) >= 2L) args[[2L]] else file.path(repo_root, "diagnostic-report-output")
 variance_file <- if (length(args) >= 3L) args[[3L]] else file.path(repo_root, "results", "reference", "uncertainty", "bet.var")
+model_dir <- Sys.getenv("DIAGNOSTIC_MODEL_DIR", file.path(repo_root, "final-run-release-check"))
+if (!grepl("^/", model_dir)) model_dir <- file.path(repo_root, model_dir)
+model_dir <- normalizePath(model_dir, mustWork = TRUE)
 
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 figure_dir <- file.path(output_dir, "figures")
@@ -477,7 +480,7 @@ build_growth_uncertainty <- function(model_dir,
 if (file.exists(hessian_file)) {
   native_hessian_file <- file.path(repo_root, "results", "reference", "hessian", "bet.hes")
   growth_uncertainty <- build_growth_uncertainty(
-    model_dir = file.path(repo_root, "final-run-release-check"),
+    model_dir = model_dir,
     hessian_path = native_hessian_file,
     hessian_metadata = h
   )
@@ -489,14 +492,14 @@ if (file.exists(hessian_file)) {
   if (!requireNamespace("mfclshiny", quietly = TRUE)) {
     stop("mfclshiny is required for the regional growth plot.", call. = FALSE)
   }
-  age_file <- list.files(file.path(repo_root, "final-run-release-check"), pattern = "\\.age_length$", full.names = TRUE)
+  age_file <- list.files(model_dir, pattern = "\\.age_length$", full.names = TRUE)
   if (length(age_file) != 1L) stop("Expected one age-length input file.", call. = FALSE)
   age_fit <- mfclshiny::summarise_mfcl_age_length_fit(
     age_file[[1L]],
-    file.path(repo_root, "final-run-release-check", "agelengthresids.dat")
+    file.path(model_dir, "agelengthresids.dat")
   )
   map_environment <- new.env(parent = baseenv())
-  sys.source(file.path(repo_root, "final-run-release-check", "fishery_map.R"), envir = map_environment)
+  sys.source(file.path(model_dir, "fishery_map.R"), envir = map_environment)
   growth_plot <- mfclshiny::plot_mfcl_age_length_growth(
     age_fit,
     growth_uncertainty$curve,
