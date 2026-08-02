@@ -3,11 +3,10 @@ set -eu
 
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 cd "$here"
-program_path=${PROGRAM_PATH:-./mfclo64}
 
-if [ ! -x "$program_path" ]; then
-  echo "MFCL executable not found: $program_path" >&2
-  echo "Run 'chmod +x mfclo64 run-final' or set PROGRAM_PATH." >&2
+if [ ! -x ./mfclo64 ]; then
+  echo "MFCL executable not found: ./mfclo64" >&2
+  echo "Run 'chmod +x mfclo64 run-final'." >&2
   exit 1
 fi
 if [ ! -s bet.frq ] || [ ! -s final.par ]; then
@@ -16,7 +15,7 @@ if [ ! -s bet.frq ] || [ ! -s final.par ]; then
 fi
 
 set +e
-"$program_path" bet.frq final.par evaluated.par -file - > mfcl-final.log 2>&1 <<'MFCL_SWITCHES'
+./mfclo64 bet.frq final.par evaluated.par -file - > mfcl-final.log 2>&1 <<'MFCL_SWITCHES'
   1 1 0
   1 246 1
 MFCL_SWITCHES

@@ -14,7 +14,7 @@ jobs:
         run: ./verify
       - name: Check scripts
         run: |
-          sh -n doitall run-final restore-hessian verify scripts/run-model model/doitall.sh standalone/run-final standalone/doitall standalone/doitall-seed23
+          sh -n doitall doitall-seed23.sh run-final restore-hessian verify scripts/run-model model/doitall.sh standalone/run-final standalone/doitall.sh standalone/doitall-seed23.sh
           bash -n scripts/container-run run.sh
       - name: Evaluate the reference final PAR
         run: ./run-final

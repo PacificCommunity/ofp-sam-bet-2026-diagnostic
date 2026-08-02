@@ -1,40 +1,18 @@
-BET 2026 DIAGNOSTIC MODEL - STANDALONE LINUX PACKAGE
-====================================================
+BET 2026 DIAGNOSTIC MODEL
+=========================
 
-Everything needed to run the model is in this one directory. Use a Linux
-x86-64 computer, or a Linux x86-64 environment such as WSL2.
+Open a Linux terminal in this directory and run:
 
-First, open a terminal in this directory and run:
+  chmod +x mfclo64 run-final doitall.sh doitall-seed23.sh
 
-  chmod +x mfclo64 run-final doitall doitall-seed23 doitall-core
-
-QUICK: EVALUATE THE PROVIDED FINAL PAR
+To generate reports from the provided final.par:
 
   ./run-final
 
-This uses final.par and writes evaluated.par, ests.rep,
-plot-evaluated.par.rep, catch.rep, tag.rep, and the other MFCL reports into
-this directory. It does not refit the model.
+To fit from the standard bet.ini starting values:
 
-COMPLETE FIT: STANDARD MAKEPAR INITIALIZATION
+  ./doitall.sh
 
-  ./doitall
+To reproduce the diagnostic model seed-23 initialization:
 
-This follows the same model phases but does not apply the seed-23 initialization
-checkpoints. It starts from the ordinary bet.ini -makepar values. The fitted PAR
-is 11.par. This is also a long model fit.
-
-COMPLETE FIT: REPRODUCE THE DIAGNOSTIC MODEL INITIALIZATION
-
-  ./doitall-seed23
-
-This starts at bet.ini -makepar and applies the archived seed-23 initialization
-checkpoints at the documented phases. The fitted PAR is 11.par. This is a long
-model fit.
-
-The supplied mfclo64 is a statically linked Linux x86-64 executable. To use a
-different compatible MFCL executable, set PROGRAM_PATH, for example:
-
-  PROGRAM_PATH=/path/to/mfclo64 ./run-final
-
-For a clean complete fit, use a newly extracted copy of this directory.
+  ./doitall-seed23.sh

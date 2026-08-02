@@ -11,8 +11,8 @@ The [latest GitHub Release](https://github.com/PacificCommunity/ofp-sam-bet-2026
 contains two ready-to-use ZIP files. The complete archive retains the repository
 and its pre-generated `final-run/` outputs. The simpler standalone archive puts
 `mfclo64`, `final.par`, every model input, and all run scripts in one directory.
-In that directory, `./run-final` evaluates the fitted PAR, `./doitall` fits from
-the ordinary `bet.ini -makepar` initialization, and `./doitall-seed23`
+In that directory, `./run-final` evaluates the fitted PAR, `./doitall.sh` fits
+from the ordinary `bet.ini -makepar` initialization, and `./doitall-seed23.sh`
 reproduces the seed-23 diagnostic initialization.
 
 ## Quick start
@@ -21,11 +21,12 @@ On 64-bit Linux, no installation or Docker is needed:
 
 ```sh
 ./run-final
-./doitall
+./doitall-seed23.sh
 ```
 
-`run-final` evaluates the included fitted PAR in a few minutes. `doitall`
-repeats the complete multi-phase fit and can take several hours.
+`run-final` evaluates the included fitted PAR in a few minutes.
+`doitall-seed23.sh` reproduces the complete diagnostic-model fit and can take
+several hours.
 
 On Windows or macOS, install
 [Docker Desktop](https://www.docker.com/products/docker-desktop/) and run:
@@ -36,9 +37,10 @@ On Windows or macOS, install
 ```
 
 The shell runners automatically use Docker on non-Linux systems. Linux users
-can force the pinned container with `USE_DOCKER=1 ./doitall`. Results go to
+can force the pinned container with `USE_DOCKER=1 ./doitall-seed23.sh`. Results go to
 `run/` or `final-run/`; frozen repository files are never modified. Select a
-fresh directory with, for example, `RUN_DIR=run-2 ./doitall`.
+fresh directory with, for example,
+`RUN_DIR=run-2 ./doitall-seed23.sh`.
 
 Keep the extracted directory structure intact and use the bundled executable.
 The final PAR cannot be evaluated by passing only `final.par` to an arbitrary
@@ -53,13 +55,7 @@ complete fit starts from the frozen input files and reconstructs the selected
 seed-23 initialization path:
 
 ```sh
-./doitall
-```
-
-An alternative compatible executable can still be selected explicitly:
-
-```sh
-PROGRAM_PATH=/absolute/path/to/mfclo64 ./doitall
+./doitall-seed23.sh
 ```
 
 ## Run the fitted final PAR

@@ -2,4 +2,4 @@
 set -eu
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 cd "$here"
-SEED23_INITIALIZATION=0 exec ./doitall-core "$@"
+exec sh ./.doitall-core "$@"

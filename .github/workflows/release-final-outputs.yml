@@ -68,22 +68,28 @@ jobs:
           mkdir -p "dist/stage/$standalone_name"
           cp -a model/. "dist/stage/$standalone_name/"
           mv "dist/stage/$standalone_name/doitall.sh" \
-            "dist/stage/$standalone_name/doitall-core"
+            "dist/stage/$standalone_name/.doitall-core"
+          sed -i \
+            's/seed23_initialization=${SEED23_INITIALIZATION:-1}/seed23_initialization=${SEED23_INITIALIZATION:-0}/' \
+            "dist/stage/$standalone_name/.doitall-core"
+          grep -F \
+            'seed23_initialization=${SEED23_INITIALIZATION:-0}' \
+            "dist/stage/$standalone_name/.doitall-core"
           rm -f \
             "dist/stage/$standalone_name/MANIFEST.sha256" \
             "dist/stage/$standalone_name/README.md"
           cp mfclo64 "dist/stage/$standalone_name/mfclo64"
           cp results/reference/final.par "dist/stage/$standalone_name/final.par"
-          cp standalone/doitall "dist/stage/$standalone_name/doitall"
-          cp standalone/doitall-seed23 "dist/stage/$standalone_name/doitall-seed23"
+          cp standalone/doitall.sh "dist/stage/$standalone_name/doitall.sh"
+          cp standalone/doitall-seed23.sh "dist/stage/$standalone_name/doitall-seed23.sh"
           cp standalone/run-final "dist/stage/$standalone_name/run-final"
           cp standalone/README.txt "dist/stage/$standalone_name/README.txt"
           chmod +x \
             "dist/stage/$standalone_name/mfclo64" \
             "dist/stage/$standalone_name/run-final" \
-            "dist/stage/$standalone_name/doitall" \
-            "dist/stage/$standalone_name/doitall-seed23" \
-            "dist/stage/$standalone_name/doitall-core"
+            "dist/stage/$standalone_name/doitall.sh" \
+            "dist/stage/$standalone_name/doitall-seed23.sh" \
+            "dist/stage/$standalone_name/.doitall-core"
 
           (
             cd "dist/stage/$standalone_name"
@@ -94,7 +100,7 @@ jobs:
             test -s plot-evaluated.par.rep
             test -s catch.rep
             test -s tag.rep
-            sh -n run-final doitall doitall-seed23 doitall-core
+            sh -n run-final doitall.sh doitall-seed23.sh .doitall-core
             sha256sum final.par > final.par.sha256
             find . -type f ! -name SHA256SUMS -print0 \
               | LC_ALL=C sort -z \
@@ -148,7 +154,7 @@ jobs:
             '' \
             'The archive also includes the frozen final PAR, inputs, completed Hessian, compact R payload, executable and reproduction scripts.' \
             '' \
-            'A separate standalone ZIP places the executable, final PAR, all inputs and run scripts in one directory. Use `./run-final` for the supplied fit, `./doitall` for ordinary makepar initialization, or `./doitall-seed23` for the diagnostic-model initialization.' \
+            'A separate standalone ZIP places the executable, final PAR, all inputs and run scripts in one directory. Use `./run-final` for the supplied fit, `./doitall.sh` for ordinary makepar initialization, or `./doitall-seed23.sh` for the diagnostic-model initialization.' \
             '' \
             "Source commit: $GITHUB_SHA" \
             > "$notes"
