@@ -1,0 +1,117 @@
+name: Publish final-PAR outputs
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag
+        required: true
+        default: v1.0.0
+      release_name:
+        description: Release title
+        required: true
+        default: BET 2026 diagnostic model with final-PAR outputs
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Evaluate final PAR and publish bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Verify frozen model files
+        run: ./verify
+
+      - name: Generate outputs from the fitted final PAR
+        run: ./run-final
+
+      - name: Validate generated outputs
+        run: |
+          grep -F "Total func      89054.339783808" final-run/mfcl-final.log
+          test -s final-run/evaluated.par
+          test -s final-run/ests.rep
+          test -s final-run/plot-evaluated.par.rep
+          test -s final-run/catch.rep
+          test -s final-run/tag.rep
+          test -s final-run/hessian/bet.hes
+          test -s final-run/hessian/hessian_info.rds
+          test -s final-run/model_payload.rds
+
+      - name: Build complete ready-to-use archive
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_name=bet-2026-diagnostic-model-with-final-outputs
+          mkdir -p "dist/stage/$package_name"
+          git archive HEAD | tar -x -C "dist/stage/$package_name"
+          cp -a final-run "dist/stage/$package_name/final-run"
+
+          (
+            cd dist/stage
+            find "$package_name" -type f -print0 \
+              | LC_ALL=C sort -z \
+              | xargs -0 sha256sum \
+              > "../$package_name.contents.sha256"
+            zip -q -9 -r "../$package_name.zip" "$package_name"
+          )
+          (
+            cd dist
+            sha256sum "$package_name.zip" > "$package_name.zip.sha256"
+          )
+
+          echo "package_name=$package_name" >> "$GITHUB_OUTPUT"
+
+      - name: Retain the bundle as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.package_name }}
+          path: |
+            dist/${{ steps.package.outputs.package_name }}.zip
+            dist/${{ steps.package.outputs.package_name }}.zip.sha256
+            dist/${{ steps.package.outputs.package_name }}.contents.sha256
+          if-no-files-found: error
+
+      - name: Create or update the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_NAME: ${{ inputs.release_name }}
+          PACKAGE_NAME: ${{ steps.package.outputs.package_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          notes=$(mktemp)
+          printf '%s\n' \
+            'Pre-generated outputs for the BET 2026 diagnostic model.' \
+            '' \
+            'The included `final-run/` directory was generated in GitHub Actions by evaluating the fitted `final.par` with the repository MFCL executable. No local MFCL run is required to use these outputs.' \
+            '' \
+            'The archive also includes the frozen final PAR, inputs, completed Hessian, compact R payload, executable and reproduction scripts.' \
+            '' \
+            "Source commit: $GITHUB_SHA" \
+            > "$notes"
+
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$RELEASE_NAME" \
+              --notes-file "$notes"
+          else
+            gh release create "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "$RELEASE_NAME" \
+              --notes-file "$notes"
+          fi
+
+          gh release upload "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --clobber \
+            "dist/$PACKAGE_NAME.zip" \
+            "dist/$PACKAGE_NAME.zip.sha256" \
+            "dist/$PACKAGE_NAME.contents.sha256"

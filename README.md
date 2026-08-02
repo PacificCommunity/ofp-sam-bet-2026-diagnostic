@@ -5,6 +5,14 @@ repository contains the frozen inputs, deterministic seed-23 initialization,
 fitted `final.par`, compact R payload, completed Hessian and exact Linux MFCL
 executable.
 
+## Download the pre-generated outputs
+
+The [latest GitHub Release](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/releases/latest)
+contains a ready-to-use ZIP. Its `final-run/` directory was generated from the
+included fitted `final.par` in GitHub Actions, so no local MFCL run is needed to
+use the output files. The same archive also retains the model files and scripts
+needed for reproduction.
+
 ## Quick start
 
 On 64-bit Linux, no installation or Docker is needed:
@@ -29,6 +37,12 @@ The shell runners automatically use Docker on non-Linux systems. Linux users
 can force the pinned container with `USE_DOCKER=1 ./doitall`. Results go to
 `run/` or `final-run/`; frozen repository files are never modified. Select a
 fresh directory with, for example, `RUN_DIR=run-2 ./doitall`.
+
+Keep the extracted directory structure intact and use the bundled executable.
+The final PAR cannot be evaluated by passing only `final.par` to an arbitrary
+MFCL executable: the matching model inputs, executable version and command-line
+switches are also required. WSL2 on an x86-64 Windows computer is supported;
+run the commands from its Linux shell after restoring executable permissions.
 
 ## Run the complete fit
 
