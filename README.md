@@ -101,6 +101,21 @@ a Hessian cannot be transferred safely to different fitted parameters.
 
 The fitted files are in [`results/reference/`](results/reference/README.md).
 
+## Diagnostic report
+
+Build the paper-ready Diagnostic model report and offline viewer with:
+
+```sh
+bash diagnostic-report/run.sh
+```
+
+The self-contained HTML, publication-resolution figures, CSV tables and compact
+Hessian uncertainty RDS are written to `diagnostic-report-output/`. The report
+includes stock status, model fit, length and conditional age-at-length fits,
+tagging, regional dynamics, biological assumptions and native MFCL
+delta-method intervals. See [`diagnostic-report/`](diagnostic-report/README.md)
+for standalone and Kflow settings.
+
 > **Seed 23 note.** Seed 23 was the best-objective converged jitter selected for
 > this diagnostic model; it was not the lowest-depletion run. The complete fit
 > applies CV=0.1 perturbations only when parameter groups first become active:

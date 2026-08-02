@@ -6,3 +6,15 @@ run/
 run-*/
 final-run/
 final-run-*/
+diagnostic-report-output/
+diagnostic-report/.R-library/
+.kflow-app-data/
+XXX
+argv
+argv1
+error.log
+fmin.log
+recruitment_debug
+ssmult.dat
+tagcont
+totalcatchpen

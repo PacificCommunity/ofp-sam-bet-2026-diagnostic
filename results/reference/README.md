@@ -12,6 +12,8 @@
 - `hessian/check-summary.csv`: partition completion and eigenvalue summary.
 - `hessian/neigenvalues`: MFCL negative/total eigenvalue counts.
 - `hessian/mfcl_*_log.txt`: retained stitch and eigen logs.
+- `uncertainty/bet.var`: native all-period delta-method estimates and standard
+  errors used by the Diagnostic report.
 
 Run `../../run-final` to regenerate standard MFCL outputs and restore these
 Hessian files without repeating the long calculation. Use `../../verify` to

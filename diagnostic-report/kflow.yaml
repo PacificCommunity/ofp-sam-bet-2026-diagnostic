@@ -1,0 +1,30 @@
+name: ofp-sam-bet-2026-diagnostic-report
+description: Build the standalone BET 2026 Diagnostic model report, uncertainty tables, figures and offline viewer.
+command: bash diagnostic-report/run.sh
+docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
+remote_host: suva
+remote_user: kyuhank
+remote_base_dir: /home/kyuhank/KflowOutput
+slot_requirements: 'regexp("^suvofp", Machine)'
+resources:
+  cpus: 4
+  memory: 16GB
+  disk: 30GB
+env:
+  JOB_TITLE: BET 2026 Diagnostic model report
+  JOB_DESCRIPTION: Build paper-ready Diagnostic model figures, tables, Hessian uncertainty and an offline viewer.
+  REPORT_OUTPUT_DIR: diagnostic-report-output
+  DIAGNOSTIC_MODEL_DIR: final-run-release-check
+  FLOW_SPECIES: BET
+  FLOW_SPECIES_LABEL: bigeye tuna
+  FLOW_ASSESSMENT_YEAR: "2026"
+  MFCLSHINY_GITHUB_REF: 987bb5d76efa513d82612ad73583ba614c535508
+  KFLOW_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+tags:
+  stage: diagnostic-report
+  species: BET
+  assessment_year: "2026"
+output_patterns:
+  - diagnostic-report-output/**
