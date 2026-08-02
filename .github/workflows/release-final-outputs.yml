@@ -47,6 +47,7 @@ jobs:
         run: |
           set -euo pipefail
           package_name=bet-2026-diagnostic-model-with-final-outputs
+          standalone_name=bet-2026-diagnostic-standalone
           mkdir -p "dist/stage/$package_name"
           git archive HEAD | tar -x -C "dist/stage/$package_name"
           cp -a final-run "dist/stage/$package_name/final-run"
@@ -64,16 +65,69 @@ jobs:
             sha256sum "$package_name.zip" > "$package_name.zip.sha256"
           )
 
+          mkdir -p "dist/stage/$standalone_name"
+          cp -a model/. "dist/stage/$standalone_name/"
+          mv "dist/stage/$standalone_name/doitall.sh" \
+            "dist/stage/$standalone_name/doitall-core"
+          rm -f \
+            "dist/stage/$standalone_name/MANIFEST.sha256" \
+            "dist/stage/$standalone_name/README.md"
+          cp mfclo64 "dist/stage/$standalone_name/mfclo64"
+          cp results/reference/final.par "dist/stage/$standalone_name/final.par"
+          cp standalone/doitall "dist/stage/$standalone_name/doitall"
+          cp standalone/doitall-seed23 "dist/stage/$standalone_name/doitall-seed23"
+          cp standalone/run-final "dist/stage/$standalone_name/run-final"
+          cp standalone/README.txt "dist/stage/$standalone_name/README.txt"
+          chmod +x \
+            "dist/stage/$standalone_name/mfclo64" \
+            "dist/stage/$standalone_name/run-final" \
+            "dist/stage/$standalone_name/doitall" \
+            "dist/stage/$standalone_name/doitall-seed23" \
+            "dist/stage/$standalone_name/doitall-core"
+
+          (
+            cd "dist/stage/$standalone_name"
+            ./run-final > standalone-final-evaluation.log
+            grep -F "Total func      89054.339783808" mfcl-final.log
+            test -s evaluated.par
+            test -s ests.rep
+            test -s plot-evaluated.par.rep
+            test -s catch.rep
+            test -s tag.rep
+            sh -n run-final doitall doitall-seed23 doitall-core
+            sha256sum final.par > final.par.sha256
+            find . -type f ! -name SHA256SUMS -print0 \
+              | LC_ALL=C sort -z \
+              | xargs -0 sha256sum \
+              > SHA256SUMS
+          )
+          (
+            cd dist/stage
+            find "$standalone_name" -type f -print0 \
+              | LC_ALL=C sort -z \
+              | xargs -0 sha256sum \
+              > "../$standalone_name.contents.sha256"
+            zip -q -9 -r "../$standalone_name.zip" "$standalone_name"
+          )
+          (
+            cd dist
+            sha256sum "$standalone_name.zip" > "$standalone_name.zip.sha256"
+          )
+
           echo "package_name=$package_name" >> "$GITHUB_OUTPUT"
+          echo "standalone_name=$standalone_name" >> "$GITHUB_OUTPUT"
 
       - name: Retain the bundle as a workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.package.outputs.package_name }}
+          name: BET-2026-diagnostic-release-bundles
           path: |
             dist/${{ steps.package.outputs.package_name }}.zip
             dist/${{ steps.package.outputs.package_name }}.zip.sha256
             dist/${{ steps.package.outputs.package_name }}.contents.sha256
+            dist/${{ steps.package.outputs.standalone_name }}.zip
+            dist/${{ steps.package.outputs.standalone_name }}.zip.sha256
+            dist/${{ steps.package.outputs.standalone_name }}.contents.sha256
           if-no-files-found: error
 
       - name: Create or update the GitHub Release
@@ -82,6 +136,7 @@ jobs:
           RELEASE_TAG: ${{ inputs.tag }}
           RELEASE_NAME: ${{ inputs.release_name }}
           PACKAGE_NAME: ${{ steps.package.outputs.package_name }}
+          STANDALONE_NAME: ${{ steps.package.outputs.standalone_name }}
         shell: bash
         run: |
           set -euo pipefail
@@ -92,6 +147,8 @@ jobs:
             'The included `final-run/` directory was generated in GitHub Actions by evaluating the fitted `final.par` with the repository MFCL executable. No local MFCL run is required to use these outputs.' \
             '' \
             'The archive also includes the frozen final PAR, inputs, completed Hessian, compact R payload, executable and reproduction scripts.' \
+            '' \
+            'A separate standalone ZIP places the executable, final PAR, all inputs and run scripts in one directory. Use `./run-final` for the supplied fit, `./doitall` for ordinary makepar initialization, or `./doitall-seed23` for the diagnostic-model initialization.' \
             '' \
             "Source commit: $GITHUB_SHA" \
             > "$notes"
@@ -114,4 +171,7 @@ jobs:
             --clobber \
             "dist/$PACKAGE_NAME.zip" \
             "dist/$PACKAGE_NAME.zip.sha256" \
-            "dist/$PACKAGE_NAME.contents.sha256"
+            "dist/$PACKAGE_NAME.contents.sha256" \
+            "dist/$STANDALONE_NAME.zip" \
+            "dist/$STANDALONE_NAME.zip.sha256" \
+            "dist/$STANDALONE_NAME.contents.sha256"

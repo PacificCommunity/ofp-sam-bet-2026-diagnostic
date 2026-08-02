@@ -24,7 +24,20 @@ fi
 # bootstrap is deliberately skipped: downstream jitter therefore remains the
 # existing makepar-based seed ensemble and does not add seed 23 a second time.
 seed23_audit_dir=seed23-initialization
-seed23_apply=true
+seed23_initialization=${SEED23_INITIALIZATION:-1}
+case "$seed23_initialization" in
+  1|true|TRUE|yes|YES)
+    seed23_apply=true
+    ;;
+  0|false|FALSE|no|NO)
+    seed23_apply=false
+    echo "Standard makepar initialization selected: seed-23 checkpoints will not be applied."
+    ;;
+  *)
+    echo "SEED23_INITIALIZATION must be 1/true/yes or 0/false/no." >&2
+    exit 1
+    ;;
+esac
 if [ -s mfk_phase1_baseline.par ] || [ -s mfk_fitted_baseline.par ]; then
   seed23_apply=false
   echo "Existing jitter resume detected: seed-23 base initialization will not be applied again."

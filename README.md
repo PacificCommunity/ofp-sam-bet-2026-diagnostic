@@ -8,10 +8,12 @@ executable.
 ## Download the pre-generated outputs
 
 The [latest GitHub Release](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/releases/latest)
-contains a ready-to-use ZIP. Its `final-run/` directory was generated from the
-included fitted `final.par` in GitHub Actions, so no local MFCL run is needed to
-use the output files. The same archive also retains the model files and scripts
-needed for reproduction.
+contains two ready-to-use ZIP files. The complete archive retains the repository
+and its pre-generated `final-run/` outputs. The simpler standalone archive puts
+`mfclo64`, `final.par`, every model input, and all run scripts in one directory.
+In that directory, `./run-final` evaluates the fitted PAR, `./doitall` fits from
+the ordinary `bet.ini -makepar` initialization, and `./doitall-seed23`
+reproduces the seed-23 diagnostic initialization.
 
 ## Quick start
 
@@ -117,7 +119,7 @@ The fitted files are in [`results/reference/`](results/reference/README.md).
 - Pinned digest: `sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360`
 - MFCL executable in the image: `/home/mfcl/mfclo64`
 - Bundled native executable: `./mfclo64` (Linux x86-64 only)
-- MFCL executable SHA-256: `f5bc1e232a86e51f920bce7271d8e0930d0b160e4d18dc46de44078f0fa24cd0`
+- MFCL executable SHA-256: `8995f72019869863c1d1c0b4f44fc6a6268d1f79031f5bc79dc354ee10f0a63e`
 
 See [`PROVENANCE.md`](PROVENANCE.md) for the model definition and source
 record. Run `./verify` to check all committed inputs and reference results.

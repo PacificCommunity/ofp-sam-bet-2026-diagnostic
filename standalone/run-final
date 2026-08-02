@@ -1,0 +1,36 @@
+#!/bin/sh
+set -eu
+
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+cd "$here"
+program_path=${PROGRAM_PATH:-./mfclo64}
+
+if [ ! -x "$program_path" ]; then
+  echo "MFCL executable not found: $program_path" >&2
+  echo "Run 'chmod +x mfclo64 run-final' or set PROGRAM_PATH." >&2
+  exit 1
+fi
+if [ ! -s bet.frq ] || [ ! -s final.par ]; then
+  echo "bet.frq and final.par must be in this directory." >&2
+  exit 1
+fi
+
+set +e
+"$program_path" bet.frq final.par evaluated.par -file - > mfcl-final.log 2>&1 <<'MFCL_SWITCHES'
+  1 1 0
+  1 246 1
+MFCL_SWITCHES
+status=$?
+set -e
+cat mfcl-final.log
+
+if [ "$status" -ne 0 ] && [ "$status" -ne 3 ]; then
+  echo "MFCL final-PAR evaluation failed with status $status." >&2
+  exit "$status"
+fi
+if [ ! -s evaluated.par ] || [ ! -s plot-evaluated.par.rep ]; then
+  echo "MFCL did not create the required final-PAR outputs." >&2
+  exit 1
+fi
+
+echo "Final PAR evaluated successfully. Outputs are in this directory."

@@ -16,6 +16,14 @@
 - Fixed Lorenzen natural-mortality intercept: -2.54930339768360
 - Dirichlet-multinomial composition likelihood: eight groups, Nmax = 25
 - Frozen frequency, tag, age-length and regional-scaling inputs
+- No weight-frequency observations: the FRQ header uses zero WF dimensions
+  and fishery records contain no trailing WF missing-value field
+
+The original FRQ declared 200 weight intervals even though no weight-frequency
+observations existed. That unused structure and its trailing per-record `-1`
+field were removed. The 7,449 catch and length-frequency records were otherwise
+preserved token-for-token. Evaluation of the fitted final PAR retains the same
+objective (89054.339783808682) and the same `evaluated.par` checksum.
 
 ## Seed-23 initialization
 
@@ -46,9 +54,12 @@ verified checkpoint from being applied.
 
 The reference fit completed in the pinned tuna-flow v2.5 image recorded in the
 root README. Its output supplied the committed final PAR, compact model payload,
-summaries and seed checkpoints. The exact statically linked Linux x86-64 MFCL
-executable from that image is also committed at repository root; other systems
-use the same executable through the pinned Docker image.
+summaries and seed checkpoints. A statically linked Linux x86-64 MFCL executable
+compatible with the corrected no-WF input is committed at repository root.
+Reference-final evaluation with this bundled executable and the executable
+previously extracted from the pinned image produced byte-identical
+`evaluated.par`, `ests.rep`, `plot-evaluated.par.rep`, `catch.rep`, and
+`tag.rep` files.
 
 ## Hessian record
 
