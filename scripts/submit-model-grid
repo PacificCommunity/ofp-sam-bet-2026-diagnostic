@@ -226,6 +226,16 @@ def validate_repository(config: dict[str, Any]) -> None:
     )
     if env.get("KFLOW_RUNTIME_PACKAGES") != expected_packages:
         raise ValueError("Kflow runtime package pins do not match the latest refs.")
+    run_script = (ROOT / "run.sh").read_text(encoding="utf-8")
+    if "RUN_DIR=${RUN_DIR:-work/" not in run_script:
+        raise ValueError("Model runs must keep raw working files outside archived outputs/.")
+    payload_script = (ROOT / "scripts" / "build-model-payload").read_text(
+        encoding="utf-8"
+    )
+    if 'artifacts = "all"' not in payload_script:
+        raise ValueError("Portable payloads must embed all restorable model artifacts.")
+    if "restore_model_payload_files" not in payload_script:
+        raise ValueError("Portable payload restoration must be validated before archiving.")
     local_apps = config.get("local_apps")
     if not isinstance(local_apps, list) or len(local_apps) != 1:
         raise ValueError("Exactly one task-level MFCL Shiny launcher is required.")
