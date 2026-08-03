@@ -1,5 +1,5 @@
-name: ofp-sam-bet-2026-diagnostic-report
-description: Build the standalone BET 2026 Diagnostic model report, uncertainty tables, figures and offline viewer.
+name: ofp-sam-bet-2026-diagnostic-model-report
+description: Build a concise paper-ready BET 2026 report from one staged Diagnostic model job, with Word/LaTeX copy controls, PNG/PDF figures, CSV tables and an offline viewer.
 command: bash diagnostic-report/run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
 remote_host: suva
@@ -11,20 +11,27 @@ resources:
   memory: 16GB
   disk: 30GB
 env:
-  JOB_TITLE: BET 2026 Diagnostic model report
-  JOB_DESCRIPTION: Build paper-ready Diagnostic model figures, tables, Hessian uncertainty and an offline viewer.
+  JOB_TITLE: BET 2026 Diagnostic model paper-ready report
+  JOB_DESCRIPTION: One Diagnostic model job; model summary, objective components, annual/recent status, stock-status and fishery-impact figures, data fits, selectivity, movement, biology, Hessian QC and report-ready downloads.
+  MODEL_JOB: ""
   REPORT_OUTPUT_DIR: diagnostic-report-output
-  DIAGNOSTIC_MODEL_DIR: final-run-release-check
+  DIAGNOSTIC_REPORT_DPI: "300"
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
-  MFCLSHINY_GITHUB_REF: c861bce8c1d8c769d12d897e035765765880bafd
-  KFLOW_RUNTIME_UPDATE: auto
+  FLR4MFCL_GITHUB_REF: ff8367fcec19baff98333170c0f1bca3f9903029
+  MFCLKIT_GITHUB_REF: cf786007b5261f84faac8f3d24f7084bd323119d
+  MFCLSHINY_GITHUB_REF: 542ac93b7ce0b6d0df70301891e668701d439857
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
 tags:
-  stage: diagnostic-report
+  stage: diagnostic-model-report
   species: BET
   assessment_year: "2026"
 output_patterns:
   - diagnostic-report-output/**
+metadata:
+  input_jobs_override: true
+  source_model_count: 1
+  report_style: paper-ready
+  source_model_policy: staged-job-only
