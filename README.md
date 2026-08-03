@@ -1,15 +1,21 @@
 # BET 2026 Diagnostic model — tau=2 exploration
 
-This branch fits the BET 2026 Diagnostic configuration with tag
-negative-binomial overdispersion fixed at `tau=2`.
+This branch fits 24 controlled BET 2026 models: three fixed steepness values
+(`0.80`, `0.85`, `0.90`) crossed with eight selectivity settings (`F1`-`F4`,
+`P1`-`P4`). Tag negative-binomial overdispersion is fixed at `tau=2` in every
+model.
 
-Only two aspects differ from the Diagnostic fitting recipe:
+All models share two fitting differences from the original Diagnostic run:
 
 - direct tau parameterization with `tau=2` fixed;
 - ordinary `bet.ini -makepar` initialization, with no jitter or seed-23
   checkpoint.
 
-All other model inputs, phases and controls are retained.
+The only differences among the 24 models are fixed steepness and the documented
+selectivity flags. All other inputs, phases and controls are common. See
+[SELECTIVITY_MODELS.md](SELECTIVITY_MODELS.md) for the exact definitions and
+[JOB19835_COMPARISON.md](JOB19835_COMPARISON.md) for the archived-input and
+control audit.
 
 ## Run
 
@@ -18,6 +24,13 @@ On 64-bit Linux:
 ```sh
 chmod +x mfclo64 doitall verify scripts/* model/doitall.sh
 ./doitall
+```
+
+`./doitall` runs `S0.80-F1`. Select another model and a fresh output directory
+with:
+
+```sh
+MODEL_ID=S0.85-P2 RUN_DIR=run-S0.85-P2 ./doitall
 ```
 
 The run is written to `run/`; the final fitted parameter file is
@@ -44,13 +57,14 @@ Under the direct parameterization,
 `tau = 1 + exp(fish_pars(4))`; therefore `fish_pars(4)=0` fixes `tau=2`.
 The script writes this value into the makepar-generated PAR before Phase 1 and
 checks it after every phase. See [TAU2_EXPLORATION.md](TAU2_EXPLORATION.md) for
-the source and manual audit.
+the source and manual audit. A portable implementation for other `doitall`
+scripts is in [TAU2_FIXED_SNIPPET.md](TAU2_FIXED_SNIPPET.md).
 
 ## Kflow
 
-The branch includes a Kflow task named
-`ofp-sam-bet-2026-diagnostic-tau2-exploration`. It uses the same
-`model/doitall.sh` recipe as the standalone run.
+The branch includes one Kflow task using the same `model/doitall.sh` recipe as
+the standalone run. `MODEL_ID` selects one of the 24 explicit model inputs; the
+default is `S0.80-F1`.
 
 ## Baseline reference files
 

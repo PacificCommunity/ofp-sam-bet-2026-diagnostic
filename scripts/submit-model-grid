@@ -1,0 +1,410 @@
+#!/usr/bin/env python3
+"""Register and concurrently submit the 24-model BET Kflow grid."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import urllib.error
+import urllib.parse
+import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CONFIG = ROOT / "kflow.yaml"
+EXPECTED_BRANCH = "tau2-exploration"
+STEEPNESS_VALUES = ("0.80", "0.85", "0.90")
+SELECTIVITY_MODELS = ("F1", "F2", "F3", "F4", "P1", "P2", "P3", "P4")
+
+SELECTIVITY_TITLES = {
+    "F1": "independent | F10 weak penalty",
+    "F2": "independent | F10+F33 weak penalties",
+    "F3": "independent | F3+F10 logistic",
+    "F4": "independent | F33 logistic",
+    "P1": "shared pairs | 4-node set | F33 logistic",
+    "P2": "shared pairs | 5-node set | F33 logistic",
+    "P3": "shared pairs | F10+F33 logistic",
+    "P4": "shared pairs | F10+F33 weak penalties",
+}
+
+SELECTIVITY_DESCRIPTIONS = {
+    "F1": (
+        "33 independent selectivity groups; Diagnostic five-node splines "
+        "except F25/F26 seven-node; F10 weak non-decreasing penalty 10000; "
+        "F33 five-node unpenalized spline"
+    ),
+    "F2": (
+        "33 independent selectivity groups; F1 settings plus the same weak "
+        "non-decreasing penalty 10000 on F33"
+    ),
+    "F3": (
+        "33 independent selectivity groups; F3 and F10 logistic; F10 penalty "
+        "off; F33 five-node unpenalized spline"
+    ),
+    "F4": (
+        "33 independent selectivity groups; F33 logistic; F10 five-node "
+        "unpenalized spline"
+    ),
+    "P1": (
+        "F2/F3 and F7/F9 shared; F1/F2/F3/F5/F29 four-node; F10 five-node "
+        "unpenalized spline; F33 logistic"
+    ),
+    "P2": (
+        "F2/F3 and F7/F9 shared; the P1 four-node curves restored to five "
+        "nodes; F10 five-node unpenalized spline; F33 logistic"
+    ),
+    "P3": (
+        "F2/F3 and F7/F9 shared; five-node defaults; F10 and F33 logistic"
+    ),
+    "P4": (
+        "F2/F3 and F7/F9 shared; five-node defaults; F10 and F33 five-node "
+        "splines with weak non-decreasing penalties 10000"
+    ),
+}
+
+
+def run_git(*args: str) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(ROOT), *args],
+        check=True,
+        text=True,
+        stdout=subprocess.PIPE,
+    )
+    return result.stdout.strip()
+
+
+def repository_name() -> str:
+    remote = run_git("remote", "get-url", "origin")
+    if remote.endswith(".git"):
+        remote = remote[:-4]
+    if remote.startswith("git@github.com:"):
+        return remote.split(":", 1)[1]
+    marker = "github.com/"
+    if marker in remote:
+        return remote.split(marker, 1)[1].strip("/")
+    raise ValueError("origin is not a GitHub repository.")
+
+
+def api_json(
+    method: str,
+    url: str,
+    token: str,
+    payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    body = None if payload is None else json.dumps(payload).encode("utf-8")
+    headers = {"Authorization": f"Bearer {token}"}
+    if body is not None:
+        headers["Content-Type"] = "application/json"
+    request = urllib.request.Request(url, data=body, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(request, timeout=90) as response:
+            raw = response.read()
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"{method} {url} failed: HTTP {exc.code}: {detail}") from exc
+    return json.loads(raw.decode("utf-8")) if raw else {}
+
+
+def read_config() -> dict[str, Any]:
+    config = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
+    if not isinstance(config, dict):
+        raise ValueError("kflow.yaml must contain a mapping.")
+    return config
+
+
+def parse_model_input(path: Path) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line or line.startswith("#"):
+            continue
+        key, separator, value = line.partition("=")
+        if not separator or not key or not value:
+            raise ValueError(f"Invalid model input line in {path}: {line}")
+        values[key] = value
+    expected = {"MODEL_ID", "STEEPNESS", "SELECTIVITY_MODEL", "SELECTIVITY_INPUT"}
+    if set(values) != expected:
+        raise ValueError(f"Unexpected fields in {path}: {sorted(values)}")
+    return values
+
+
+def build_rows() -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+    for steepness in STEEPNESS_VALUES:
+        for selectivity in SELECTIVITY_MODELS:
+            model_id = f"S{steepness}-{selectivity}"
+            path = ROOT / "model" / "model-inputs" / f"{model_id}.conf"
+            values = parse_model_input(path)
+            expected = {
+                "MODEL_ID": model_id,
+                "STEEPNESS": steepness,
+                "SELECTIVITY_MODEL": selectivity,
+                "SELECTIVITY_INPUT": f"selectivity-models/{selectivity}.csv",
+            }
+            if values != expected:
+                raise ValueError(f"Model input mismatch in {path}: {values}")
+            rows.append(values)
+    if len(rows) != 24 or len({row["MODEL_ID"] for row in rows}) != 24:
+        raise ValueError("The grid must contain exactly 24 unique models.")
+    return rows
+
+
+def validate_repository(config: dict[str, Any]) -> None:
+    branch = run_git("branch", "--show-current")
+    if branch != EXPECTED_BRANCH:
+        raise ValueError(f"Expected branch {EXPECTED_BRANCH}; found {branch}.")
+    if run_git("status", "--porcelain"):
+        raise ValueError("Commit all intended changes before Kflow submission.")
+    head = run_git("rev-parse", "HEAD")
+    remote_head = run_git("rev-parse", f"origin/{EXPECTED_BRANCH}")
+    if head != remote_head:
+        raise ValueError("Local HEAD is not the pushed origin/tau2-exploration commit.")
+    if config.get("name") != "ofp-sam-bet-2026-tau2-steepness-selectivity-grid":
+        raise ValueError("Unexpected Kflow task name.")
+    image = str(config.get("docker_image") or "")
+    if "@sha256:" not in image:
+        raise ValueError("Kflow image must use an immutable digest.")
+    if str(config.get("remote_host", "")).lower() != "suva":
+        raise ValueError("The 24 fits must run on Suva.")
+    if "suvofp" not in str(config.get("slot_requirements", "")).lower():
+        raise ValueError("The slot requirement must select Suva workers.")
+    if config.get("triggers"):
+        raise ValueError("The independent grid must not define job triggers.")
+
+
+def job_title(row: dict[str, str]) -> str:
+    selectivity = row["SELECTIVITY_MODEL"]
+    return (
+        f"{row['MODEL_ID']} | h={row['STEEPNESS']} fixed | "
+        f"{SELECTIVITY_TITLES[selectivity]} | tau=2 fixed"
+    )
+
+
+def job_description(row: dict[str, str]) -> str:
+    selectivity = row["SELECTIVITY_MODEL"]
+    return (
+        f"Independent full doitall fit {row['MODEL_ID']}. Fixed steepness "
+        f"sv(29)={row['STEEPNESS']} with age flag 162=0. "
+        f"Selectivity: {SELECTIVITY_DESCRIPTIONS[selectivity]}. "
+        "Direct negative-binomial tau=2 is fixed (parest 305=1, all "
+        "fish_pars(4)=0, fish flags 43/44=0). Ordinary bet.ini -makepar "
+        "initialization; no seed, jitter or checkpoint. Diagnostic Job 19835 "
+        "DM G8/Nmax25 treatment, K=0.20 mixing, biology, weighting and data are retained."
+    )
+
+
+def task_payload(config: dict[str, Any], rows: list[dict[str, str]]) -> dict[str, Any]:
+    resources = config["resources"]
+    metadata = {
+        **dict(config.get("metadata") or {}),
+        "model_count": 24,
+        "execution": "independent-concurrent",
+        "change_axes": ["fixed steepness", "selectivity"],
+        "steepness_values": list(STEEPNESS_VALUES),
+        "selectivity_models": list(SELECTIVITY_MODELS),
+        "model_ids": [row["MODEL_ID"] for row in rows],
+        "source_commit": run_git("rev-parse", "HEAD"),
+    }
+    return {
+        "name": config["name"],
+        "description": config["description"],
+        "repo_full_name": repository_name(),
+        "branch": EXPECTED_BRANCH,
+        "command": config["command"],
+        "docker_image": config["docker_image"],
+        "cpus": resources["cpus"],
+        "memory": resources["memory"],
+        "disk": resources["disk"],
+        "remote_host": config["remote_host"],
+        "remote_user": config["remote_user"],
+        "remote_base_dir": config["remote_base_dir"],
+        "slot_requirements": config["slot_requirements"],
+        "exclude_machines": config.get("exclude_machines", []),
+        "exclude_slots": config.get("exclude_slots", []),
+        "env": config["env"],
+        "tags": config["tags"],
+        "metadata": metadata,
+        "output_patterns": config["output_patterns"],
+        "input_jobs": [],
+        "triggers": {},
+    }
+
+
+def job_payload(config: dict[str, Any], row: dict[str, str]) -> dict[str, Any]:
+    resources = config["resources"]
+    model_id = row["MODEL_ID"]
+    selectivity = row["SELECTIVITY_MODEL"]
+    title = job_title(row)
+    description = job_description(row)
+    key = model_id.lower().replace(".", "").replace("-", "-") + "-tau2-fixed"
+    env = {
+        **config["env"],
+        "MODEL_ID": model_id,
+        "JOB_KEY": key,
+        "JOB_TITLE": title,
+        "MODEL_LABEL": title,
+        "JOB_DESCRIPTION": description,
+    }
+    return {
+        "docker_image": config["docker_image"],
+        "remote_host": config["remote_host"],
+        "remote_user": config["remote_user"],
+        "remote_base_dir": config["remote_base_dir"],
+        "slot_requirements": config["slot_requirements"],
+        "cpus": resources["cpus"],
+        "memory": resources["memory"],
+        "disk": resources["disk"],
+        "batch_name": config["env"]["FLOW_GROUP"],
+        "output_patterns": config["output_patterns"],
+        "input_jobs": [],
+        "env": env,
+        "tags": {
+            **config["tags"],
+            "model_id": model_id,
+            "steepness": row["STEEPNESS"],
+            "selectivity_model": selectivity,
+            "run_mode": "full-doitall",
+            "independent_fit": "true",
+        },
+        "metadata": {
+            **dict(config.get("metadata") or {}),
+            "model_id": model_id,
+            "fixed_steepness": row["STEEPNESS"],
+            "age_flag_162": 0,
+            "selectivity_model": selectivity,
+            "selectivity_input": row["SELECTIVITY_INPUT"],
+            "job_description": description,
+            "source_commit": run_git("rev-parse", "HEAD"),
+            "independent_fit": True,
+            "full_doitall": True,
+            "campaign_size": 24,
+        },
+        "triggers": {},
+    }
+
+
+def existing_keys(base_url: str, token: str, task_name: str) -> set[str]:
+    task_path = urllib.parse.quote(task_name, safe="")
+    keys: set[str] = set()
+    for page in range(1, 10):
+        response = api_json("GET", f"{base_url}/api/jobs/{task_path}/?page={page}", token)
+        jobs = response.get("jobs", [])
+        if not jobs:
+            break
+        for job in jobs:
+            env = job.get("env") or job.get("env_json") or {}
+            key = str(job.get("job_key") or env.get("JOB_KEY") or "")
+            if key:
+                keys.add(key)
+    return keys
+
+
+def verify_job(
+    base_url: str,
+    token: str,
+    task_name: str,
+    job_number: int,
+    row: dict[str, str],
+) -> None:
+    response = api_json("GET", f"{base_url}/api/job/{job_number}/", token)
+    job = response.get("job", response)
+    env = job.get("env") or job.get("env_json") or {}
+    if job.get("report_code") != task_name:
+        raise ValueError(f"Job {job_number} is attached to the wrong task.")
+    if env.get("MODEL_ID") != row["MODEL_ID"]:
+        raise ValueError(f"Job {job_number} has the wrong MODEL_ID.")
+    if env.get("JOB_TITLE") != job_title(row):
+        raise ValueError(f"Job {job_number} has the wrong title.")
+    if env.get("JOB_DESCRIPTION") != job_description(row):
+        raise ValueError(f"Job {job_number} has the wrong description.")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--max-workers", type=int, default=24)
+    args = parser.parse_args()
+
+    config = read_config()
+    rows = build_rows()
+    payloads = [job_payload(config, row) for row in rows]
+    if args.dry_run:
+        print(json.dumps({"task": task_payload(config, rows), "jobs": payloads}, indent=2))
+        return 0
+
+    validate_repository(config)
+    token = os.environ.get("KFLOW_API_TOKEN", "")
+    if not token:
+        raise SystemExit("Set KFLOW_API_TOKEN before submission.")
+    base_url = os.environ.get("KFLOW_URL", "http://127.0.0.1:8089").rstrip("/")
+    task_name = str(config["name"])
+    task_path = urllib.parse.quote(task_name, safe="")
+    api_json("POST", f"{base_url}/api/report/{task_path}", token, task_payload(config, rows))
+
+    present = existing_keys(base_url, token, task_name)
+    pending = [
+        (row, payload)
+        for row, payload in zip(rows, payloads)
+        if payload["env"]["JOB_KEY"] not in present
+    ]
+    results: list[dict[str, Any]] = []
+    failures: list[str] = []
+    with ThreadPoolExecutor(max_workers=max(1, args.max_workers)) as executor:
+        futures = {
+            executor.submit(
+                api_json, "POST", f"{base_url}/api/job/{task_path}", token, payload
+            ): row
+            for row, payload in pending
+        }
+        for future in as_completed(futures):
+            row = futures[future]
+            try:
+                response = future.result()
+                job = response.get("job", response)
+                results.append(
+                    {
+                        "model_id": row["MODEL_ID"],
+                        "job_number": int(job["job_number"]),
+                        "status": job.get("status"),
+                    }
+                )
+            except Exception as exc:
+                failures.append(f"{row['MODEL_ID']}: {exc}")
+
+    by_id = {row["MODEL_ID"]: row for row in rows}
+    for result in results:
+        try:
+            verify_job(
+                base_url,
+                token,
+                task_name,
+                result["job_number"],
+                by_id[result["model_id"]],
+            )
+        except Exception as exc:
+            failures.append(f"{result['model_id']} verification: {exc}")
+
+    results.sort(key=lambda item: item["model_id"])
+    print(json.dumps(
+        {
+            "task": task_name,
+            "source_commit": run_git("rev-parse", "HEAD"),
+            "already_present": len(present),
+            "submitted": results,
+            "failures": failures,
+        },
+        indent=2,
+    ))
+    if failures or len(present) + len(results) != 24:
+        raise SystemExit("Grid submission or verification was incomplete.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

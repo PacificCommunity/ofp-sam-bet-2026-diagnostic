@@ -2,7 +2,7 @@
 
 ## Model identity
 
-- Public name: **Diagnostic model | tau fixed at 2**
+- Public name: **BET 2026 fixed-tau steepness-selectivity grid**
 - Initialization: ordinary `bet.ini -makepar`; no jitter or seed checkpoint
 - Source repository: `PacificCommunity/ofp-sam-bet-2026-stepwise`
 - Source commit: `2973795d47b255e015fee680608401f20160e80a`
@@ -11,6 +11,9 @@
 ## Model definition
 
 - K = 0.20; tag tau fixed at 2 using the direct negative-binomial formulation
+- Fixed steepness grid: 0.80, 0.85 and 0.90 (`sv(29)`, age flag 162 = 0)
+- Selectivity grid: F1-F4 and P1-P4, defined in `SELECTIVITY_MODELS.md`
+- Job 19835 input/control audit: `JOB19835_COMPARISON.md`
 - Parest flags 111/305/306 = 4/1/0
 - All fish flags 43/44 = 0 and all `fish_pars(4) = 0`
 - F10: five-node cubic spline

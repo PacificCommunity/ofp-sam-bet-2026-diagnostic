@@ -1,8 +1,11 @@
 # Fixed tau=2 exploration
 
-This branch retains the BET 2026 Diagnostic model settings and changes the tag
-negative-binomial treatment to a fixed `tau=2`. It starts from the ordinary
-`bet.ini -makepar` parameter values; no jitter or seed-23 checkpoint is used.
+This branch compares the documented `F1`-`F4` and `P1`-`P4` selectivity
+settings at fixed steepness `0.80`, `0.85` and `0.90`, with the tag negative-
+binomial treatment fixed at `tau=2`. It starts from ordinary `bet.ini -makepar`
+parameter values; no jitter, seed or checkpoint is used. Except for fixed
+steepness and the five documented selectivity flags, inputs and controls are
+identical across the 24 models.
 
 ## MFCL settings
 
@@ -34,9 +37,12 @@ bounds and does not determine a fixed value.
 
 The run script writes `fish_pars(4)=0` directly into the Phase-0 PAR before any
 optimization. After every phase it verifies the parameterization, both fish
-flags and every fishery copy of `fish_pars(4)`. The final audit also verifies
-that no `fish_pars(4)` occurs in `indepvar.rpt` and writes
-`tag-tau-audit.csv`.
+flags and every fishery copy of `fish_pars(4)`. It also audits every final
+fishery flag controlling selectivity form, sharing, node count and the weak
+penalty. It separately verifies that `sv(29)` equals the selected steepness,
+age flag 162 remains zero and `sv(29)` is absent from `indepvar.rpt`. Final runs
+write `tag-tau-audit.csv`, `selectivity-audit.csv` and
+`model-input-audit.csv`.
 
 Source audit performed against:
 
