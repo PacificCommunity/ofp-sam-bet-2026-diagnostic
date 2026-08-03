@@ -9,111 +9,8 @@ if [ ! -x "$program_path" ]; then
   exit 1
 fi
 
-# ---------------------------------------------------------------------------
-# Deterministic seed-23 base initialization
-# ---------------------------------------------------------------------------
-# This is the exact CV=0.1 active-parameter perturbation path used by the
-# selected best-objective converged seed-23 fit. Parameters already represented
-# after Phase 1 are initialized there. The eight DM CEST parameters represented in
-# Phase 2 and the 25 regional-index selectivity coefficients first represented
-# after the Phase-5 group split are initialized immediately before their first
-# optimization. A parameter is initialized once, never once per phase.
-#
-# mfclkit's ordinary phase1/doitall jitter runner stages
-# mfk_phase1_baseline.par before resuming the script. In that context this base
-# bootstrap is deliberately skipped: downstream jitter therefore remains the
-# existing makepar-based seed ensemble and does not add seed 23 a second time.
-seed23_audit_dir=seed23-initialization
-seed23_initialization=${SEED23_INITIALIZATION:-1}
-case "$seed23_initialization" in
-  1|true|TRUE|yes|YES)
-    seed23_apply=true
-    ;;
-  0|false|FALSE|no|NO)
-    seed23_apply=false
-    echo "Standard makepar initialization selected: seed-23 checkpoints will not be applied."
-    ;;
-  *)
-    echo "SEED23_INITIALIZATION must be 1/true/yes or 0/false/no." >&2
-    exit 1
-    ;;
-esac
-if [ -s mfk_phase1_baseline.par ] || [ -s mfk_fitted_baseline.par ]; then
-  seed23_apply=false
-  echo "Existing jitter resume detected: seed-23 base initialization will not be applied again."
-fi
-
-# The exact Phase 1, 2 and 5 seed-23 checkpoints are archived here. Reusing
-# those byte-verified checkpoints removes the private mfclkit runtime dependency
-# while retaining the fitted path.
-seed23_initialize()
-{
-  mode=$1
-  input_par=$2
-  probe_par=$3
-  output_par=$4
-  phase=$7
-  checkpoint_root=${SEED23_CHECKPOINT_DIR:-checkpoints}
-
-  case "$phase" in
-    1)
-      phase_tag=phase01
-      expected_input=d6e0464187da0af8142e21070eff0a41
-      expected_probe=
-      expected_output=42fbc2f4b19d127df30ffdeaecbc007e
-      ;;
-    2)
-      phase_tag=phase02
-      expected_input=42fbc2f4b19d127df30ffdeaecbc007e
-      expected_probe=acf11f080de93b971f50d3e886cb5c92
-      expected_output=6e5d6637d7e12d33eac34981ec261734
-      ;;
-    5)
-      phase_tag=phase05
-      expected_input=5c77e7d1dcccf6333e51d0b61772ff2a
-      expected_probe=85e9c638132ed2a4e3671e91a6d5003d
-      expected_output=e536666b839539afde3be4fb5ffbcfaa
-      ;;
-    *)
-      echo "Unsupported seed-23 checkpoint phase: $phase" >&2
-      exit 46
-      ;;
-  esac
-
-  checkpoint=$checkpoint_root/$phase_tag-seed23.par
-  summary=$checkpoint_root/$phase_tag-summary.csv
-  mapping=$checkpoint_root/$phase_tag-mapping.csv
-  for required in "$checkpoint" "$summary" "$mapping"; do
-    if [ ! -s "$required" ]; then
-      echo "Missing archived seed-23 checkpoint file: $required" >&2
-      exit 46
-    fi
-  done
-
-  observed_input=$(md5sum "$input_par" | awk '{print $1}')
-  if [ "$observed_input" != "$expected_input" ]; then
-    echo "Warning: seed-23 $phase_tag pre-checkpoint hash differs across runtimes." >&2
-    echo "Expected $expected_input; observed $observed_input; applying the verified checkpoint." >&2
-  fi
-  if [ -n "$expected_probe" ]; then
-    observed_probe=$(md5sum "$probe_par" | awk '{print $1}')
-    if [ "$observed_probe" != "$expected_probe" ]; then
-      echo "Warning: seed-23 $phase_tag probe hash differs across runtimes." >&2
-      echo "Expected $expected_probe; observed $observed_probe; applying the verified checkpoint." >&2
-    fi
-  fi
-  observed_output=$(md5sum "$checkpoint" | awk '{print $1}')
-  if [ "$observed_output" != "$expected_output" ]; then
-    echo "Seed-23 $phase_tag checkpoint hash mismatch." >&2
-    echo "Expected $expected_output; observed $observed_output." >&2
-    exit 46
-  fi
-
-  cp "$checkpoint" "$output_par"
-  cp "$summary" "$seed23_audit_dir/$phase_tag-summary.csv"
-  cp "$mapping" "$seed23_audit_dir/$phase_tag-mapping.csv"
-  echo "Seed-23 initialization: $phase_tag checkpoint verified and applied."
-}
+# This exploration always starts from the ordinary bet.ini -makepar values.
+# No jitter or archived fitted checkpoint is applied.
 
 phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:--4}
 case "$phase10_11_convergence" in
@@ -144,6 +41,70 @@ echo "Regional recruitment-distribution penalty: $regional_recruitment_penalty (
 dm_nmax=25
 dm_concentration=7
 echo "DM controls: Nmax=$dm_nmax; grouped fish_pars(22) fixed at $dm_concentration; fish_pars(23) estimated"
+echo "Tag overdispersion: tau fixed at 2 under the direct parameterization (parest 305=1; fish_pars(4)=0; fish flags 43/44=0)"
+
+audit_tau2_fixed()
+{
+  par_file=$1
+  phase_label=$2
+  if [ ! -s "$par_file" ]; then
+    echo "$phase_label tau=2 audit: missing PAR file $par_file" >&2
+    exit 42
+  fi
+
+  tau_audit=$(awk '
+    /^# The parest_flags/ {
+      getline
+      parest111=$111
+      parest305=$305
+      parest306=$306
+    }
+    !fish_flags_done && /^# fish flags/ {
+      in_fish_flags=1
+      next
+    }
+    in_fish_flags && /^#/ {
+      in_fish_flags=0
+    }
+    in_fish_flags && NF {
+      fisheries++
+      active43 += $43
+      grouping44 += $44
+      if (fisheries == 33) {
+        in_fish_flags=0
+        fish_flags_done=1
+      }
+      next
+    }
+    /^# extra fishery parameters/ {
+      in_fish_pars=1
+      next
+    }
+    in_fish_pars && /^#/ {
+      next
+    }
+    in_fish_pars && NF {
+      fish_par_row++
+      if (fish_par_row == 4) {
+        fish_par4_count=NF
+        for (i=1; i<=NF; i++) {
+          if ($i < -1e-12 || $i > 1e-12) fish_par4_nonzero++
+        }
+        in_fish_pars=0
+      }
+    }
+    END {
+      print parest111 + 0 "," parest305 + 0 "," parest306 + 0 "," fisheries + 0 "," active43 + 0 "," grouping44 + 0 "," fish_par4_count + 0 "," fish_par4_nonzero + 0
+    }
+  ' "$par_file")
+
+  if [ "$tau_audit" != "4,1,0,33,0,0,33,0" ]; then
+    echo "$phase_label tau=2 audit failed: $tau_audit" >&2
+    echo "Expected parest111=4, parest305=1, parest306=0, 33 fisheries, fish flags 43/44=0, and all fish_pars(4)=0." >&2
+    exit 42
+  fi
+  echo "$phase_label tau=2 audit: passed."
+}
 
 
 # -----------------------------------
@@ -152,31 +113,39 @@ echo "DM controls: Nmax=$dm_nmax; grouped fish_pars(22) fixed at $dm_concentrati
 
 $program_path bet.frq bet.ini 00.par -makepar
 
-# The diagnostic model fixes the eight grouped fish_pars(22) concentration
-# intercepts after they had converged to their upper bound (7). Set all
-# fishery copies explicitly before applying the same G8 grouping and flag 69=0.
+# Fix the direct negative-binomial parameter at fish_pars(4)=log(tau-1)=0
+# for tau=2. The diagnostic model also fixes the eight grouped fish_pars(22)
+# concentration intercepts at 7. Set every fishery copy explicitly in the
+# makepar output before Phase 1 so neither value depends on bet.ini defaults.
 awk -v concentration="$dm_concentration" '
   /^# extra fishery parameters/ { in_fish = 1; print; next }
   in_fish && /^#/ { print; next }
   in_fish && NF {
     fish_row++
+    if (fish_row == 4) {
+      if (NF != 33) exit 38
+      for (i = 1; i <= NF; i++)
+        printf "%s%s", 0, (i == NF ? "\n" : " ")
+      changed_tau = 1
+      next
+    }
     if (fish_row == 22) {
       if (NF != 33) exit 38
       for (i = 1; i <= NF; i++)
         printf "%s%s", concentration, (i == NF ? "\n" : " ")
-      changed = 1
+      changed_dm = 1
       next
     }
   }
   { print }
-  END { if (changed != 1) exit 38 }
-' 00.par > 00.dm-fixed.par
+  END { if (changed_tau != 1 || changed_dm != 1) exit 38 }
+' 00.par > 00.fixed.par
 
 # -----------------------
 #  PHASE 1 - initial par
 # -----------------------
 
-$program_path bet.frq 00.dm-fixed.par 01.par -file - <<PHASE1
+$program_path bet.frq 00.fixed.par 01.par -file - <<PHASE1
 # Use default quasi-Newton minimizer
   1 351 0
   1 192 0
@@ -256,6 +225,8 @@ $program_path bet.frq 00.dm-fixed.par 01.par -file - <<PHASE1
   2 94 1 2 128 100  # initial Z = 1.0*M, i.e. initial F = 0
 # Likelihood component settings
   1 111 4     # set likelihood function for tags to negative binomial
+  1 305 1     # direct parameterization: tau = 1 + exp(fish_pars(4))
+  1 306 0     # default bounds; inactive because fish flags 43/44 are fixed at zero
   1 141 11  # length-frequency likelihood: Dirichlet-multinomial without random effects
   1 139 3     # set likelihood function for WF data to normal
   -999 49 20  # divide LF sample sizes by 20
@@ -279,8 +250,8 @@ $program_path bet.frq 00.dm-fixed.par 01.par -file - <<PHASE1
   2 96 30    # pool tags after 30 quarters at liberty
 # Mixing periods are read from bet.ini tag flags for this step.
   2 198 1    # activate release group reporting rates
-  -999 43 0  # estimate tag variance if = 1
-  -999 44 0  # group all tags for variance estimation if = 1
+  -999 43 0  # keep fish_pars(4) fixed; 1 would estimate tau
+  -999 44 0  # no grouping is needed for a fixed common value
 # Grouping of fisheries for tag return data, mapped from BET_PHrev_FNL.xlsx.
 # New labels with region 4 in the workbook are treated as region 5 here.
    -1 32 1   # LL.WEST.1, old1
@@ -455,60 +426,11 @@ $program_path bet.frq 00.dm-fixed.par 01.par -file - <<PHASE1
   -999 69 0  # fix grouped fish_pars(22) concentration intercepts at 7
   -999 89 0  # stage relative sample-size exponent fixed at zero
 PHASE1
-
-if [ "$seed23_apply" = true ]; then
-  mkdir -p "$seed23_audit_dir"
-  cp 01.par "$seed23_audit_dir/phase01-before.par"
-  seed23_initialize \
-    phase1 \
-    01.par \
-    - \
-    "$seed23_audit_dir/phase01-seed23.par" \
-    - \
-    all \
-    1
-  cp "$seed23_audit_dir/phase01-seed23.par" 01.par
-fi
+audit_tau2_fixed 01.par "Phase 1"
 
 # ---------
 #  PHASE 2
 # ---------
-
-if [ "$seed23_apply" = true ]; then
-  if $program_path bet.frq 01.par seed23-phase02-probe.par -file - <<SEED23_PHASE2_PROBE
-  1 1 100
-  1 50 0
-  2 113 0
-  1 190 1
-  -999 89 1
-  1 1 0
-  1 246 1
-SEED23_PHASE2_PROBE
-  then
-    seed23_probe_status=0
-  else
-    seed23_probe_status=$?
-  fi
-  if [ "$seed23_probe_status" -ne 0 ] && [ "$seed23_probe_status" -ne 3 ]; then
-    echo "Seed-23 Phase-2 zero-evaluation probe failed with status $seed23_probe_status." >&2
-    exit "$seed23_probe_status"
-  fi
-  if [ ! -s seed23-phase02-probe.par ] || [ ! -s xinit.rpt ]; then
-    echo "Seed-23 Phase-2 probe did not create its PAR and xinit report." >&2
-    exit 47
-  fi
-  mv seed23-phase02-probe.par "$seed23_audit_dir/phase02-probe.par"
-  cp xinit.rpt "$seed23_audit_dir/phase02-xinit.rpt"
-  seed23_initialize \
-    deferred \
-    01.par \
-    "$seed23_audit_dir/phase02-probe.par" \
-    "$seed23_audit_dir/phase02-seed23.par" \
-    "$seed23_audit_dir/phase02-xinit.rpt" \
-    fish_pars23 \
-    2
-  cp "$seed23_audit_dir/phase02-seed23.par" 01.par
-fi
 
 $program_path bet.frq 01.par 02.par -file - <<PHASE2
   1 1 100  # set max. number of function evaluations per phase to 100
@@ -517,6 +439,7 @@ $program_path bet.frq 01.par 02.par -file - <<PHASE2
   1 190 1  # write plot-xxx.par.rep
   -999 89 1  # estimate group-specific DM relative sample-size exponent (CEST)
 PHASE2
+audit_tau2_fixed 02.par "Phase 2"
 
 # ---------
 #  PHASE 3
@@ -528,6 +451,7 @@ $program_path bet.frq 02.par 03.par -file - <<PHASE3
   2 178 1  # constrain regional recruitments
   1 1 200
 PHASE3
+audit_tau2_fixed 03.par "Phase 3"
 
 # ---------
 #  PHASE 4
@@ -538,66 +462,11 @@ $program_path bet.frq 03.par 04.par -file - <<PHASE4
   2 69 1
   2 27 -1  # penalty wt 0.1 computed against prior
 PHASE4
+audit_tau2_fixed 04.par "Phase 4"
 
 # ---------
 #  PHASE 5
 # ---------
-
-if [ "$seed23_apply" = true ]; then
-  if $program_path bet.frq 04.par seed23-phase05-probe.par -file - <<SEED23_PHASE5_PROBE
-  -100000 1 1
-  -100000 2 1
-  -100000 3 1
-  -100000 4 1
-  -100000 5 1
-  1 77 100
-  1 78 1
-  1 79 240
-  1 80 220
-  1 81 1
-  -29 99 29
-  -30 99 30
-  -31 99 31
-  -32 99 32
-  -33 99 33
-  -29 94 0
-  -30 94 0
-  -31 94 0
-  -32 94 0
-  -33 94 0
-  -29 24 29
-  -30 24 30
-  -31 24 31
-  -32 24 32
-  -33 24 33
-  1 1 0
-  1 246 1
-SEED23_PHASE5_PROBE
-  then
-    seed23_probe_status=0
-  else
-    seed23_probe_status=$?
-  fi
-  if [ "$seed23_probe_status" -ne 0 ] && [ "$seed23_probe_status" -ne 3 ]; then
-    echo "Seed-23 Phase-5 zero-evaluation probe failed with status $seed23_probe_status." >&2
-    exit "$seed23_probe_status"
-  fi
-  if [ ! -s seed23-phase05-probe.par ] || [ ! -s xinit.rpt ]; then
-    echo "Seed-23 Phase-5 probe did not create its PAR and xinit report." >&2
-    exit 48
-  fi
-  mv seed23-phase05-probe.par "$seed23_audit_dir/phase05-probe.par"
-  cp xinit.rpt "$seed23_audit_dir/phase05-xinit.rpt"
-  seed23_initialize \
-    deferred \
-    04.par \
-    "$seed23_audit_dir/phase05-probe.par" \
-    "$seed23_audit_dir/phase05-seed23.par" \
-    "$seed23_audit_dir/phase05-xinit.rpt" \
-    selectivity_coff \
-    5
-  cp "$seed23_audit_dir/phase05-seed23.par" 04.par
-fi
 
 $program_path bet.frq 04.par 05.par -file - <<PHASE5
   -100000 1 1  # estimate
@@ -629,6 +498,7 @@ $program_path bet.frq 04.par 05.par -file - <<PHASE5
   -32 24 32  # Index R4; separate selectivity coefficient-sharing group from staged run 5
   -33 24 33  # Index R5; separate selectivity coefficient-sharing group from staged run 5
 PHASE5
+audit_tau2_fixed 05.par "Phase 5"
 
 # ---------
 #  PHASE 6
@@ -641,6 +511,7 @@ $program_path bet.frq 05.par 06.par -file - <<PHASE6
   1 13 1   # estimate length of age n
   1 1 300  # function evaluations
 PHASE6
+audit_tau2_fixed 06.par "Phase 6"
 
 # ---------
 #  PHASE 7
@@ -654,6 +525,7 @@ $program_path bet.frq 06.par 07.par -file - <<PHASE7
   1 184 0  # estimate parameters
   1 1 500  # function evaluations
 PHASE7
+audit_tau2_fixed 07.par "Phase 7"
 
 # ---------
 #  PHASE 8
@@ -681,6 +553,7 @@ $program_path bet.frq 07.par 08.par -file - <<PHASE8
   1 50 -2    # convergence criteria
   2 116 100  # increase F bound for NR to 1.0
 PHASE8
+audit_tau2_fixed 08.par "Phase 8"
 
 # ---------
 #  PHASE 9
@@ -692,44 +565,65 @@ $program_path bet.frq 08.par 09.par -file - <<PHASE9
   1 50 -2    # convergence criteria
   2 116 300  # increase F bound for NR to 3.0
 PHASE9
+audit_tau2_fixed 09.par "Phase 9"
 
 # ------------------------------------------------------------------
-#  TAG-TAU TREATMENT - negative binomial, tau not estimated
+#  TAG-TAU TREATMENT - direct negative binomial, tau fixed at 2
 # ------------------------------------------------------------------
 
-# Parest flag 111 remains 4 (negative binomial), while fish flags 43/44
-# remain zero and fish_pars(4) is not opened as an independent variable.
-# All inherited diagnostic-model controls applied above remain unchanged.
-$program_path bet.frq 09.par 10.par -file - <<PHASE10_NO_TAU_EST
+# Parest flags 111/305 remain 4/1, fish flags 43/44 remain zero and
+# fish_pars(4)=log(2-1)=0 remains fixed. All other Diagnostic settings carry.
+$program_path bet.frq 09.par 10.par -file - <<PHASE10_TAU2_FIXED
   1 1 10000
   1 50 $phase10_11_convergence
   1 121 0
-PHASE10_NO_TAU_EST
+PHASE10_TAU2_FIXED
+audit_tau2_fixed 10.par "Phase 10"
 
-$program_path bet.frq 10.par 11.par -file - <<PHASE11_NO_TAU_EST
+$program_path bet.frq 10.par 11.par -file - <<PHASE11_TAU2_FIXED
   1 1 5000
   1 50 $phase10_11_convergence
   1 121 0
   1 246 1
-PHASE11_NO_TAU_EST
+PHASE11_TAU2_FIXED
+audit_tau2_fixed 11.par "Phase 11"
 
 final_par=11.par
 parest_111=$(awk '/^# The parest_flags/{getline; print $111; exit}' "$final_par")
 parest_121=$(awk '/^# The parest_flags/{getline; print $121; exit}' "$final_par")
 parest_141=$(awk '/^# The parest_flags/{getline; print $141; exit}' "$final_par")
+parest_305=$(awk '/^# The parest_flags/{getline; print $305; exit}' "$final_par")
+parest_306=$(awk '/^# The parest_flags/{getline; print $306; exit}' "$final_par")
 parest_320=$(awk '/^# The parest_flags/{getline; print $320; exit}' "$final_par")
 parest_342=$(awk '/^# The parest_flags/{getline; print $342; exit}' "$final_par")
 estimated_tau_count=$(awk '$2 ~ /^fish_pars[(]4[)]/ {n++} END {print n+0}' indepvar.rpt)
 dm22_active=$(awk '$2 ~ /^fish_pars[(]22[)]/ {n++} END {print n+0}' indepvar.rpt)
 dm23_active=$(awk '$2 ~ /^fish_pars[(]23[)]/ {n++} END {print n+0}' indepvar.rpt)
-active_tau_fisheries=$(awk '
+tau_fish_flag_summary=$(awk '
   /^# fish flags/ {in_fish=1; next}
   in_fish && /^#/ {exit}
   in_fish && NF {
     fishery++
-    active += $43
+    active43 += $43
+    grouping44 += $44
     if (fishery == 33) {
-      print active + 0
+      print active43 + 0 "," grouping44 + 0
+      exit
+    }
+  }
+' "$final_par")
+active_tau_fisheries=${tau_fish_flag_summary%,*}
+grouped_tau_fisheries=${tau_fish_flag_summary#*,}
+fish_par4_summary=$(awk '
+  /^# extra fishery parameters/ {in_fish=1; next}
+  in_fish && /^#/ {next}
+  in_fish && NF {
+    row++
+    if (row == 4) {
+      for (i=1; i<=NF; i++) {
+        if ($i < -1e-12 || $i > 1e-12) nonzero++
+      }
+      print NF "," nonzero + 0
       exit
     }
   }
@@ -762,13 +656,15 @@ dm_control_summary=$(awk '
   }
 ' "$final_par")
 
-if [ "$parest_111" != 4 ] || [ "$parest_121" != 0 ] ||
+if [ "$parest_111" != 4 ] || [ "$parest_305" != 1 ] ||
+   [ "$parest_306" != 0 ] || [ "$parest_121" != 0 ] ||
    [ "$parest_141" != 11 ] || [ "$parest_320" != 5 ] ||
    [ "$parest_342" != "$dm_nmax" ] ||
    [ "$dm22_active" != 0 ] || [ "$dm23_active" != 8 ] ||
    [ "$dm_control_summary" != "33,8,0,33" ] ||
-   [ "$estimated_tau_count" != 0 ] || [ "$active_tau_fisheries" != 0 ]; then
-  echo "Final fit did not retain the required DM and negative-binomial tau-not-estimated controls." >&2
+   [ "$estimated_tau_count" != 0 ] || [ "$active_tau_fisheries" != 0 ] ||
+   [ "$grouped_tau_fisheries" != 0 ] || [ "$fish_par4_summary" != "33,0" ]; then
+  echo "Final fit did not retain the required DM and fixed tau=2 controls." >&2
   exit 44
 fi
 if ! awk -v observed="$final_m" 'BEGIN {
@@ -782,33 +678,7 @@ if ! awk -v observed="$final_m" 'BEGIN {
 fi
 
 printf '%s\n' \
-  'mode,tag_likelihood,parest111,estimated_tau_count,active_tau_fisheries,parest121,dm_nmax,dm_concentration,dm22_active,dm23_active,parest141,parest320,parest342,final_m,status' \
-  "tau-not-estimated,negative-binomial,$parest_111,$estimated_tau_count,$active_tau_fisheries,$parest_121,$dm_nmax,$dm_concentration,$dm22_active,$dm23_active,$parest_141,$parest_320,$parest_342,$final_m,passed" \
+  'mode,tag_likelihood,tau,fish_pars4,parest111,parest305,parest306,estimated_tau_count,active_tau_fisheries,grouped_tau_fisheries,parest121,dm_nmax,dm_concentration,dm22_active,dm23_active,parest141,parest320,parest342,final_m,status' \
+  "tau-fixed,direct-negative-binomial,2,0,$parest_111,$parest_305,$parest_306,$estimated_tau_count,$active_tau_fisheries,$grouped_tau_fisheries,$parest_121,$dm_nmax,$dm_concentration,$dm22_active,$dm23_active,$parest_141,$parest_320,$parest_342,$final_m,passed" \
   > tag-tau-audit.csv
-
-if [ "$seed23_apply" = true ]; then
-  for seed23_phase in 01 02 05; do
-    if [ ! -s "$seed23_audit_dir/phase${seed23_phase}-summary.csv" ]; then
-      echo "Seed-23 initialization audit is missing Phase $seed23_phase." >&2
-      exit 49
-    fi
-  done
-  {
-    sed -n '1,2p' "$seed23_audit_dir/phase01-summary.csv"
-    sed -n '2p' "$seed23_audit_dir/phase02-summary.csv"
-    sed -n '2p' "$seed23_audit_dir/phase05-summary.csv"
-  } > seed23-initialization-summary.csv
-  sha256sum \
-    "$seed23_audit_dir/phase01-before.par" \
-    "$seed23_audit_dir/phase01-seed23.par" \
-    "$seed23_audit_dir/phase01-mapping.csv" \
-    "$seed23_audit_dir/phase02-probe.par" \
-    "$seed23_audit_dir/phase02-seed23.par" \
-    "$seed23_audit_dir/phase02-mapping.csv" \
-    "$seed23_audit_dir/phase05-probe.par" \
-    "$seed23_audit_dir/phase05-seed23.par" \
-    "$seed23_audit_dir/phase05-mapping.csv" \
-    > "$seed23_audit_dir/SHA256SUMS"
-  echo "Seed-23 base initialization audit: passed."
-fi
 exit 0

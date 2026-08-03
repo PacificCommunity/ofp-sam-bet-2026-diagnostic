@@ -1,14 +1,16 @@
 # Frozen model files
 
 This directory is the complete input recipe for the BET 2026 **Diagnostic
-model**. Do not run it in place. Use `../doitall-seed23.sh`, which copies these
-files to a fresh `run/` directory and reproduces the diagnostic-model
-initialization.
+model: tau fixed at 2** exploration. Do not run it in place. Use `../doitall`,
+which copies these files to a fresh `run/` directory and starts from the
+ordinary `bet.ini -makepar` initialization.
 
-`doitall.sh` starts with `bet.ini -makepar`, runs all eleven estimation phases,
-and applies the archived seed-23 checkpoints at Phases 1, 2 and 5 only after
-their input hashes match the reference fit. The fitted output is `11.par`; the
-root runner also saves it as `final.par`.
+`doitall.sh` starts with `bet.ini -makepar` and runs all eleven estimation
+phases without jitter or seed-23 checkpoints. Immediately after makepar it sets
+all 33 copies of `fish_pars(4)` to zero. Phase 1 selects the direct negative-
+binomial parameterization (`parest 305=1`) and fixes fish flags 43/44 at zero,
+so `tau = 1 + exp(0) = 2`. Every phase verifies that these settings persist.
+The fitted output is `11.par`; the root runner also saves it as `final.par`.
 
 Run `../verify` before fitting to validate `MANIFEST.sha256`.
 
@@ -17,7 +19,5 @@ present (`WFIntervals`, `WFFirst`, and both `WFWidth` fields are zero). The
 obsolete trailing WF missing-value field was removed from every fishery
 record; all catch and length-frequency values are unchanged.
 
-The repository's official `doitall-seed23.sh` runner applies the archived
-seed-23 initialization. The standalone Release also supplies a separate
-`doitall.sh` entry point for an ordinary `bet.ini -makepar` initialization
-without the seed-23 checkpoints.
+The archived seed-23 files are retained only as provenance for the main-branch
+Diagnostic fit. This exploration does not read or apply them.

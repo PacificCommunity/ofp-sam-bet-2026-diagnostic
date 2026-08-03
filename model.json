@@ -1,16 +1,16 @@
 {
-  "name": "Diagnostic model",
+  "name": "Diagnostic model | tau fixed at 2",
   "species": "BET",
   "assessment_year": 2026,
-  "source_seed": 23,
-  "source_model_key": "K020-tau-not-estimated-sel20c-f10-ndpen-weak-seed23-base",
-  "hessian": {
-    "parameters": 1997,
-    "partitions": 70,
-    "status": "PDH",
-    "negative_eigenvalues": 0,
-    "zero_eigenvalues": 0,
-    "minimum_eigenvalue": 1.62641e-07
+  "source_seed": null,
+  "source_model_key": "diagnostic-model-tau2-fixed-ordinary-makepar",
+  "tag_overdispersion": {
+    "tau": 2,
+    "parameterization": "direct",
+    "parest_305": 1,
+    "fish_pars_4": 0,
+    "fish_flag_43": 0,
+    "fish_flag_44": 0
   },
   "docker_image": "ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360"
 }

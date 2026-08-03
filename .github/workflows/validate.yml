@@ -2,7 +2,7 @@ name: Validate Diagnostic model
 
 on:
   push:
-    branches: [main]
+    branches: [main, tau2-exploration]
   pull_request:
 
 jobs:
@@ -14,8 +14,17 @@ jobs:
         run: ./verify
       - name: Check scripts
         run: |
-          sh -n doitall doitall-seed23.sh run-final restore-hessian verify scripts/run-model model/doitall.sh standalone/run-final standalone/doitall.sh standalone/doitall-seed23.sh
+          sh -n doitall run-final restore-hessian verify scripts/run-model model/doitall.sh standalone/run-final
           bash -n scripts/container-run run.sh
+      - name: Confirm fixed tau=2 controls
+        if: github.ref_name == 'tau2-exploration'
+        run: |
+          ! grep -Eiq 'seed.?23|doitall-core' model/doitall.sh
+          grep -F '1 305 1' model/doitall.sh
+          grep -F '1 306 0' model/doitall.sh
+          grep -F -- '-999 43 0' model/doitall.sh
+          grep -F -- '-999 44 0' model/doitall.sh
+          test "$(grep -c '^audit_tau2_fixed [0-9][0-9]\.par' model/doitall.sh)" -eq 11
       - name: Evaluate the reference final PAR
         run: ./run-final
       - name: Confirm the reference objective
