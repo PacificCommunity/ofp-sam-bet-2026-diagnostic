@@ -1,0 +1,33 @@
+#!/usr/bin/env Rscript
+
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) != 1L || !nzchar(args[[1L]])) {
+  stop("Usage: scripts/build-model-payload MODEL_DIR", call. = FALSE)
+}
+
+model_dir <- normalizePath(args[[1L]], winslash = "/", mustWork = TRUE)
+if (!requireNamespace("mfclshiny", quietly = TRUE)) {
+  stop("The pinned mfclshiny package is required to build model_payload.rds.", call. = FALSE)
+}
+
+payload_file <- file.path(model_dir, "model_payload.rds")
+mfclshiny::build_model_payload(
+  model_dir,
+  output_file = payload_file,
+  overwrite = TRUE,
+  recursive = FALSE,
+  object_cache = "all",
+  artifacts = "core"
+)
+
+required <- c(
+  payload_file,
+  file.path(model_dir, "model_payload_manifest.json"),
+  file.path(model_dir, "model_payload_manifest.csv")
+)
+missing <- required[!file.exists(required) | file.info(required)$size <= 0]
+if (length(missing)) {
+  stop("MFCL Shiny payload output is incomplete: ", paste(missing, collapse = ", "), call. = FALSE)
+}
+
+cat("MFCL Shiny payload ready:", payload_file, "\n")

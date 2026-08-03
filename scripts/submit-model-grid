@@ -226,6 +226,29 @@ def validate_repository(config: dict[str, Any]) -> None:
     )
     if env.get("KFLOW_RUNTIME_PACKAGES") != expected_packages:
         raise ValueError("Kflow runtime package pins do not match the latest refs.")
+    local_apps = config.get("local_apps")
+    if not isinstance(local_apps, list) or len(local_apps) != 1:
+        raise ValueError("Exactly one task-level MFCL Shiny launcher is required.")
+    local_app = local_apps[0]
+    if local_app.get("key") != "mfclshiny":
+        raise ValueError("The task-level launcher must use key=mfclshiny.")
+    if "mfclshiny::build_model_payload" not in str(local_app.get("command") or ""):
+        raise ValueError("MFCL Shiny launcher must support completed raw model outputs.")
+    if "mfclshiny::run_mfclshiny" not in str(local_app.get("command") or ""):
+        raise ValueError("MFCL Shiny launcher command is incomplete.")
+    package_sources = {
+        str(source.get("name") or ""): source
+        for source in local_app.get("package_sources", [])
+        if isinstance(source, dict)
+    }
+    expected_sources = {
+        "mfclkit": ("PacificCommunity/ofp-sam-mfclkit", "MFCLKIT_GITHUB_REF"),
+        "mfclshiny": ("PacificCommunity/mfclshiny", "MFCLSHINY_GITHUB_REF"),
+    }
+    for package, (repo, ref_env) in expected_sources.items():
+        source = package_sources.get(package, {})
+        if source.get("repo") != repo or source.get("ref_env") != ref_env:
+            raise ValueError(f"Invalid local-app package source for {package}.")
 
 
 def job_title(row: dict[str, str]) -> str:
@@ -262,6 +285,7 @@ def task_payload(config: dict[str, Any], rows: list[dict[str, str]]) -> dict[str
         "selectivity_models": list(SELECTIVITY_MODELS),
         "model_ids": [row["MODEL_ID"] for row in rows],
         "source_commit": run_git("rev-parse", "HEAD"),
+        "local_apps": config["local_apps"],
     }
     return {
         "name": config["name"],
@@ -336,6 +360,7 @@ def job_payload(config: dict[str, Any], row: dict[str, str]) -> dict[str, Any]:
             "independent_fit": True,
             "full_doitall": True,
             "campaign_size": 27,
+            "local_apps": config["local_apps"],
         },
         "triggers": {},
     }
@@ -380,6 +405,11 @@ def verify_job(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--register-only",
+        action="store_true",
+        help="Update the task definition without submitting any missing jobs.",
+    )
     parser.add_argument("--max-workers", type=int, default=27)
     args = parser.parse_args()
 
@@ -400,7 +430,7 @@ def main() -> int:
     api_json("POST", f"{base_url}/api/report/{task_path}", token, task_payload(config, rows))
 
     present = existing_keys(base_url, token, task_name)
-    pending = [
+    pending = [] if args.register_only else [
         (row, payload)
         for row, payload in zip(rows, payloads)
         if payload["env"]["JOB_KEY"] not in present

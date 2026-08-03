@@ -43,3 +43,5 @@ else
   echo "Unknown run mode: $mode" >&2
   exit 2
 fi
+
+Rscript "$repo_root/scripts/build-model-payload" "$run_dir"
