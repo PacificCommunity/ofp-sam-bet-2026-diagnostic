@@ -48,7 +48,10 @@ if [[ ! -d "${MFCLSHINY_REPO:-}" ]]; then
   fi
 
   install_repo() {
-    local package=$1 repo=$2 ref=$3 source_dir=$runtime_root/$package
+    local package=$1
+    local repo=$2
+    local ref=$3
+    local source_dir=$runtime_root/$package
     echo "[diagnostic-report] installing $package at $ref"
     if [[ -n "$runtime_token" ]]; then
       GIT_ASKPASS=$askpass_file GIT_TERMINAL_PROMPT=0 KFLOW_REPORT_GIT_TOKEN=$runtime_token \
