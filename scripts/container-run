@@ -44,4 +44,11 @@ else
   exit 2
 fi
 
-Rscript "$repo_root/scripts/build-model-payload" "$run_dir"
+if command -v Rscript >/dev/null 2>&1; then
+  Rscript "$repo_root/scripts/build-model-payload" "$run_dir"
+elif [[ -s "$run_dir/model_payload.rds" ]]; then
+  echo "Rscript is unavailable; retaining the verified archived model_payload.rds."
+else
+  echo "Rscript is required to build model_payload.rds when no verified archived payload is available." >&2
+  exit 127
+fi
