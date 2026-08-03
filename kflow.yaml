@@ -43,7 +43,7 @@ local_apps:
   - key: mfclshiny
     label: MFCL Shiny
     icon: chart-no-axes-combined
-    runner: local-docker-ssh
+    runner: local-docker
     memory: 8g
     archive_sources:
       - outputs

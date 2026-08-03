@@ -232,6 +232,10 @@ def validate_repository(config: dict[str, Any]) -> None:
     local_app = local_apps[0]
     if local_app.get("key") != "mfclshiny":
         raise ValueError("The task-level launcher must use key=mfclshiny.")
+    if local_app.get("runner") != "local-docker":
+        raise ValueError(
+            "The raw-output MFCL Shiny fallback requires runner=local-docker."
+        )
     if "mfclshiny::build_model_payload" not in str(local_app.get("command") or ""):
         raise ValueError("MFCL Shiny launcher must support completed raw model outputs.")
     if "mfclshiny::run_mfclshiny" not in str(local_app.get("command") or ""):
