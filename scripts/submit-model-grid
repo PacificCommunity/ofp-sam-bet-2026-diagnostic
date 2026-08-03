@@ -22,6 +22,8 @@ CONFIG = ROOT / "kflow.yaml"
 EXPECTED_BRANCH = "tau2-exploration"
 STEEPNESS_VALUES = ("0.80", "0.85", "0.90")
 SELECTIVITY_MODELS = ("F1", "F2", "F3", "F4", "P1", "P2", "P3", "P4")
+MFCLKIT_REF = "cf786007b5261f84faac8f3d24f7084bd323119d"
+MFCLSHINY_REF = "c861bce8c1d8c769d12d897e035765765880bafd"
 
 SELECTIVITY_TITLES = {
     "F1": "independent | F10 weak penalty",
@@ -176,6 +178,23 @@ def validate_repository(config: dict[str, Any]) -> None:
         raise ValueError("The slot requirement must select Suva workers.")
     if config.get("triggers"):
         raise ValueError("The independent grid must not define job triggers.")
+    env = dict(config.get("env") or {})
+    expected_runtime = {
+        "KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES": "true",
+        "KFLOW_RUNTIME_UPDATE": "auto",
+        "KFLOW_RUNTIME_FORCE_UPDATE": "1",
+        "MFCLKIT_GITHUB_REF": MFCLKIT_REF,
+        "MFCLSHINY_GITHUB_REF": MFCLSHINY_REF,
+    }
+    for key, expected in expected_runtime.items():
+        if str(env.get(key, "")) != expected:
+            raise ValueError(f"{key} must be {expected}.")
+    expected_packages = (
+        f"mfclkit=PacificCommunity/ofp-sam-mfclkit@{MFCLKIT_REF},"
+        f"mfclshiny=PacificCommunity/mfclshiny@{MFCLSHINY_REF}"
+    )
+    if env.get("KFLOW_RUNTIME_PACKAGES") != expected_packages:
+        raise ValueError("Kflow runtime package pins do not match the latest refs.")
 
 
 def job_title(row: dict[str, str]) -> str:
@@ -195,7 +214,9 @@ def job_description(row: dict[str, str]) -> str:
         "Direct negative-binomial tau=2 is fixed (parest 305=1, all "
         "fish_pars(4)=0, fish flags 43/44=0). Ordinary bet.ini -makepar "
         "initialization; no seed, jitter or checkpoint. Diagnostic Job 19835 "
-        "DM G8/Nmax25 treatment, K=0.20 mixing, biology, weighting and data are retained."
+        "DM G8/Nmax25 treatment, K=0.20 mixing, biology, weighting and data are retained. "
+        f"tuna-flow v2.5; latest-at-submission mfclkit {MFCLKIT_REF[:8]} and "
+        f"mfclshiny {MFCLSHINY_REF[:8]} are installed at startup."
     )
 
 

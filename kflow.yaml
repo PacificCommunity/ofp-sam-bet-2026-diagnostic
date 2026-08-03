@@ -1,5 +1,5 @@
 name: ofp-sam-bet-2026-tau2-steepness-selectivity-grid
-description: Fit one of 24 BET 2026 fixed-steepness and selectivity models with tag tau fixed at 2 and ordinary makepar initialization.
+description: Fit one of 24 BET 2026 fixed-steepness and selectivity models with tag tau fixed at 2, ordinary makepar initialization, tuna-flow v2.5 and latest-at-submission mfclkit/mfclshiny.
 command: bash run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
 remote_host: suva
@@ -24,7 +24,15 @@ env:
   PROGRAM_PATH: /home/mfcl/mfclo64
   MODEL_ID: S0.80-F1
   BET_PHASE10_11_CONVERGENCE: "-4"
-  TUNA_FLOW_RUNTIME_UPDATE: never
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
+  KFLOW_RUNTIME_UPDATE: auto
+  TUNA_FLOW_RUNTIME_UPDATE: auto
+  KFLOW_RUNTIME_FORCE_UPDATE: "1"
+  KFLOW_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@cf786007b5261f84faac8f3d24f7084bd323119d,mfclshiny=PacificCommunity/mfclshiny@c861bce8c1d8c769d12d897e035765765880bafd
+  MFCLKIT_GITHUB_REF: cf786007b5261f84faac8f3d24f7084bd323119d
+  MFCLSHINY_GITHUB_REF: c861bce8c1d8c769d12d897e035765765880bafd
+  KFLOW_RUNTIME_GITHUB_AUTH: "true"
+  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
 tags:
   stage: tau2-steepness-selectivity-grid
   species: BET
@@ -41,4 +49,6 @@ metadata:
   model_id: S0.80-F1
   steepness: "0.80"
   selectivity_model: F1
+  mfclkit_ref: cf786007b5261f84faac8f3d24f7084bd323119d
+  mfclshiny_ref: c861bce8c1d8c769d12d897e035765765880bafd
   model_label: S0.80-F1 | tau=2 fixed

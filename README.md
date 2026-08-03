@@ -64,7 +64,9 @@ scripts is in [TAU2_FIXED_SNIPPET.md](TAU2_FIXED_SNIPPET.md).
 
 The branch includes one Kflow task using the same `model/doitall.sh` recipe as
 the standalone run. `MODEL_ID` selects one of the 24 explicit model inputs; the
-default is `S0.80-F1`.
+default is `S0.80-F1`. Jobs use the pinned `tuna-flow:v2.5` image and install
+the latest-at-submission `mfclkit` (`cf786007`) and `mfclshiny` (`c861bce8`)
+revisions before fitting.
 
 ## Baseline reference files
 
