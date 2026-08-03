@@ -28,9 +28,9 @@ env:
   KFLOW_RUNTIME_UPDATE: auto
   TUNA_FLOW_RUNTIME_UPDATE: auto
   KFLOW_RUNTIME_FORCE_UPDATE: "1"
-  KFLOW_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@cf786007b5261f84faac8f3d24f7084bd323119d,mfclshiny=PacificCommunity/mfclshiny@ba050391d17da9fbacb0e50c3a47e61f4a0a7818
+  KFLOW_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@cf786007b5261f84faac8f3d24f7084bd323119d,mfclshiny=PacificCommunity/mfclshiny@51766fa85eb8668e2970badf8f8e7c84fccf7e3a
   MFCLKIT_GITHUB_REF: cf786007b5261f84faac8f3d24f7084bd323119d
-  MFCLSHINY_GITHUB_REF: ba050391d17da9fbacb0e50c3a47e61f4a0a7818
+  MFCLSHINY_GITHUB_REF: 51766fa85eb8668e2970badf8f8e7c84fccf7e3a
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
 tags:
@@ -216,5 +216,5 @@ metadata:
   dm_nmax: "25"
   tag_mixing_k: "0.20"
   mfclkit_ref: cf786007b5261f84faac8f3d24f7084bd323119d
-  mfclshiny_ref: ba050391d17da9fbacb0e50c3a47e61f4a0a7818
+  mfclshiny_ref: 51766fa85eb8668e2970badf8f8e7c84fccf7e3a
   model_label: Diagnostic
