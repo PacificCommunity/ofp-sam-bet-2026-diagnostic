@@ -14,20 +14,26 @@ jobs:
         run: ./verify
       - name: Check scripts
         run: |
-          sh -n doitall run-final restore-hessian verify scripts/run-model model/doitall.sh standalone/run-final
-          bash -n scripts/container-run run.sh
-      - name: Confirm fixed tau=2 controls
-        if: github.ref_name == 'tau2-exploration'
+          sh -n doitall run-final restore-hessian verify scripts/run-model scripts/validate-selectivity-models model/doitall.sh standalone/run-final
+          bash -n scripts/container-run run.sh diagnostic-report/run.sh
+          python -m py_compile diagnostic-report/submit.py
+      - name: Confirm Job 21641 controls
         run: |
-          ! grep -Eiq 'seed.?23|doitall-core' model/doitall.sh
+          test "$(awk '/^# sv[(]29[)]/ { getline; print $1; exit }' model/bet.ini)" = 0.90
+          ! grep -Ev '^[[:space:]]*#' model/doitall.sh | grep -Eiq 'seed.?23|checkpoint|doitall-core'
           grep -F '1 305 1' model/doitall.sh
           grep -F '1 306 0' model/doitall.sh
           grep -F -- '-999 43 0' model/doitall.sh
           grep -F -- '-999 44 0' model/doitall.sh
           test "$(grep -c '^audit_tau2_fixed [0-9][0-9]\.par' model/doitall.sh)" -eq 11
+          scripts/validate-selectivity-models
       - name: Evaluate the reference final PAR
         run: ./run-final
       - name: Confirm the reference objective
-        run: grep -F "Total func      89054.339783808" final-run/mfcl-final.log
-      - name: Confirm the archived Hessian was restored
-        run: test -s final-run/hessian/bet.hes && test -s final-run/model_payload.rds
+        run: grep -F "Total func      90814.857396659" final-run/mfcl-final.log
+      - name: Confirm Job 21641 diagnostics were restored
+        run: |
+          test -s final-run/hessian/hessian_info.rds
+          test -s final-run/hessian/check-summary.csv
+          test -s final-run/hessian/check-unit-status.csv
+          test -s final-run/model_payload.rds

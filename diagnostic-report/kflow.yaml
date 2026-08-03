@@ -1,5 +1,5 @@
 name: ofp-sam-bet-2026-diagnostic-model-report
-description: Build a concise paper-ready BET 2026 report from one staged Diagnostic model job, with Word/LaTeX copy controls, PNG/PDF figures, CSV tables and an offline viewer.
+description: Build a concise paper-ready BET 2026 report from the verified Job 21641 Diagnostic payload, including 400-DPI PNG/PDF figures, CSV/LaTeX tables, an offline viewer and 60-partition Hessian uncertainty diagnostics.
 command: bash diagnostic-report/run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
 remote_host: suva
@@ -11,17 +11,17 @@ resources:
   memory: 16GB
   disk: 30GB
 env:
-  JOB_TITLE: BET 2026 Diagnostic model paper-ready report
-  JOB_DESCRIPTION: One Diagnostic model job; model summary, objective components, annual/recent status, stock-status and fishery-impact figures, data fits, selectivity, movement, biology, Hessian QC and report-ready downloads.
-  MODEL_JOB: ""
+  JOB_TITLE: BET 2026 Diagnostic model | Job 21641 report
+  JOB_DESCRIPTION: Verified Job 21641 Diagnostic report; h=0.90 and tau=2 fixed; complete model, data-fit, stock-status, fishery, biological and tagging figures; Job 22020 Hessian QC and parameter uncertainty; report-ready downloads.
+  MODEL_JOB: "21641"
   REPORT_OUTPUT_DIR: diagnostic-report-output
-  DIAGNOSTIC_REPORT_DPI: "300"
+  DIAGNOSTIC_REPORT_DPI: "400"
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
   FLR4MFCL_GITHUB_REF: ff8367fcec19baff98333170c0f1bca3f9903029
   MFCLKIT_GITHUB_REF: cf786007b5261f84faac8f3d24f7084bd323119d
-  MFCLSHINY_GITHUB_REF: 542ac93b7ce0b6d0df70301891e668701d439857
+  MFCLSHINY_GITHUB_REF: ba050391d17da9fbacb0e50c3a47e61f4a0a7818
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
 tags:
@@ -33,5 +33,8 @@ output_patterns:
 metadata:
   input_jobs_override: true
   source_model_count: 1
+  source_model_job: 21641
+  source_hessian_job: 22020
+  expected_final_par_sha256: 21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3
   report_style: paper-ready
   source_model_policy: staged-job-only

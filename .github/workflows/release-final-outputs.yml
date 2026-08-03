@@ -31,14 +31,14 @@ jobs:
 
       - name: Validate generated outputs
         run: |
-          grep -F "Total func      89054.339783808" final-run/mfcl-final.log
+          grep -F "Total func      90814.857396659" final-run/mfcl-final.log
           test -s final-run/evaluated.par
           test -s final-run/ests.rep
           test -s final-run/plot-evaluated.par.rep
           test -s final-run/catch.rep
           test -s final-run/tag.rep
-          test -s final-run/hessian/bet.hes
           test -s final-run/hessian/hessian_info.rds
+          test -s final-run/hessian/check-summary.csv
           test -s final-run/model_payload.rds
 
       - name: Build complete ready-to-use archive
@@ -83,7 +83,7 @@ jobs:
           (
             cd "dist/stage/$standalone_name"
             ./run-final > standalone-final-evaluation.log
-            grep -F "Total func      89054.339783808" mfcl-final.log
+            grep -F "Total func      90814.857396659" mfcl-final.log
             test -s evaluated.par
             test -s ests.rep
             test -s plot-evaluated.par.rep
@@ -148,9 +148,9 @@ jobs:
             '' \
             'The included `final-run/` directory was generated in GitHub Actions by evaluating the fitted `final.par` with the repository MFCL executable. No local MFCL run is required to use these outputs.' \
             '' \
-            'The archive also includes the frozen final PAR, inputs, completed Hessian, compact R payload, executable and reproduction scripts.' \
+            'The archive also includes the frozen Job 21641 final PAR, inputs, completed Hessian diagnostics, compact R payload, executable and reproduction scripts.' \
             '' \
-            'A separate standalone ZIP places the executable, baseline final PAR, all inputs and run scripts in one directory. On the tau2-exploration branch, use `./doitall.sh` to fit the fixed-tau model from ordinary makepar initialization.' \
+            'A separate standalone ZIP places the executable, Diagnostic final PAR, all inputs and run scripts in one directory. Use `./doitall.sh` to reproduce Job 21641 from ordinary makepar initialization with h=0.90 and tau=2 fixed.' \
             '' \
             "Source commit: $GITHUB_SHA" \
             > "$notes"

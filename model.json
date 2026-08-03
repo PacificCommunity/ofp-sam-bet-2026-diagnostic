@@ -1,9 +1,18 @@
 {
-  "name": "Diagnostic model | tau fixed at 2",
+  "name": "BET 2026 Diagnostic model",
   "species": "BET",
   "assessment_year": 2026,
   "source_seed": null,
-  "source_model_key": "diagnostic-model-tau2-fixed-ordinary-makepar",
+  "source_job": 21641,
+  "source_commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+  "source_model_key": "diagnostic-job21641",
+  "steepness": 0.90,
+  "steepness_fixed": true,
+  "selectivity": {
+    "groups": "33-independent",
+    "f10": "five-node weak non-decreasing penalty 10000",
+    "f33": "five-node weak non-decreasing penalty 10000"
+  },
   "tag_overdispersion": {
     "tau": 2,
     "parameterization": "direct",

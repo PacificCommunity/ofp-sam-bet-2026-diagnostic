@@ -19,7 +19,7 @@ IMAGE = (
 )
 FLR4MFCL_REF = "ff8367fcec19baff98333170c0f1bca3f9903029"
 MFCLKIT_REF = "cf786007b5261f84faac8f3d24f7084bd323119d"
-MFCLSHINY_REF = "542ac93b7ce0b6d0df70301891e668701d439857"
+MFCLSHINY_REF = "ba050391d17da9fbacb0e50c3a47e61f4a0a7818"
 
 
 class Kflow:
@@ -54,7 +54,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("model_job")
     parser.add_argument("--branch", default="main")
-    parser.add_argument("--dpi", type=int, default=300)
+    parser.add_argument("--dpi", type=int, default=400)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--api-url", default=os.getenv("KFLOW_API_URL", "http://127.0.0.1:8089"))
     args = parser.parse_args()
@@ -81,11 +81,11 @@ def main() -> int:
         "model_branch": model.get("branch", ""),
         "model_commit": model.get("commit_hash", model.get("source_version", "")),
     }
-    title = f"BET 2026 Diagnostic model report | Job #{source_number}"
+    title = f"BET 2026 Diagnostic model | Job #{source_number} report"
     description = (
-        f"Paper-ready report from Diagnostic model Job #{source_number}: model and convergence summary, "
-        "objective components, annual/recent stock status, fishery impact, data fits, selectivity, "
-        "movement, biology, Hessian QC, Word/LaTeX copy controls, PNG/PDF and CSV outputs."
+        f"Verified paper-ready report from Diagnostic model Job #{source_number}: h=0.90 and tau=2 fixed; "
+        "model and convergence summary, annual/recent stock status, data fits, fishery impact, selectivity, "
+        "movement, biology, tagging, Job 22020 Hessian QC and parameter uncertainty, plus report downloads."
     )
     payload = {
         "repo": REPO,
@@ -136,7 +136,7 @@ def main() -> int:
 
     task_payload = {
             "name": "BET 2026 Diagnostic model report",
-            "description": "Paper-ready report generated from exactly one staged BET Diagnostic model job.",
+            "description": "Paper-ready report generated from the checksum-verified Job 21641 BET Diagnostic payload and attached Hessian diagnostics.",
             "repo": REPO,
             "branch": args.branch,
             "make_target": "all",

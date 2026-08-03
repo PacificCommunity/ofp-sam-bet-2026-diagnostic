@@ -11,12 +11,12 @@ cd "$run_dir"
 chmod +x doitall.sh
 
 if [[ $mode == fit ]]; then
-  MODEL_ID="${MODEL_ID:-S0.80-F1}" PROGRAM_PATH="$program_path" ./doitall.sh 2>&1 | tee mfcl.log
+  MODEL_ID="${MODEL_ID:-Diagnostic}" PROGRAM_PATH="$program_path" ./doitall.sh 2>&1 | tee mfcl.log
   test -s 11.par
   cp 11.par final.par
   sha256sum final.par > final.par.sha256
   observed=$(sha256sum final.par | awk '{print $1}')
-  expected=6a7a4489ec40fa8223c9c3aac831a46c4eaa810654a35af0a537cf6b04fb2eed
+  expected=21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3
   printf 'Reference final PAR: %s\nObserved final PAR:  %s\n' "$expected" "$observed"
   if [[ $observed == "$expected" ]]; then
     "$repo_root/restore-hessian" "$run_dir"

@@ -27,6 +27,7 @@ if [[ ! -s "$model_dir/model_payload.rds" ]]; then
   exit 2
 fi
 export DIAGNOSTIC_MODEL_DIR=$model_dir
+export DIAGNOSTIC_REPORT_DPI=${DIAGNOSTIC_REPORT_DPI:-400}
 
 if [[ ! -d "${MFCLSHINY_REPO:-}" ]]; then
   runtime_root=$(mktemp -d)

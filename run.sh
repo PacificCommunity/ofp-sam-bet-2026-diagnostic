@@ -1,20 +1,15 @@
 #!/bin/bash
 set -euo pipefail
-export MODEL_ID=${MODEL_ID:-S0.80-F1}
-case "$MODEL_ID" in
-  S0.80-F1|S0.80-F2|S0.80-F3|S0.80-F4|S0.80-F5|S0.80-P1|S0.80-P2|S0.80-P3|S0.80-P4|\
-  S0.85-F1|S0.85-F2|S0.85-F3|S0.85-F4|S0.85-F5|S0.85-P1|S0.85-P2|S0.85-P3|S0.85-P4|\
-  S0.90-F1|S0.90-F2|S0.90-F3|S0.90-F4|S0.90-F5|S0.90-P1|S0.90-P2|S0.90-P3|S0.90-P4) ;;
-  *)
-    echo "MODEL_ID must be S0.80, S0.85 or S0.90 followed by F1-F5 or P1-P4." >&2
-    exit 2
-    ;;
-esac
-export RUN_DIR=${RUN_DIR:-work/${MODEL_ID}-tau2-fixed}
+export MODEL_ID=${MODEL_ID:-Diagnostic}
+if [[ $MODEL_ID != Diagnostic ]]; then
+  echo "MODEL_ID must remain Diagnostic (the Job 21641 model)." >&2
+  exit 2
+fi
+export RUN_DIR=${RUN_DIR:-work/Diagnostic}
 export PROGRAM_PATH=${PROGRAM_PATH:-/home/mfcl/mfclo64}
 scripts/run-model fit
 
-compact_dir=${COMPACT_OUTPUT_DIR:-outputs/${MODEL_ID}-tau2-fixed}
+compact_dir=${COMPACT_OUTPUT_DIR:-outputs/Diagnostic}
 if [[ -e $compact_dir ]] && [[ -n $(find "$compact_dir" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null) ]]; then
   echo "Compact output directory is not empty: $compact_dir" >&2
   exit 2

@@ -1,77 +1,80 @@
-# BET 2026 Diagnostic model — tau=2 exploration
+# BET 2026 Diagnostic model
 
-This branch fits 27 controlled BET 2026 models: three fixed steepness values
-(`0.80`, `0.85`, `0.90`) crossed with nine selectivity settings (`F1`-`F5`,
-`P1`-`P4`). Tag negative-binomial overdispersion is fixed at `tau=2` in every
-model.
+This repository reproduces Kflow Job 21641, the BET 2026 Diagnostic model used
+as the basis of the tau=2 structural ensemble. The earlier Diagnostic `main`
+is preserved without modification on branch
+[`tau=1`](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/tree/tau%3D1).
 
-All models share two fitting differences from the original Diagnostic run:
+## Fixed model definition
 
-- direct tau parameterization with `tau=2` fixed;
-- ordinary `bet.ini -makepar` initialization, with no jitter or seed-23
-  checkpoint.
+| Component | Diagnostic setting |
+|---|---|
+| Steepness | `h=0.90`, fixed; committed `model/bet.ini` has `sv(29)=0.90` and age flag 162 remains zero |
+| Selectivity | 33 independent groups; F10 and F33 are five-node splines with weak non-decreasing penalty 10,000 |
+| Tag likelihood | Direct negative binomial; `tau=2` fixed (`parest 111/305/306 = 4/1/0`, all `fish_pars(4)=0`, fish flags 43/44 = 0) |
+| Initialization | Ordinary `bet.ini -makepar`; no seed, jitter or fitted checkpoint |
+| Natural mortality | Lorenzen log-intercept `-2.54930339768360`, slope `-1`, fixed |
+| Composition likelihood | Dirichlet-multinomial, Nmax 25, eight groups, concentration 7 fixed and group effects estimated |
+| Tag mixing | `K=0.20` |
 
-The only differences among the 27 models are fixed steepness and the documented
-selectivity flags. All other inputs, phases and controls are common. See
-[SELECTIVITY_MODELS.md](SELECTIVITY_MODELS.md) for the exact definitions and
-[JOB19835_COMPARISON.md](JOB19835_COMPARISON.md) for the archived-input and
-control audit.
+The fitting script audits steepness, tau, natural mortality, DM concentration
+and every Diagnostic selectivity flag after each fitted phase. A mismatch stops
+the run before the next phase.
 
 ## Run
 
 On 64-bit Linux:
 
 ```sh
-chmod +x mfclo64 doitall verify scripts/* model/doitall.sh
+./verify
 ./doitall
 ```
 
-`./doitall` runs `S0.80-F1`. Select another model and a fresh output directory
-with:
+The complete fit starts from ordinary makepar values and writes `run/final.par`.
+Use a fresh directory with `RUN_DIR=run-2 ./doitall`. On Windows or macOS,
+install Docker Desktop and run `./doitall.ps1`.
+
+Evaluate the archived Job 21641 final PAR without refitting:
 
 ```sh
-MODEL_ID=S0.85-P2 RUN_DIR=run-S0.85-P2 ./doitall
+./run-final
 ```
 
-The run is written to `run/`; the final fitted parameter file is
-`run/final.par`. Select another empty output directory with, for example,
-`RUN_DIR=run-2 ./doitall`.
+## Reference result
 
-On Windows or macOS, install Docker Desktop and run `./doitall` from a Linux
-shell, or use `doitall.ps1`. The pinned runtime is
-`ghcr.io/pacificcommunity/tuna-flow:v2.5`.
-
-## Fixed-tau implementation
-
-The run uses:
-
-| Control | Value |
+| Item | Job 21641 value |
 |---|---:|
-| parest flag 111 | 4 |
-| parest flag 305 | 1 |
-| parest flag 306 | 0 |
-| fish flags 43/44 | 0/0 |
-| `fish_pars(4)` | 0 for all fisheries |
+| Objective | 90,814.8573966593 |
+| Maximum gradient | 9.6794115e-05 |
+| Final PAR SHA-256 | `21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3` |
+| Hessian | PDH; 60/60 partitions completed |
+| Eigenvalues | 1,997 positive; 0 non-positive |
+| Smallest eigenvalue | 2.55194e-07 |
 
-Under the direct parameterization,
-`tau = 1 + exp(fish_pars(4))`; therefore `fish_pars(4)=0` fixes `tau=2`.
-The script writes this value into the makepar-generated PAR before Phase 1 and
-checks it after every phase. See [TAU2_EXPLORATION.md](TAU2_EXPLORATION.md) for
-the source and manual audit. A portable implementation for other `doitall`
-scripts is in [TAU2_FIXED_SNIPPET.md](TAU2_FIXED_SNIPPET.md).
+[`results/reference/`](results/reference/README.md) contains the exact final
+PAR, Hessian diagnostics and Hessian-enriched MFCL Shiny payload. The payload
+restores the matching final PAR and core MFCL report files and can be opened
+directly in MFCL Shiny.
 
-## Kflow
+## Diagnostic report
 
-The branch includes one Kflow task using the same `model/doitall.sh` recipe as
-the standalone run. `MODEL_ID` selects one of the 27 explicit model inputs; the
-default is `S0.80-F1`. Jobs use the pinned `tuna-flow:v2.5` image and install
-the latest-at-submission `mfclkit` (`cf786007`) and `mfclshiny` (`542ac93b`)
-revisions before fitting. The original 24 definitions remain unchanged; the
-three `F5` jobs add the independent F10+F33-logistic comparison.
+Build the paper-ready report from one completed Diagnostic payload:
 
-## Baseline reference files
+```sh
+DIAGNOSTIC_MODEL_DIR=/path/to/Job21641/model bash diagnostic-report/run.sh
+```
 
-The committed `results/reference/`, completed Hessian, `final.par` and
-`run-final` belong to the main-branch Diagnostic fit. They are retained for
-comparison and are **not** tau=2 exploration results. The fitted tau=2 result
-must come from `./doitall` or the Kflow task above.
+The report refuses a mismatched final PAR. It produces publication-resolution
+PNG/PDF figures, CSV/LaTeX tables, Hessian uncertainty summaries, a
+self-contained HTML report and an offline viewer. See
+[`diagnostic-report/`](diagnostic-report/README.md).
+
+## Provenance
+
+- Source Kflow model: Job 21641
+- Source repository commit: `3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6`
+- Runtime: Tuna Flow 2.5, pinned by image digest in `kflow.yaml`
+- MFCL executable SHA-256: `8995f72019869863c1d1c0b4f44fc6a6268d1f79031f5bc79dc354ee10f0a63e`
+
+See [`PROVENANCE.md`](PROVENANCE.md) and
+[`JOB19835_COMPARISON.md`](JOB19835_COMPARISON.md) for the input/control audit.

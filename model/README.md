@@ -1,27 +1,20 @@
-# Frozen model files
+# Frozen Job 21641 model files
 
-This directory is the complete input recipe for the BET 2026 **tau=2 fixed-
-steepness and selectivity grid**. Do not run it in place. Use `../doitall`,
-which copies these files to a fresh run directory and starts from ordinary
-`bet.ini -makepar` initialization. `MODEL_ID` selects one of the 27 files in
-`model-inputs/`; the default is `S0.80-F1`.
+This directory is the complete BET 2026 Diagnostic Job 21641 recipe. Do not run
+it in place; use `../doitall`, which copies it to a fresh directory.
 
-`doitall.sh` starts with `bet.ini -makepar` and runs all eleven estimation
-phases without jitter or seed-23 checkpoints. Immediately after makepar it sets
-all 33 copies of `fish_pars(4)` to zero. Phase 1 selects the direct negative-
-binomial parameterization (`parest 305=1`) and fixes fish flags 43/44 at zero,
-so `tau = 1 + exp(0) = 2`. Every phase verifies that these settings persist.
-The selected model input also writes fixed `sv(29)` into `bet.model.ini` and
-keeps age flag 162 at zero. The fitted output is `11.par`; the root runner also
-saves it as `final.par`.
+The committed `bet.ini` is the effective Job 21641 INI and contains
+`sv(29)=0.90`. `model-inputs/Diagnostic.conf` selects the single explicit
+33-row `selectivity-models/Diagnostic.csv`: all fisheries remain independent,
+with weak non-decreasing penalties 10,000 on F10 and F33.
 
-Run `../verify` before fitting to validate `MANIFEST.sha256`.
+`doitall.sh` starts from ordinary `bet.ini -makepar`, applies no seed, jitter or
+fitted checkpoint, and fixes direct negative-binomial `tau=2`. It audits tau,
+steepness, Lorenzen M, DM concentration and Diagnostic selectivity after every
+fitted phase. The final fitted file is `11.par`.
 
-The frequency input explicitly declares that no weight-frequency data are
-present (`WFIntervals`, `WFFirst`, and both `WFWidth` fields are zero). The
-obsolete trailing WF missing-value field was removed from every fishery
-record; all catch and length-frequency values are unchanged.
+The FRQ declares no weight-frequency observations. Removing the obsolete WF
+header dimensions and trailing missing-value placeholder did not alter catch,
+effort or length-frequency observations.
 
-No seed or checkpoint file is included in this model directory. The
-`results/reference/` directory at repository root contains baseline Diagnostic
-artifacts only and is not copied into a fit.
+Run `../verify` before fitting to validate all hashes.

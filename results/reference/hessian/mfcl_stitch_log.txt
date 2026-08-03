@@ -1,9 +1,9 @@
 Starting 1
 9
-./mfclo64
+/home/mfcl/mfclo64
 opened file argv
 Starting 2
-/tmp/bet-hessian-parts.q4Cdp1/hessian
+/var/lib/condor/execute/dir_1791789/scratch/output/checks/hessian/S0.90-F2-tau2-fixed/hessian
 input (.frq) file: bet.frq
  GRADSTACK_BUFFER_SIZE read in and set equal to 100000000
  CMPDIF_BUFFER_SIZE read in and set equal to 850000000
@@ -507,152 +507,132 @@ enter 1 for test or 0 for no test
  ERROR: mixing period = 0 for tag release event:  46 Since version 2.2.7.5 this is no longer permitted, exiting
 A ubd -0.2
 B ubd -0.2
-  num_parallel_processes = 70
+  num_parallel_processes = 60
   num_indep vars = 1997
- start positions =  1 30 59 88 117 146 175 204 233 262 291 320 349 378 407 436 465 494 523 552 581 610 639 668 697 726 755 784 813 842 871 900 929 958 987 1016 1045 1074 1102 1130 1158 1186 1214 1242 1270 1298 1326 1354 1382 1410 1438 1466 1494 1522 1550 1578 1606 1634 1662 1690 1718 1746 1774 1802 1830 1858 1886 1914 1942 1970
- No. rows in each file:  29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28 28
+ start positions =  1 35 69 103 137 171 205 239 273 307 341 375 409 443 477 511 545 579 612 645 678 711 744 777 810 843 876 909 942 975 1008 1041 1074 1107 1140 1173 1206 1239 1272 1305 1338 1371 1404 1437 1470 1503 1536 1569 1602 1635 1668 1701 1734 1767 1800 1833 1866 1899 1932 1965
+ No. rows in each file:  34 34 34 34 34 34 34 34 34 34 34 34 34 34 34 34 34 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33 33
  Total rows: 1997  nvars: 1997
- Start positions :  1 30 59 88 117 146 175 204 233 262 291 320 349 378 407 436 465 494 523 552 581 610 639 668 697 726 755 784 813 842 871 900 929 958 987 1016 1045 1074 1102 1130 1158 1186 1214 1242 1270 1298 1326 1354 1382 1410 1438 1466 1494 1522 1550 1578 1606 1634 1662 1690 1718 1746 1774 1802 1830 1858 1886 1914 1942 1970
+ Start positions :  1 35 69 103 137 171 205 239 273 307 341 375 409 443 477 511 545 579 612 645 678 711 744 777 810 843 876 909 942 975 1008 1041 1074 1107 1140 1173 1206 1239 1272 1305 1338 1371 1404 1437 1470 1503 1536 1569 1602 1635 1668 1701 1734 1767 1800 1833 1866 1899 1932 1965
  Filename for :  1 bet.hes_1
- nvar for file: bet.hes_1 = 1997 hmin:  1 hmax:  29
+ nvar for file: bet.hes_1 = 1997 hmin:  1 hmax:  34
  Filename for :  2 bet.hes_2
- nvar for file: bet.hes_2 = 1997 hmin:  30 hmax:  58
+ nvar for file: bet.hes_2 = 1997 hmin:  35 hmax:  68
  Filename for :  3 bet.hes_3
- nvar for file: bet.hes_3 = 1997 hmin:  59 hmax:  87
+ nvar for file: bet.hes_3 = 1997 hmin:  69 hmax:  102
  Filename for :  4 bet.hes_4
- nvar for file: bet.hes_4 = 1997 hmin:  88 hmax:  116
+ nvar for file: bet.hes_4 = 1997 hmin:  103 hmax:  136
  Filename for :  5 bet.hes_5
- nvar for file: bet.hes_5 = 1997 hmin:  117 hmax:  145
+ nvar for file: bet.hes_5 = 1997 hmin:  137 hmax:  170
  Filename for :  6 bet.hes_6
- nvar for file: bet.hes_6 = 1997 hmin:  146 hmax:  174
+ nvar for file: bet.hes_6 = 1997 hmin:  171 hmax:  204
  Filename for :  7 bet.hes_7
- nvar for file: bet.hes_7 = 1997 hmin:  175 hmax:  203
+ nvar for file: bet.hes_7 = 1997 hmin:  205 hmax:  238
  Filename for :  8 bet.hes_8
- nvar for file: bet.hes_8 = 1997 hmin:  204 hmax:  232
+ nvar for file: bet.hes_8 = 1997 hmin:  239 hmax:  272
  Filename for :  9 bet.hes_9
- nvar for file: bet.hes_9 = 1997 hmin:  233 hmax:  261
+ nvar for file: bet.hes_9 = 1997 hmin:  273 hmax:  306
  Filename for :  10 bet.hes_10
- nvar for file: bet.hes_10 = 1997 hmin:  262 hmax:  290
+ nvar for file: bet.hes_10 = 1997 hmin:  307 hmax:  340
  Filename for :  11 bet.hes_11
- nvar for file: bet.hes_11 = 1997 hmin:  291 hmax:  319
+ nvar for file: bet.hes_11 = 1997 hmin:  341 hmax:  374
  Filename for :  12 bet.hes_12
- nvar for file: bet.hes_12 = 1997 hmin:  320 hmax:  348
+ nvar for file: bet.hes_12 = 1997 hmin:  375 hmax:  408
  Filename for :  13 bet.hes_13
- nvar for file: bet.hes_13 = 1997 hmin:  349 hmax:  377
+ nvar for file: bet.hes_13 = 1997 hmin:  409 hmax:  442
  Filename for :  14 bet.hes_14
- nvar for file: bet.hes_14 = 1997 hmin:  378 hmax:  406
+ nvar for file: bet.hes_14 = 1997 hmin:  443 hmax:  476
  Filename for :  15 bet.hes_15
- nvar for file: bet.hes_15 = 1997 hmin:  407 hmax:  435
+ nvar for file: bet.hes_15 = 1997 hmin:  477 hmax:  510
  Filename for :  16 bet.hes_16
- nvar for file: bet.hes_16 = 1997 hmin:  436 hmax:  464
+ nvar for file: bet.hes_16 = 1997 hmin:  511 hmax:  544
  Filename for :  17 bet.hes_17
- nvar for file: bet.hes_17 = 1997 hmin:  465 hmax:  493
+ nvar for file: bet.hes_17 = 1997 hmin:  545 hmax:  578
  Filename for :  18 bet.hes_18
- nvar for file: bet.hes_18 = 1997 hmin:  494 hmax:  522
+ nvar for file: bet.hes_18 = 1997 hmin:  579 hmax:  611
  Filename for :  19 bet.hes_19
- nvar for file: bet.hes_19 = 1997 hmin:  523 hmax:  551
+ nvar for file: bet.hes_19 = 1997 hmin:  612 hmax:  644
  Filename for :  20 bet.hes_20
- nvar for file: bet.hes_20 = 1997 hmin:  552 hmax:  580
+ nvar for file: bet.hes_20 = 1997 hmin:  645 hmax:  677
  Filename for :  21 bet.hes_21
- nvar for file: bet.hes_21 = 1997 hmin:  581 hmax:  609
+ nvar for file: bet.hes_21 = 1997 hmin:  678 hmax:  710
  Filename for :  22 bet.hes_22
- nvar for file: bet.hes_22 = 1997 hmin:  610 hmax:  638
+ nvar for file: bet.hes_22 = 1997 hmin:  711 hmax:  743
  Filename for :  23 bet.hes_23
- nvar for file: bet.hes_23 = 1997 hmin:  639 hmax:  667
+ nvar for file: bet.hes_23 = 1997 hmin:  744 hmax:  776
  Filename for :  24 bet.hes_24
- nvar for file: bet.hes_24 = 1997 hmin:  668 hmax:  696
+ nvar for file: bet.hes_24 = 1997 hmin:  777 hmax:  809
  Filename for :  25 bet.hes_25
- nvar for file: bet.hes_25 = 1997 hmin:  697 hmax:  725
+ nvar for file: bet.hes_25 = 1997 hmin:  810 hmax:  842
  Filename for :  26 bet.hes_26
- nvar for file: bet.hes_26 = 1997 hmin:  726 hmax:  754
+ nvar for file: bet.hes_26 = 1997 hmin:  843 hmax:  875
  Filename for :  27 bet.hes_27
- nvar for file: bet.hes_27 = 1997 hmin:  755 hmax:  783
+ nvar for file: bet.hes_27 = 1997 hmin:  876 hmax:  908
  Filename for :  28 bet.hes_28
- nvar for file: bet.hes_28 = 1997 hmin:  784 hmax:  812
+ nvar for file: bet.hes_28 = 1997 hmin:  909 hmax:  941
  Filename for :  29 bet.hes_29
- nvar for file: bet.hes_29 = 1997 hmin:  813 hmax:  841
+ nvar for file: bet.hes_29 = 1997 hmin:  942 hmax:  974
  Filename for :  30 bet.hes_30
- nvar for file: bet.hes_30 = 1997 hmin:  842 hmax:  870
+ nvar for file: bet.hes_30 = 1997 hmin:  975 hmax:  1007
  Filename for :  31 bet.hes_31
- nvar for file: bet.hes_31 = 1997 hmin:  871 hmax:  899
+ nvar for file: bet.hes_31 = 1997 hmin:  1008 hmax:  1040
  Filename for :  32 bet.hes_32
- nvar for file: bet.hes_32 = 1997 hmin:  900 hmax:  928
+ nvar for file: bet.hes_32 = 1997 hmin:  1041 hmax:  1073
  Filename for :  33 bet.hes_33
- nvar for file: bet.hes_33 = 1997 hmin:  929 hmax:  957
+ nvar for file: bet.hes_33 = 1997 hmin:  1074 hmax:  1106
  Filename for :  34 bet.hes_34
- nvar for file: bet.hes_34 = 1997 hmin:  958 hmax:  986
+ nvar for file: bet.hes_34 = 1997 hmin:  1107 hmax:  1139
  Filename for :  35 bet.hes_35
- nvar for file: bet.hes_35 = 1997 hmin:  987 hmax:  1015
+ nvar for file: bet.hes_35 = 1997 hmin:  1140 hmax:  1172
  Filename for :  36 bet.hes_36
- nvar for file: bet.hes_36 = 1997 hmin:  1016 hmax:  1044
+ nvar for file: bet.hes_36 = 1997 hmin:  1173 hmax:  1205
  Filename for :  37 bet.hes_37
- nvar for file: bet.hes_37 = 1997 hmin:  1045 hmax:  1073
+ nvar for file: bet.hes_37 = 1997 hmin:  1206 hmax:  1238
  Filename for :  38 bet.hes_38
- nvar for file: bet.hes_38 = 1997 hmin:  1074 hmax:  1101
+ nvar for file: bet.hes_38 = 1997 hmin:  1239 hmax:  1271
  Filename for :  39 bet.hes_39
- nvar for file: bet.hes_39 = 1997 hmin:  1102 hmax:  1129
+ nvar for file: bet.hes_39 = 1997 hmin:  1272 hmax:  1304
  Filename for :  40 bet.hes_40
- nvar for file: bet.hes_40 = 1997 hmin:  1130 hmax:  1157
+ nvar for file: bet.hes_40 = 1997 hmin:  1305 hmax:  1337
  Filename for :  41 bet.hes_41
- nvar for file: bet.hes_41 = 1997 hmin:  1158 hmax:  1185
+ nvar for file: bet.hes_41 = 1997 hmin:  1338 hmax:  1370
  Filename for :  42 bet.hes_42
- nvar for file: bet.hes_42 = 1997 hmin:  1186 hmax:  1213
+ nvar for file: bet.hes_42 = 1997 hmin:  1371 hmax:  1403
  Filename for :  43 bet.hes_43
- nvar for file: bet.hes_43 = 1997 hmin:  1214 hmax:  1241
+ nvar for file: bet.hes_43 = 1997 hmin:  1404 hmax:  1436
  Filename for :  44 bet.hes_44
- nvar for file: bet.hes_44 = 1997 hmin:  1242 hmax:  1269
+ nvar for file: bet.hes_44 = 1997 hmin:  1437 hmax:  1469
  Filename for :  45 bet.hes_45
- nvar for file: bet.hes_45 = 1997 hmin:  1270 hmax:  1297
+ nvar for file: bet.hes_45 = 1997 hmin:  1470 hmax:  1502
  Filename for :  46 bet.hes_46
- nvar for file: bet.hes_46 = 1997 hmin:  1298 hmax:  1325
+ nvar for file: bet.hes_46 = 1997 hmin:  1503 hmax:  1535
  Filename for :  47 bet.hes_47
- nvar for file: bet.hes_47 = 1997 hmin:  1326 hmax:  1353
+ nvar for file: bet.hes_47 = 1997 hmin:  1536 hmax:  1568
  Filename for :  48 bet.hes_48
- nvar for file: bet.hes_48 = 1997 hmin:  1354 hmax:  1381
+ nvar for file: bet.hes_48 = 1997 hmin:  1569 hmax:  1601
  Filename for :  49 bet.hes_49
- nvar for file: bet.hes_49 = 1997 hmin:  1382 hmax:  1409
+ nvar for file: bet.hes_49 = 1997 hmin:  1602 hmax:  1634
  Filename for :  50 bet.hes_50
- nvar for file: bet.hes_50 = 1997 hmin:  1410 hmax:  1437
+ nvar for file: bet.hes_50 = 1997 hmin:  1635 hmax:  1667
  Filename for :  51 bet.hes_51
- nvar for file: bet.hes_51 = 1997 hmin:  1438 hmax:  1465
+ nvar for file: bet.hes_51 = 1997 hmin:  1668 hmax:  1700
  Filename for :  52 bet.hes_52
- nvar for file: bet.hes_52 = 1997 hmin:  1466 hmax:  1493
+ nvar for file: bet.hes_52 = 1997 hmin:  1701 hmax:  1733
  Filename for :  53 bet.hes_53
- nvar for file: bet.hes_53 = 1997 hmin:  1494 hmax:  1521
+ nvar for file: bet.hes_53 = 1997 hmin:  1734 hmax:  1766
  Filename for :  54 bet.hes_54
- nvar for file: bet.hes_54 = 1997 hmin:  1522 hmax:  1549
+ nvar for file: bet.hes_54 = 1997 hmin:  1767 hmax:  1799
  Filename for :  55 bet.hes_55
- nvar for file: bet.hes_55 = 1997 hmin:  1550 hmax:  1577
+ nvar for file: bet.hes_55 = 1997 hmin:  1800 hmax:  1832
  Filename for :  56 bet.hes_56
- nvar for file: bet.hes_56 = 1997 hmin:  1578 hmax:  1605
+ nvar for file: bet.hes_56 = 1997 hmin:  1833 hmax:  1865
  Filename for :  57 bet.hes_57
- nvar for file: bet.hes_57 = 1997 hmin:  1606 hmax:  1633
+ nvar for file: bet.hes_57 = 1997 hmin:  1866 hmax:  1898
  Filename for :  58 bet.hes_58
- nvar for file: bet.hes_58 = 1997 hmin:  1634 hmax:  1661
+ nvar for file: bet.hes_58 = 1997 hmin:  1899 hmax:  1931
  Filename for :  59 bet.hes_59
- nvar for file: bet.hes_59 = 1997 hmin:  1662 hmax:  1689
+ nvar for file: bet.hes_59 = 1997 hmin:  1932 hmax:  1964
  Filename for :  60 bet.hes_60
- nvar for file: bet.hes_60 = 1997 hmin:  1690 hmax:  1717
- Filename for :  61 bet.hes_61
- nvar for file: bet.hes_61 = 1997 hmin:  1718 hmax:  1745
- Filename for :  62 bet.hes_62
- nvar for file: bet.hes_62 = 1997 hmin:  1746 hmax:  1773
- Filename for :  63 bet.hes_63
- nvar for file: bet.hes_63 = 1997 hmin:  1774 hmax:  1801
- Filename for :  64 bet.hes_64
- nvar for file: bet.hes_64 = 1997 hmin:  1802 hmax:  1829
- Filename for :  65 bet.hes_65
- nvar for file: bet.hes_65 = 1997 hmin:  1830 hmax:  1857
- Filename for :  66 bet.hes_66
- nvar for file: bet.hes_66 = 1997 hmin:  1858 hmax:  1885
- Filename for :  67 bet.hes_67
- nvar for file: bet.hes_67 = 1997 hmin:  1886 hmax:  1913
- Filename for :  68 bet.hes_68
- nvar for file: bet.hes_68 = 1997 hmin:  1914 hmax:  1941
- Filename for :  69 bet.hes_69
- nvar for file: bet.hes_69 = 1997 hmin:  1942 hmax:  1969
- Filename for :  70 bet.hes_70
- nvar for file: bet.hes_70 = 1997 hmin:  1970 hmax:  1997
+ nvar for file: bet.hes_60 = 1997 hmin:  1965 hmax:  1997
  Writing the Hessian file:  bet.hes
  Completed stitch of Hessian file: bet.hes
-fmax = 0.00211918960435753
+fmax = 0.00713204409083801
