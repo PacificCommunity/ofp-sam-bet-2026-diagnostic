@@ -43,6 +43,133 @@ dm_concentration=7
 echo "DM controls: Nmax=$dm_nmax; grouped fish_pars(22) fixed at $dm_concentration; fish_pars(23) estimated"
 echo "Tag overdispersion: tau fixed at 2 under the direct parameterization (parest 305=1; fish_pars(4)=0; fish flags 43/44=0)"
 
+requested_model_id=${MODEL_ID:-S0.80-F1}
+case "$requested_model_id" in
+  S0.80-F1|S0.80-F2|S0.80-F3|S0.80-F4|S0.80-P1|S0.80-P2|S0.80-P3|S0.80-P4|\
+  S0.85-F1|S0.85-F2|S0.85-F3|S0.85-F4|S0.85-P1|S0.85-P2|S0.85-P3|S0.85-P4|\
+  S0.90-F1|S0.90-F2|S0.90-F3|S0.90-F4|S0.90-P1|S0.90-P2|S0.90-P3|S0.90-P4)
+    ;;
+  *)
+    echo "MODEL_ID must be S0.80, S0.85 or S0.90 followed by F1-F4 or P1-P4." >&2
+    exit 40
+    ;;
+esac
+
+model_input="model-inputs/$requested_model_id.conf"
+if [ ! -s "$model_input" ]; then
+  echo "Model input not found: $model_input" >&2
+  exit 40
+fi
+# Each short model input is committed separately and names the fixed steepness
+# and the complete 33-row selectivity input used by this run.
+. "./$model_input"
+if [ "$MODEL_ID" != "$requested_model_id" ]; then
+  echo "Model input identity mismatch: requested $requested_model_id, found $MODEL_ID." >&2
+  exit 40
+fi
+case "$STEEPNESS" in
+  0.80|0.85|0.90) ;;
+  *)
+    echo "STEEPNESS must be 0.80, 0.85 or 0.90 in $model_input." >&2
+    exit 40
+    ;;
+esac
+case "$SELECTIVITY_MODEL" in
+  F1|F2|F3|F4|P1|P2|P3|P4) ;;
+  *)
+    echo "Invalid SELECTIVITY_MODEL in $model_input: $SELECTIVITY_MODEL" >&2
+    exit 40
+    ;;
+esac
+if [ "$SELECTIVITY_INPUT" != "selectivity-models/$SELECTIVITY_MODEL.csv" ] ||
+   [ ! -s "$SELECTIVITY_INPUT" ]; then
+  echo "Invalid SELECTIVITY_INPUT in $model_input: $SELECTIVITY_INPUT" >&2
+  exit 40
+fi
+
+model_id=$MODEL_ID
+fixed_steepness=$STEEPNESS
+selectivity_model=$SELECTIVITY_MODEL
+selectivity_file=$SELECTIVITY_INPUT
+
+if ! awk -F, '
+  NR == 1 {
+    if ($0 != "fishery,fishery_name,flag16,flag24,flag56,flag57,flag61") failures++
+    next
+  }
+  {
+    fishery=NR-1
+    if (NF != 7 || $1 != fishery || $2 == "" ||
+        ($3 != 0 && $3 != 1) || $4 < 1 || $4 > 33 ||
+        ($5 != 0 && $5 != 10000) || ($6 != 1 && $6 != 3) ||
+        ($7 != 4 && $7 != 5 && $7 != 7)) failures++
+  }
+  END { exit(NR == 34 && failures == 0 ? 0 : 1) }
+' "$selectivity_file"; then
+  echo "Invalid 33-row selectivity input: $selectivity_file" >&2
+  exit 40
+fi
+case "$selectivity_model" in
+  F1)
+    selectivity_label="Flexible: F10 weak non-decreasing"
+    ;;
+  F2)
+    selectivity_label="Flexible: F10 and F33 weak non-decreasing"
+    ;;
+  F3)
+    selectivity_label="Flexible: F3 and F10 logistic"
+    ;;
+  F4)
+    selectivity_label="Flexible: F33 logistic; F10 unpenalized spline"
+    ;;
+  P1)
+    selectivity_label="Parsimonious sharing: retained four-node splines; F33 logistic"
+    ;;
+  P2)
+    selectivity_label="Parsimonious sharing: five-node splines; F33 logistic"
+    ;;
+  P3)
+    selectivity_label="Parsimonious sharing: five-node splines; F10 and F33 logistic"
+    ;;
+  P4)
+    selectivity_label="Parsimonious sharing: five-node F10 and F33 weak non-decreasing"
+    ;;
+esac
+echo "Model: $model_id"
+echo "Fixed steepness: $fixed_steepness (INI sv(29); age flag 162=0)"
+echo "Selectivity model: $selectivity_model - $selectivity_label"
+
+emit_selectivity_phase1_controls()
+{
+  awk -F, 'NR > 1 {
+    printf "  -%d 16 %s  # %s flag 16 from explicit input\n", $1, $3, $2
+    printf "  -%d 24 %s  # %s selectivity-sharing group\n", $1, $4, $2
+    printf "  -%d 56 %s  # %s selectivity-penalty weight\n", $1, $5, $2
+    printf "  -%d 57 %s  # %s selectivity form\n", $1, $6, $2
+    printf "  -%d 61 %s  # %s spline-node count\n", $1, $7, $2
+  }' "$selectivity_file"
+}
+
+emit_selectivity_phase5_controls()
+{
+  awk -F, 'NR > 1 {
+    printf "  -%d 24 %s  # %s final selectivity-sharing group\n", $1, $4, $2
+  }' "$selectivity_file"
+}
+
+selectivity_phase1_controls=$(emit_selectivity_phase1_controls)
+selectivity_phase5_controls=$(emit_selectivity_phase5_controls)
+
+if [ "${SELECTIVITY_PRINT_CONTROLS:-0}" = 1 ]; then
+  printf '%s\n' "# $model_id: fixed steepness $fixed_steepness; $selectivity_label"
+  printf '%s\n' "$selectivity_phase1_controls"
+  printf '%s\n' "$selectivity_phase5_controls"
+  exit 0
+fi
+
+cp "$model_input" selected-model-input.conf
+cp "$selectivity_file" selected-selectivity-input.csv
+
 audit_tau2_fixed()
 {
   par_file=$1
@@ -106,12 +233,201 @@ audit_tau2_fixed()
   echo "$phase_label tau=2 audit: passed."
 }
 
+audit_tau2_value_fixed()
+{
+  par_file=$1
+  phase_label=$2
+  if [ ! -s "$par_file" ]; then
+    echo "$phase_label tau=2 value audit: missing PAR file $par_file" >&2
+    exit 42
+  fi
+
+  tau_value_audit=$(awk '
+    !fish_flags_done && /^# fish flags/ {
+      in_fish_flags=1
+      next
+    }
+    in_fish_flags && /^#/ {
+      in_fish_flags=0
+    }
+    in_fish_flags && NF {
+      fisheries++
+      active43 += $43
+      grouping44 += $44
+      if (fisheries == 33) {
+        in_fish_flags=0
+        fish_flags_done=1
+      }
+      next
+    }
+    /^# extra fishery parameters/ {
+      in_fish_pars=1
+      next
+    }
+    in_fish_pars && /^#/ {
+      next
+    }
+    in_fish_pars && NF {
+      fish_par_row++
+      if (fish_par_row == 4) {
+        fish_par4_count=NF
+        for (i=1; i<=NF; i++) {
+          if ($i < -1e-12 || $i > 1e-12) fish_par4_nonzero++
+        }
+        in_fish_pars=0
+      }
+    }
+    END {
+      print fisheries + 0 "," active43 + 0 "," grouping44 + 0 "," fish_par4_count + 0 "," fish_par4_nonzero + 0
+    }
+  ' "$par_file")
+
+  if [ "$tau_value_audit" != "33,0,0,33,0" ]; then
+    echo "$phase_label tau=2 value audit failed: $tau_value_audit" >&2
+    echo "Expected 33 fisheries, fish flags 43/44=0, and all fish_pars(4)=0." >&2
+    exit 42
+  fi
+  echo "$phase_label tau=2 value audit: passed (estimation switches are applied in Phase 1)."
+}
+
+audit_steepness_fixed()
+{
+  par_file=$1
+  phase_label=$2
+  steepness_audit=$(awk '
+    /^# age flags/ {
+      getline
+      age162=$162
+    }
+    /^# Seasonal growth parameters/ {
+      getline
+      steepness=$29
+    }
+    END { print steepness + 0 "," age162 + 0 }
+  ' "$par_file")
+  observed_steepness=${steepness_audit%,*}
+  observed_age162=${steepness_audit#*,}
+  if [ "$observed_age162" != 0 ] ||
+     ! awk -v observed="$observed_steepness" -v expected="$fixed_steepness" 'BEGIN {
+       difference=observed-expected
+       if (difference < 0) difference=-difference
+       exit(difference <= 1e-12 ? 0 : 1)
+     }'; then
+    echo "$phase_label fixed-steepness audit failed: sv(29)/age_flag(162)=$steepness_audit; expected $fixed_steepness/0." >&2
+    exit 41
+  fi
+  echo "$phase_label fixed-steepness audit: $fixed_steepness passed."
+}
+
+audit_dm_concentration_fixed()
+{
+  par_file=$1
+  phase_label=$2
+  dm22_audit=$(awk -v expected="$dm_concentration" '
+    /^# extra fishery parameters/ { in_extra=1; next }
+    in_extra && /^#/ { next }
+    in_extra && NF {
+      row++
+      if (row == 22) {
+        copies=NF
+        for (i=1; i<=NF; i++) {
+          difference=$i-expected
+          if (difference < 0) difference=-difference
+          if (difference > 1e-12) changed++
+        }
+        print copies "," changed + 0
+        exit
+      }
+    }
+  ' "$par_file")
+  if [ "$dm22_audit" != "33,0" ]; then
+    echo "$phase_label fixed-DM audit failed: fish_pars(22) count/non-7=$dm22_audit; expected 33,0." >&2
+    exit 47
+  fi
+  echo "$phase_label fixed-DM concentration audit: 33 fish_pars(22)=7 passed."
+}
+
+audit_selectivity_model()
+{
+  par_file=$1
+  phase_label=$2
+  if ! awk '
+    FILENAME == ARGV[1] {
+      if (FNR == 1) next
+      split($0, values, ",")
+      fishery=values[1]
+      expected16[fishery]=values[3]
+      expected24[fishery]=values[4]
+      expected56[fishery]=values[5]
+      expected57[fishery]=values[6]
+      expected61[fishery]=values[7]
+      expected_rows++
+      next
+    }
+    /^# fish flags/ { in_fish=1; next }
+    in_fish && /^#/ { in_fish=0 }
+    in_fish && NF {
+      fishery++
+      if ($16 != expected16[fishery] || $24 != expected24[fishery] ||
+          $56 != expected56[fishery] || $57 != expected57[fishery] ||
+          $61 != expected61[fishery]) {
+        printf "F%d observed 16/24/56/57/61=%s/%s/%s/%s/%s; expected %s/%s/%s/%s/%s\n",
+          fishery, $16, $24, $56, $57, $61,
+          expected16[fishery], expected24[fishery], expected56[fishery],
+          expected57[fishery], expected61[fishery] > "/dev/stderr"
+        failures++
+      }
+      if (fishery == 33) exit
+    }
+    END {
+      if (expected_rows != 33 || fishery != 33) {
+        print "Expected 33 fishery-flag rows; found " fishery > "/dev/stderr"
+        failures++
+      }
+      exit(failures > 0 ? 1 : 0)
+    }
+  ' "$selectivity_file" "$par_file"; then
+    echo "$phase_label selectivity audit failed for $selectivity_model." >&2
+    exit 43
+  fi
+  echo "$phase_label selectivity audit: $selectivity_model passed."
+}
+
 
 # -----------------------------------
 #  PHASE 0 - create initial par file
 # -----------------------------------
 
-$program_path bet.frq bet.ini 00.par -makepar
+# Write the selected fixed steepness into the actual INI passed to MFCL. The
+# original Job 19835 INI is never edited; only sv(29) is changed in this copy.
+awk -v steepness="$fixed_steepness" '
+  /^# sv[(]29[)]/ {
+    print
+    replace_next=1
+    next
+  }
+  replace_next {
+    if (NF != 1) exit 37
+    print steepness
+    replaced++
+    replace_next=0
+    next
+  }
+  { print }
+  END { if (replaced != 1) exit 37 }
+' bet.ini > bet.model.ini
+
+ini_steepness=$(awk '/^# sv[(]29[)]/{getline; print $1; exit}' bet.model.ini)
+if ! awk -v observed="$ini_steepness" -v expected="$fixed_steepness" 'BEGIN {
+  difference=observed-expected
+  if (difference < 0) difference=-difference
+  exit(difference <= 1e-12 ? 0 : 1)
+}'; then
+  echo "Failed to write fixed steepness $fixed_steepness to bet.model.ini." >&2
+  exit 37
+fi
+
+$program_path bet.frq bet.model.ini 00.par -makepar
 
 # Fix the direct negative-binomial parameter at fish_pars(4)=log(tau-1)=0
 # for tau=2. The diagnostic model also fixes the eight grouped fish_pars(22)
@@ -140,6 +456,14 @@ awk -v concentration="$dm_concentration" '
   { print }
   END { if (changed_tau != 1 || changed_dm != 1) exit 38 }
 ' 00.par > 00.fixed.par
+audit_tau2_value_fixed 00.fixed.par "Phase 0"
+audit_steepness_fixed 00.fixed.par "Phase 0"
+audit_dm_concentration_fixed 00.fixed.par "Phase 0"
+
+if [ "${MODEL_STOP_AFTER_PHASE0:-0}" = 1 ]; then
+  echo "Phase-0 validation requested; stopping after makepar and fixed-control audits."
+  exit 0
+fi
 
 # -----------------------
 #  PHASE 1 - initial par
@@ -215,6 +539,7 @@ $program_path bet.frq 00.fixed.par 01.par -file - <<PHASE1
 # Recruitment and initial population settings
   1 149 100        # recruitment deviation penalty
   1 400 6          # final six recruitment deviates set to zero
+  2 162 0          # keep sv(29) steepness fixed at the model-input value
 # Fixed terminal recruitments are arithmetic mean of remaining period (not default geometric mean)
   1 398 1
   2 177 1          # use old totpop scaling method
@@ -425,8 +750,13 @@ $program_path bet.frq 00.fixed.par 01.par -file - <<PHASE1
   -33 68 8  # G8PSSET DM group for F33
   -999 69 0  # fix grouped fish_pars(22) concentration intercepts at 7
   -999 89 0  # stage relative sample-size exponent fixed at zero
+# Model-specific selectivity controls are last so they override the common
+# Diagnostic defaults without altering any non-selectivity setting.
+$selectivity_phase1_controls
 PHASE1
 audit_tau2_fixed 01.par "Phase 1"
+audit_steepness_fixed 01.par "Phase 1"
+audit_dm_concentration_fixed 01.par "Phase 1"
 
 # ---------
 #  PHASE 2
@@ -440,6 +770,8 @@ $program_path bet.frq 01.par 02.par -file - <<PHASE2
   -999 89 1  # estimate group-specific DM relative sample-size exponent (CEST)
 PHASE2
 audit_tau2_fixed 02.par "Phase 2"
+audit_steepness_fixed 02.par "Phase 2"
+audit_dm_concentration_fixed 02.par "Phase 2"
 
 # ---------
 #  PHASE 3
@@ -452,6 +784,8 @@ $program_path bet.frq 02.par 03.par -file - <<PHASE3
   1 1 200
 PHASE3
 audit_tau2_fixed 03.par "Phase 3"
+audit_steepness_fixed 03.par "Phase 3"
+audit_dm_concentration_fixed 03.par "Phase 3"
 
 # ---------
 #  PHASE 4
@@ -463,6 +797,8 @@ $program_path bet.frq 03.par 04.par -file - <<PHASE4
   2 27 -1  # penalty wt 0.1 computed against prior
 PHASE4
 audit_tau2_fixed 04.par "Phase 4"
+audit_steepness_fixed 04.par "Phase 4"
+audit_dm_concentration_fixed 04.par "Phase 4"
 
 # ---------
 #  PHASE 5
@@ -497,8 +833,14 @@ $program_path bet.frq 04.par 05.par -file - <<PHASE5
   -31 24 31  # Index R3; separate selectivity coefficient-sharing group from staged run 5
   -32 24 32  # Index R4; separate selectivity coefficient-sharing group from staged run 5
   -33 24 33  # Index R5; separate selectivity coefficient-sharing group from staged run 5
+# P-series models retain the two documented extraction-fishery sharing pairs
+# and independent index groups after the staged-run-5 controls above.
+$selectivity_phase5_controls
 PHASE5
 audit_tau2_fixed 05.par "Phase 5"
+audit_steepness_fixed 05.par "Phase 5"
+audit_dm_concentration_fixed 05.par "Phase 5"
+audit_selectivity_model 05.par "Phase 5"
 
 # ---------
 #  PHASE 6
@@ -512,6 +854,8 @@ $program_path bet.frq 05.par 06.par -file - <<PHASE6
   1 1 300  # function evaluations
 PHASE6
 audit_tau2_fixed 06.par "Phase 6"
+audit_steepness_fixed 06.par "Phase 6"
+audit_dm_concentration_fixed 06.par "Phase 6"
 
 # ---------
 #  PHASE 7
@@ -526,6 +870,8 @@ $program_path bet.frq 06.par 07.par -file - <<PHASE7
   1 1 500  # function evaluations
 PHASE7
 audit_tau2_fixed 07.par "Phase 7"
+audit_steepness_fixed 07.par "Phase 7"
+audit_dm_concentration_fixed 07.par "Phase 7"
 
 # ---------
 #  PHASE 8
@@ -554,6 +900,8 @@ $program_path bet.frq 07.par 08.par -file - <<PHASE8
   2 116 100  # increase F bound for NR to 1.0
 PHASE8
 audit_tau2_fixed 08.par "Phase 8"
+audit_steepness_fixed 08.par "Phase 8"
+audit_dm_concentration_fixed 08.par "Phase 8"
 
 # ---------
 #  PHASE 9
@@ -566,6 +914,8 @@ $program_path bet.frq 08.par 09.par -file - <<PHASE9
   2 116 300  # increase F bound for NR to 3.0
 PHASE9
 audit_tau2_fixed 09.par "Phase 9"
+audit_steepness_fixed 09.par "Phase 9"
+audit_dm_concentration_fixed 09.par "Phase 9"
 
 # ------------------------------------------------------------------
 #  TAG-TAU TREATMENT - direct negative binomial, tau fixed at 2
@@ -579,6 +929,8 @@ $program_path bet.frq 09.par 10.par -file - <<PHASE10_TAU2_FIXED
   1 121 0
 PHASE10_TAU2_FIXED
 audit_tau2_fixed 10.par "Phase 10"
+audit_steepness_fixed 10.par "Phase 10"
+audit_dm_concentration_fixed 10.par "Phase 10"
 
 $program_path bet.frq 10.par 11.par -file - <<PHASE11_TAU2_FIXED
   1 1 5000
@@ -587,6 +939,9 @@ $program_path bet.frq 10.par 11.par -file - <<PHASE11_TAU2_FIXED
   1 246 1
 PHASE11_TAU2_FIXED
 audit_tau2_fixed 11.par "Phase 11"
+audit_steepness_fixed 11.par "Phase 11"
+audit_dm_concentration_fixed 11.par "Phase 11"
+audit_selectivity_model 11.par "Phase 11"
 
 final_par=11.par
 parest_111=$(awk '/^# The parest_flags/{getline; print $111; exit}' "$final_par")
@@ -599,6 +954,7 @@ parest_342=$(awk '/^# The parest_flags/{getline; print $342; exit}' "$final_par"
 estimated_tau_count=$(awk '$2 ~ /^fish_pars[(]4[)]/ {n++} END {print n+0}' indepvar.rpt)
 dm22_active=$(awk '$2 ~ /^fish_pars[(]22[)]/ {n++} END {print n+0}' indepvar.rpt)
 dm23_active=$(awk '$2 ~ /^fish_pars[(]23[)]/ {n++} END {print n+0}' indepvar.rpt)
+estimated_steepness_count=$(awk '$2 == "sv(29)" {n++} END {print n+0}' indepvar.rpt)
 tau_fish_flag_summary=$(awk '
   /^# fish flags/ {in_fish=1; next}
   in_fish && /^#/ {exit}
@@ -642,6 +998,8 @@ final_m=$(awk '
     }
   }
 ' "$final_par")
+final_steepness=$(awk '/^# Seasonal growth parameters/{getline; print $29; exit}' "$final_par")
+final_age162=$(awk '/^# age flags/{getline; print $162; exit}' "$final_par")
 
 dm_control_summary=$(awk '
   /^# fish flags/ { in_fish=1; next }
@@ -662,10 +1020,19 @@ if [ "$parest_111" != 4 ] || [ "$parest_305" != 1 ] ||
    [ "$parest_342" != "$dm_nmax" ] ||
    [ "$dm22_active" != 0 ] || [ "$dm23_active" != 8 ] ||
    [ "$dm_control_summary" != "33,8,0,33" ] ||
+   [ "$estimated_steepness_count" != 0 ] || [ "$final_age162" != 0 ] ||
    [ "$estimated_tau_count" != 0 ] || [ "$active_tau_fisheries" != 0 ] ||
    [ "$grouped_tau_fisheries" != 0 ] || [ "$fish_par4_summary" != "33,0" ]; then
   echo "Final fit did not retain the required DM and fixed tau=2 controls." >&2
   exit 44
+fi
+if ! awk -v observed="$final_steepness" -v expected="$fixed_steepness" 'BEGIN {
+  difference=observed-expected
+  if (difference < 0) difference=-difference
+  exit(difference <= 1e-12 ? 0 : 1)
+}'; then
+  echo "Final fit changed fixed steepness: observed $final_steepness; expected $fixed_steepness." >&2
+  exit 46
 fi
 if ! awk -v observed="$final_m" 'BEGIN {
   expected = -2.54930339768360
@@ -681,4 +1048,34 @@ printf '%s\n' \
   'mode,tag_likelihood,tau,fish_pars4,parest111,parest305,parest306,estimated_tau_count,active_tau_fisheries,grouped_tau_fisheries,parest121,dm_nmax,dm_concentration,dm22_active,dm23_active,parest141,parest320,parest342,final_m,status' \
   "tau-fixed,direct-negative-binomial,2,0,$parest_111,$parest_305,$parest_306,$estimated_tau_count,$active_tau_fisheries,$grouped_tau_fisheries,$parest_121,$dm_nmax,$dm_concentration,$dm22_active,$dm23_active,$parest_141,$parest_320,$parest_342,$final_m,passed" \
   > tag-tau-audit.csv
+
+printf '%s\n' \
+  'model_id,steepness,selectivity_model,label,selectivity_groups,four_node_flags,five_node_flags,seven_node_flags,logistic_flags,weak_penalty_flags,status' \
+  > selectivity-audit.csv
+awk -v model_id="$model_id" -v steepness="$fixed_steepness" \
+    -v model="$selectivity_model" -v label="$selectivity_label" '
+  /^# fish flags/ { in_fish=1; next }
+  in_fish && /^#/ { in_fish=0 }
+  in_fish && NF {
+    fishery++
+    groups[$24]=1
+    if ($61 == 4) four++
+    if ($61 == 5) five++
+    if ($61 == 7) seven++
+    if ($57 == 1) logistic++
+    if ($16 == 1 && $56 == 10000) weak++
+    if (fishery == 33) exit
+  }
+  END {
+    for (group in groups) group_count++
+    printf "\"%s\",%s,\"%s\",\"%s\",%d,%d,%d,%d,%d,%d,passed\n",
+      model_id, steepness, model, label, group_count, four + 0, five + 0, seven + 0,
+      logistic + 0, weak + 0
+  }
+' "$final_par" >> selectivity-audit.csv
+
+printf '%s\n' \
+  'model_id,fixed_steepness,age_flag_162,estimated_steepness_count,selectivity_model,tau,initialization,status' \
+  "$model_id,$fixed_steepness,$final_age162,$estimated_steepness_count,$selectivity_model,2,ordinary-makepar-no-seed,passed" \
+  > model-input-audit.csv
 exit 0

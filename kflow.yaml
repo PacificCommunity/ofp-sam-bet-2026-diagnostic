@@ -1,5 +1,5 @@
-name: ofp-sam-bet-2026-diagnostic-tau2-exploration
-description: Fit the BET 2026 Diagnostic configuration with tag tau fixed at 2 and ordinary makepar initialization.
+name: ofp-sam-bet-2026-tau2-steepness-selectivity-grid
+description: Fit one of 24 BET 2026 fixed-steepness and selectivity models with tag tau fixed at 2 and ordinary makepar initialization.
 command: bash run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
 remote_host: suva
@@ -13,19 +13,20 @@ resources:
 exclude_machines: []
 exclude_slots: []
 env:
-  JOB_TITLE: Diagnostic model | tau fixed at 2
-  JOB_DESCRIPTION: Diagnostic settings with direct negative-binomial tau fixed at 2; standard makepar initialization and no seed-23 checkpoint.
-  MODEL_LABEL: Diagnostic model | tau fixed at 2
-  JOB_KEY: diagnostic-model-tau2-fixed
-  FLOW_GROUP: bet-2026-diagnostic-tau2-exploration
+  JOB_TITLE: S0.80-F1 | Diagnostic selectivity | tau=2 fixed
+  JOB_DESCRIPTION: Fixed steepness 0.80; F1 Diagnostic selectivity with F10 weak non-decreasing penalty 10000; direct negative-binomial tau=2 fixed; ordinary makepar initialization with no seed or checkpoint.
+  MODEL_LABEL: S0.80-F1 | tau=2 fixed
+  JOB_KEY: s080-f1-tau2-fixed
+  FLOW_GROUP: bet-2026-tau2-steepness-selectivity-grid
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
   PROGRAM_PATH: /home/mfcl/mfclo64
+  MODEL_ID: S0.80-F1
   BET_PHASE10_11_CONVERGENCE: "-4"
   TUNA_FLOW_RUNTIME_UPDATE: never
 tags:
-  stage: tau2-exploration
+  stage: tau2-steepness-selectivity-grid
   species: BET
   assessment_year: "2026"
 output_patterns:
@@ -37,4 +38,7 @@ metadata:
   parest_305: "1"
   fish_pars_4: "0"
   fish_flag_43: "0"
-  model_label: Diagnostic model | tau fixed at 2
+  model_id: S0.80-F1
+  steepness: "0.80"
+  selectivity_model: F1
+  model_label: S0.80-F1 | tau=2 fixed
