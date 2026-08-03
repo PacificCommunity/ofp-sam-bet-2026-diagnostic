@@ -167,8 +167,10 @@ if [ "${SELECTIVITY_PRINT_CONTROLS:-0}" = 1 ]; then
   exit 0
 fi
 
-cp "$model_input" selected-model-input.conf
-cp "$selectivity_file" selected-selectivity-input.csv
+if [ -z "${SELECTIVITY_AUDIT_PAR:-}" ]; then
+  cp "$model_input" selected-model-input.conf
+  cp "$selectivity_file" selected-selectivity-input.csv
+fi
 
 audit_tau2_fixed()
 {
@@ -355,33 +357,36 @@ audit_selectivity_model()
     FILENAME == ARGV[1] {
       if (FNR == 1) next
       split($0, values, ",")
-      fishery=values[1]
-      expected16[fishery]=values[3]
-      expected24[fishery]=values[4]
-      expected56[fishery]=values[5]
-      expected57[fishery]=values[6]
-      expected61[fishery]=values[7]
+      expected_fishery=values[1]
+      expected16[expected_fishery]=values[3]
+      expected24[expected_fishery]=values[4]
+      expected56[expected_fishery]=values[5]
+      expected57[expected_fishery]=values[6]
+      expected61[expected_fishery]=values[7]
       expected_rows++
       next
     }
     /^# fish flags/ { in_fish=1; next }
     in_fish && /^#/ { in_fish=0 }
     in_fish && NF {
-      fishery++
-      if ($16 != expected16[fishery] || $24 != expected24[fishery] ||
-          $56 != expected56[fishery] || $57 != expected57[fishery] ||
-          $61 != expected61[fishery]) {
+      observed_fishery++
+      if ($16 != expected16[observed_fishery] ||
+          $24 != expected24[observed_fishery] ||
+          $56 != expected56[observed_fishery] ||
+          $57 != expected57[observed_fishery] ||
+          $61 != expected61[observed_fishery]) {
         printf "F%d observed 16/24/56/57/61=%s/%s/%s/%s/%s; expected %s/%s/%s/%s/%s\n",
-          fishery, $16, $24, $56, $57, $61,
-          expected16[fishery], expected24[fishery], expected56[fishery],
-          expected57[fishery], expected61[fishery] > "/dev/stderr"
+          observed_fishery, $16, $24, $56, $57, $61,
+          expected16[observed_fishery], expected24[observed_fishery],
+          expected56[observed_fishery], expected57[observed_fishery],
+          expected61[observed_fishery] > "/dev/stderr"
         failures++
       }
-      if (fishery == 33) exit
+      if (observed_fishery == 33) exit
     }
     END {
-      if (expected_rows != 33 || fishery != 33) {
-        print "Expected 33 fishery-flag rows; found " fishery > "/dev/stderr"
+      if (expected_rows != 33 || observed_fishery != 33) {
+        print "Expected 33 fishery-flag rows; found " observed_fishery > "/dev/stderr"
         failures++
       }
       exit(failures > 0 ? 1 : 0)
@@ -392,6 +397,11 @@ audit_selectivity_model()
   fi
   echo "$phase_label selectivity audit: $selectivity_model passed."
 }
+
+if [ -n "${SELECTIVITY_AUDIT_PAR:-}" ]; then
+  audit_selectivity_model "$SELECTIVITY_AUDIT_PAR" "Standalone"
+  exit 0
+fi
 
 
 # -----------------------------------

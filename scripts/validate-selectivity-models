@@ -100,6 +100,11 @@ for steepness in 0.80 0.85 0.90; do
     fi
     test -s "$work/$model_id.par"
     audit_par "$model" "$work/$model_id.par"
+    (
+      cd "$root/model"
+      MODEL_ID="$model_id" SELECTIVITY_AUDIT_PAR="$work/$model_id.par" \
+        PROGRAM_PATH="$mfcl" ./doitall.sh
+    ) > "$work/$model_id.internal-audit.log"
     if ! awk -v expected="$steepness" '
       /^# age flags/ { getline; age162=$162 }
       /^# Seasonal growth parameters/ { getline; observed=$29 }
