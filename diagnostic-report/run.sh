@@ -5,6 +5,11 @@ report_root=$(cd "$(dirname "$0")/.." && pwd)
 output_dir=${REPORT_OUTPUT_DIR:-$report_root/diagnostic-report-output}
 report_lib=${R_LIBS_USER:-$report_root/diagnostic-report/.R-library}
 
+case "$output_dir" in
+  /*) ;;
+  *) output_dir=$report_root/$output_dir ;;
+esac
+
 mkdir -p "$report_lib"
 export R_LIBS_USER=$report_lib
 
