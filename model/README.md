@@ -3,7 +3,7 @@
 This directory is the complete input recipe for the BET 2026 **tau=2 fixed-
 steepness and selectivity grid**. Do not run it in place. Use `../doitall`,
 which copies these files to a fresh run directory and starts from ordinary
-`bet.ini -makepar` initialization. `MODEL_ID` selects one of the 24 files in
+`bet.ini -makepar` initialization. `MODEL_ID` selects one of the 27 files in
 `model-inputs/`; the default is `S0.80-F1`.
 
 `doitall.sh` starts with `bet.ini -makepar` and runs all eleven estimation

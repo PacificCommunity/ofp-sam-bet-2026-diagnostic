@@ -12,12 +12,14 @@
 
 - K = 0.20; tag tau fixed at 2 using the direct negative-binomial formulation
 - Fixed steepness grid: 0.80, 0.85 and 0.90 (`sv(29)`, age flag 162 = 0)
-- Selectivity grid: F1-F4 and P1-P4, defined in `SELECTIVITY_MODELS.md`
+- Selectivity grid: F1-F5 and P1-P4, defined in `SELECTIVITY_MODELS.md`
 - Job 19835 input/control audit: `JOB19835_COMPARISON.md`
 - Parest flags 111/305/306 = 4/1/0
 - All fish flags 43/44 = 0 and all `fish_pars(4) = 0`
-- F10: five-node cubic spline
-- F10 non-decreasing controls: flag 16 = 1 and flag 56 = 10000
+- F10: model-specific five-node cubic spline or logistic, as defined in
+  `SELECTIVITY_MODELS.md`
+- F10 non-decreasing controls (`flag 16=1`, `flag 56=10000`) apply only to
+  definitions that explicitly retain the weak penalty
 - Fixed Lorenzen natural-mortality intercept: -2.54930339768360
 - Dirichlet-multinomial composition likelihood: eight groups, Nmax = 25
 - Frozen frequency, tag, age-length and regional-scaling inputs

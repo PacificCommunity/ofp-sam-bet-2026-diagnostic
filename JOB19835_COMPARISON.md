@@ -1,25 +1,25 @@
 # Job 19835 comparison
 
 This grid retains the BET 2026 Diagnostic data and non-selectivity controls
-used by Kflow Job 19835. The 24 fits form a complete 3 by 8 cross: fixed
-steepness `0.80`, `0.85` or `0.90`, and selectivity definition `F1`-`F4` or
+used by Kflow Job 19835. The 27 fits form a complete 3 by 9 cross: fixed
+steepness `0.80`, `0.85` or `0.90`, and selectivity definition `F1`-`F5` or
 `P1`-`P4`.
 
 ## Controlled changes
 
-| Setting | Archived Job 19835 | This 24-model grid |
+| Setting | Archived Job 19835 | This 27-model grid |
 |---|---|---|
 | Steepness | `sv(29)=0.80`, fixed (`age flag 162=0`) | `sv(29)=0.80`, `0.85` or `0.90`, fixed in every fit (`age flag 162=0`) |
-| Selectivity | F1/Diagnostic definition | One explicit F1-F4 or P1-P4 definition; only fish flags 16, 24, 56, 57 and 61 vary |
+| Selectivity | F1/Diagnostic definition | One explicit F1-F5 or P1-P4 definition; only fish flags 16, 24, 56, 57 and 61 vary |
 | Tag tau | Tau not estimated under the archived legacy branch (`parest 305=0`) | Exactly `tau=2`, fixed under the direct branch (`parest 305=1`, all `fish_pars(4)=0`, fish flags 43/44=0) |
 | Initialization | Seed-23 fitted checkpoints were applied during the staged fit | Ordinary `bet.ini -makepar`; no seed, jitter or checkpoint |
 | DM composition treatment | Eight groups; `fish_pars(22)=7` fixed; `fish_pars(23)` estimated; `Nmax=25`; staged CEST | Unchanged; the run adds phase-by-phase audits but does not alter these controls |
 | Biology, mixing, weighting and phases | Diagnostic settings, including K=0.20 | Unchanged |
 | Weight-frequency structure | Declared 200 unused WF intervals and a trailing placeholder despite no WF observations | Approved cleanup: zero WF dimensions and no unused trailing placeholder; catch and LF data are unchanged |
 
-The only differences **among the 24 new fits** are the first two grid axes:
+The only differences **among the 27 new fits** are the first two grid axes:
 fixed steepness and the five selectivity flags. Fixed tau=2, ordinary makepar
-initialization and the WF cleanup are common to all 24 fits.
+initialization and the WF cleanup are common to all 27 fits.
 
 ## Frozen input audit
 

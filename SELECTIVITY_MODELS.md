@@ -1,7 +1,7 @@
 # BET 2026 fixed-tau selectivity models
 
 Each selectivity definition below is crossed with fixed steepness `0.80`,
-`0.85` and `0.90`, giving 24 models. Every model uses the same Diagnostic
+`0.85` and `0.90`, giving 27 models. Every model uses the same Diagnostic
 inputs, estimation phases, fixed `tau=2`, mixing period, biological settings
 and data weighting. Within a steepness level, only the selectivity controls in
 this table change.
@@ -12,6 +12,7 @@ this table change.
 | F2 | All 33 independent | Diagnostic defaults | 5-node spline; weak non-decreasing penalty 10,000 | 5-node spline; weak non-decreasing penalty 10,000 | None |
 | F3 | All 33 independent | Diagnostic defaults | Logistic | 5-node spline | F3 logistic |
 | F4 | All 33 independent | Diagnostic defaults | 5-node unpenalized spline | Logistic | None |
+| F5 | All 33 independent | Diagnostic defaults | Logistic | Logistic | Added without changing the original F3 models |
 | P1 | F2/F3 and F7/F9 shared | F1, F2, F3, F5 and F29 use four nodes | 5-node unpenalized spline | Logistic | Reproduces the parsimonious selectivity structure |
 | P2 | F2/F3 and F7/F9 shared | The P1 four-node curves return to five nodes | 5-node unpenalized spline | Logistic | Isolates the four-versus-five-node choice |
 | P3 | F2/F3 and F7/F9 shared | As P2 | Logistic | Logistic | Isolates F10 form within the P2 structure |
@@ -26,6 +27,7 @@ Their complete 33-fishery values are directly available here:
 | F2 | [F2.csv](model/selectivity-models/F2.csv) |
 | F3 | [F3.csv](model/selectivity-models/F3.csv) |
 | F4 | [F4.csv](model/selectivity-models/F4.csv) |
+| F5 | [F5.csv](model/selectivity-models/F5.csv) |
 | P1 | [P1.csv](model/selectivity-models/P1.csv) |
 | P2 | [P2.csv](model/selectivity-models/P2.csv) |
 | P3 | [P3.csv](model/selectivity-models/P3.csv) |
@@ -42,15 +44,18 @@ remain independent. The four-node settings in P1 are retained from the earlier
 parsimonious screening; P2 provides the direct five-node comparison without
 changing the sharing structure.
 
-## Complete 24-model grid
+`F5` is the requested independent F10+F33-logistic comparison. The original
+`F3` definitions and jobs, where F3+F10 are logistic, are retained unchanged.
+
+## Complete 27-model grid
 
 Each link is the exact model input used by `doitall.sh`.
 
-| Fixed steepness | F1 | F2 | F3 | F4 | P1 | P2 | P3 | P4 |
-|---:|---|---|---|---|---|---|---|---|
-| 0.80 | [S0.80-F1](model/model-inputs/S0.80-F1.conf) | [S0.80-F2](model/model-inputs/S0.80-F2.conf) | [S0.80-F3](model/model-inputs/S0.80-F3.conf) | [S0.80-F4](model/model-inputs/S0.80-F4.conf) | [S0.80-P1](model/model-inputs/S0.80-P1.conf) | [S0.80-P2](model/model-inputs/S0.80-P2.conf) | [S0.80-P3](model/model-inputs/S0.80-P3.conf) | [S0.80-P4](model/model-inputs/S0.80-P4.conf) |
-| 0.85 | [S0.85-F1](model/model-inputs/S0.85-F1.conf) | [S0.85-F2](model/model-inputs/S0.85-F2.conf) | [S0.85-F3](model/model-inputs/S0.85-F3.conf) | [S0.85-F4](model/model-inputs/S0.85-F4.conf) | [S0.85-P1](model/model-inputs/S0.85-P1.conf) | [S0.85-P2](model/model-inputs/S0.85-P2.conf) | [S0.85-P3](model/model-inputs/S0.85-P3.conf) | [S0.85-P4](model/model-inputs/S0.85-P4.conf) |
-| 0.90 | [S0.90-F1](model/model-inputs/S0.90-F1.conf) | [S0.90-F2](model/model-inputs/S0.90-F2.conf) | [S0.90-F3](model/model-inputs/S0.90-F3.conf) | [S0.90-F4](model/model-inputs/S0.90-F4.conf) | [S0.90-P1](model/model-inputs/S0.90-P1.conf) | [S0.90-P2](model/model-inputs/S0.90-P2.conf) | [S0.90-P3](model/model-inputs/S0.90-P3.conf) | [S0.90-P4](model/model-inputs/S0.90-P4.conf) |
+| Fixed steepness | F1 | F2 | F3 | F4 | F5 | P1 | P2 | P3 | P4 |
+|---:|---|---|---|---|---|---|---|---|---|
+| 0.80 | [S0.80-F1](model/model-inputs/S0.80-F1.conf) | [S0.80-F2](model/model-inputs/S0.80-F2.conf) | [S0.80-F3](model/model-inputs/S0.80-F3.conf) | [S0.80-F4](model/model-inputs/S0.80-F4.conf) | [S0.80-F5](model/model-inputs/S0.80-F5.conf) | [S0.80-P1](model/model-inputs/S0.80-P1.conf) | [S0.80-P2](model/model-inputs/S0.80-P2.conf) | [S0.80-P3](model/model-inputs/S0.80-P3.conf) | [S0.80-P4](model/model-inputs/S0.80-P4.conf) |
+| 0.85 | [S0.85-F1](model/model-inputs/S0.85-F1.conf) | [S0.85-F2](model/model-inputs/S0.85-F2.conf) | [S0.85-F3](model/model-inputs/S0.85-F3.conf) | [S0.85-F4](model/model-inputs/S0.85-F4.conf) | [S0.85-F5](model/model-inputs/S0.85-F5.conf) | [S0.85-P1](model/model-inputs/S0.85-P1.conf) | [S0.85-P2](model/model-inputs/S0.85-P2.conf) | [S0.85-P3](model/model-inputs/S0.85-P3.conf) | [S0.85-P4](model/model-inputs/S0.85-P4.conf) |
+| 0.90 | [S0.90-F1](model/model-inputs/S0.90-F1.conf) | [S0.90-F2](model/model-inputs/S0.90-F2.conf) | [S0.90-F3](model/model-inputs/S0.90-F3.conf) | [S0.90-F4](model/model-inputs/S0.90-F4.conf) | [S0.90-F5](model/model-inputs/S0.90-F5.conf) | [S0.90-P1](model/model-inputs/S0.90-P1.conf) | [S0.90-P2](model/model-inputs/S0.90-P2.conf) | [S0.90-P3](model/model-inputs/S0.90-P3.conf) | [S0.90-P4](model/model-inputs/S0.90-P4.conf) |
 
 Run one model with, for example:
 

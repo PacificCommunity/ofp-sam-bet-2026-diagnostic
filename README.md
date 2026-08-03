@@ -1,7 +1,7 @@
 # BET 2026 Diagnostic model — tau=2 exploration
 
-This branch fits 24 controlled BET 2026 models: three fixed steepness values
-(`0.80`, `0.85`, `0.90`) crossed with eight selectivity settings (`F1`-`F4`,
+This branch fits 27 controlled BET 2026 models: three fixed steepness values
+(`0.80`, `0.85`, `0.90`) crossed with nine selectivity settings (`F1`-`F5`,
 `P1`-`P4`). Tag negative-binomial overdispersion is fixed at `tau=2` in every
 model.
 
@@ -11,7 +11,7 @@ All models share two fitting differences from the original Diagnostic run:
 - ordinary `bet.ini -makepar` initialization, with no jitter or seed-23
   checkpoint.
 
-The only differences among the 24 models are fixed steepness and the documented
+The only differences among the 27 models are fixed steepness and the documented
 selectivity flags. All other inputs, phases and controls are common. See
 [SELECTIVITY_MODELS.md](SELECTIVITY_MODELS.md) for the exact definitions and
 [JOB19835_COMPARISON.md](JOB19835_COMPARISON.md) for the archived-input and
@@ -63,10 +63,11 @@ scripts is in [TAU2_FIXED_SNIPPET.md](TAU2_FIXED_SNIPPET.md).
 ## Kflow
 
 The branch includes one Kflow task using the same `model/doitall.sh` recipe as
-the standalone run. `MODEL_ID` selects one of the 24 explicit model inputs; the
+the standalone run. `MODEL_ID` selects one of the 27 explicit model inputs; the
 default is `S0.80-F1`. Jobs use the pinned `tuna-flow:v2.5` image and install
 the latest-at-submission `mfclkit` (`cf786007`) and `mfclshiny` (`c861bce8`)
-revisions before fitting.
+revisions before fitting. The original 24 definitions remain unchanged; the
+three `F5` jobs add the independent F10+F33-logistic comparison.
 
 ## Baseline reference files
 

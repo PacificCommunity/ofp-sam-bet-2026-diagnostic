@@ -45,12 +45,12 @@ echo "Tag overdispersion: tau fixed at 2 under the direct parameterization (pare
 
 requested_model_id=${MODEL_ID:-S0.80-F1}
 case "$requested_model_id" in
-  S0.80-F1|S0.80-F2|S0.80-F3|S0.80-F4|S0.80-P1|S0.80-P2|S0.80-P3|S0.80-P4|\
-  S0.85-F1|S0.85-F2|S0.85-F3|S0.85-F4|S0.85-P1|S0.85-P2|S0.85-P3|S0.85-P4|\
-  S0.90-F1|S0.90-F2|S0.90-F3|S0.90-F4|S0.90-P1|S0.90-P2|S0.90-P3|S0.90-P4)
+  S0.80-F1|S0.80-F2|S0.80-F3|S0.80-F4|S0.80-F5|S0.80-P1|S0.80-P2|S0.80-P3|S0.80-P4|\
+  S0.85-F1|S0.85-F2|S0.85-F3|S0.85-F4|S0.85-F5|S0.85-P1|S0.85-P2|S0.85-P3|S0.85-P4|\
+  S0.90-F1|S0.90-F2|S0.90-F3|S0.90-F4|S0.90-F5|S0.90-P1|S0.90-P2|S0.90-P3|S0.90-P4)
     ;;
   *)
-    echo "MODEL_ID must be S0.80, S0.85 or S0.90 followed by F1-F4 or P1-P4." >&2
+    echo "MODEL_ID must be S0.80, S0.85 or S0.90 followed by F1-F5 or P1-P4." >&2
     exit 40
     ;;
 esac
@@ -75,7 +75,7 @@ case "$STEEPNESS" in
     ;;
 esac
 case "$SELECTIVITY_MODEL" in
-  F1|F2|F3|F4|P1|P2|P3|P4) ;;
+  F1|F2|F3|F4|F5|P1|P2|P3|P4) ;;
   *)
     echo "Invalid SELECTIVITY_MODEL in $model_input: $SELECTIVITY_MODEL" >&2
     exit 40
@@ -121,6 +121,9 @@ case "$selectivity_model" in
     ;;
   F4)
     selectivity_label="Flexible: F33 logistic; F10 unpenalized spline"
+    ;;
+  F5)
+    selectivity_label="Flexible: F10 and F33 logistic"
     ;;
   P1)
     selectivity_label="Parsimonious sharing: retained four-node splines; F33 logistic"

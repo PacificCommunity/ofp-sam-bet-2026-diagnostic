@@ -1,11 +1,11 @@
 # Fixed tau=2 exploration
 
-This branch compares the documented `F1`-`F4` and `P1`-`P4` selectivity
+This branch compares the documented `F1`-`F5` and `P1`-`P4` selectivity
 settings at fixed steepness `0.80`, `0.85` and `0.90`, with the tag negative-
 binomial treatment fixed at `tau=2`. It starts from ordinary `bet.ini -makepar`
 parameter values; no jitter, seed or checkpoint is used. Except for fixed
 steepness and the five documented selectivity flags, inputs and controls are
-identical across the 24 models.
+identical across the 27 models.
 
 ## MFCL settings
 

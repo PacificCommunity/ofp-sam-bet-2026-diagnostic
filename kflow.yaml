@@ -1,5 +1,5 @@
 name: ofp-sam-bet-2026-tau2-steepness-selectivity-grid
-description: Fit one of 24 BET 2026 fixed-steepness and selectivity models with tag tau fixed at 2, ordinary makepar initialization, tuna-flow v2.5 and latest-at-submission mfclkit/mfclshiny.
+description: Fit one of 27 BET 2026 fixed-steepness and selectivity models with tag tau fixed at 2, ordinary makepar initialization, tuna-flow v2.5 and pinned mfclkit/mfclshiny revisions.
 command: bash run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
 remote_host: suva

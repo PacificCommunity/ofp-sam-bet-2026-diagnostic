@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Register and concurrently submit the 24-model BET Kflow grid."""
+"""Register and concurrently submit the 27-model BET Kflow grid."""
 
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import os
 import subprocess
@@ -21,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "kflow.yaml"
 EXPECTED_BRANCH = "tau2-exploration"
 STEEPNESS_VALUES = ("0.80", "0.85", "0.90")
-SELECTIVITY_MODELS = ("F1", "F2", "F3", "F4", "P1", "P2", "P3", "P4")
+SELECTIVITY_MODELS = ("F1", "F2", "F3", "F4", "F5", "P1", "P2", "P3", "P4")
 MFCLKIT_REF = "cf786007b5261f84faac8f3d24f7084bd323119d"
 MFCLSHINY_REF = "c861bce8c1d8c769d12d897e035765765880bafd"
 
@@ -30,6 +31,7 @@ SELECTIVITY_TITLES = {
     "F2": "independent | F10+F33 weak penalties",
     "F3": "independent | F3+F10 logistic",
     "F4": "independent | F33 logistic",
+    "F5": "independent | F10+F33 logistic",
     "P1": "shared pairs | 4-node set | F33 logistic",
     "P2": "shared pairs | 5-node set | F33 logistic",
     "P3": "shared pairs | F10+F33 logistic",
@@ -53,6 +55,10 @@ SELECTIVITY_DESCRIPTIONS = {
     "F4": (
         "33 independent selectivity groups; F33 logistic; F10 five-node "
         "unpenalized spline"
+    ),
+    "F5": (
+        "33 independent selectivity groups; F10 and F33 logistic; all other "
+        "fishery forms, sharing groups, penalties and node settings unchanged"
     ),
     "P1": (
         "F2/F3 and F7/F9 shared; F1/F2/F3/F5/F29 four-node; F10 five-node "
@@ -136,7 +142,32 @@ def parse_model_input(path: Path) -> dict[str, str]:
     return values
 
 
+def validate_f5_selectivity() -> None:
+    path = ROOT / "model" / "selectivity-models" / "F5.csv"
+    with path.open(encoding="utf-8", newline="") as source:
+        rows = list(csv.DictReader(source))
+    if len(rows) != 33:
+        raise ValueError("F5 must define exactly 33 fisheries.")
+    for fishery, row in enumerate(rows, start=1):
+        expected_form = "1" if fishery in {10, 33} else "3"
+        expected_nodes = "7" if fishery in {25, 26} else "5"
+        expected = {
+            "fishery": str(fishery),
+            "flag16": "0",
+            "flag24": str(fishery),
+            "flag56": "0",
+            "flag57": expected_form,
+            "flag61": expected_nodes,
+        }
+        actual = {key: row.get(key) for key in expected}
+        if actual != expected or not row.get("fishery_name"):
+            raise ValueError(
+                f"F5 fishery {fishery} is not independent with only F10/F33 logistic: {row}"
+            )
+
+
 def build_rows() -> list[dict[str, str]]:
+    validate_f5_selectivity()
     rows: list[dict[str, str]] = []
     for steepness in STEEPNESS_VALUES:
         for selectivity in SELECTIVITY_MODELS:
@@ -152,8 +183,8 @@ def build_rows() -> list[dict[str, str]]:
             if values != expected:
                 raise ValueError(f"Model input mismatch in {path}: {values}")
             rows.append(values)
-    if len(rows) != 24 or len({row["MODEL_ID"] for row in rows}) != 24:
-        raise ValueError("The grid must contain exactly 24 unique models.")
+    if len(rows) != 27 or len({row["MODEL_ID"] for row in rows}) != 27:
+        raise ValueError("The grid must contain exactly 27 unique models.")
     return rows
 
 
@@ -173,7 +204,7 @@ def validate_repository(config: dict[str, Any]) -> None:
     if "@sha256:" not in image:
         raise ValueError("Kflow image must use an immutable digest.")
     if str(config.get("remote_host", "")).lower() != "suva":
-        raise ValueError("The 24 fits must run on Suva.")
+        raise ValueError("The 27 fits must run on Suva.")
     if "suvofp" not in str(config.get("slot_requirements", "")).lower():
         raise ValueError("The slot requirement must select Suva workers.")
     if config.get("triggers"):
@@ -224,7 +255,7 @@ def task_payload(config: dict[str, Any], rows: list[dict[str, str]]) -> dict[str
     resources = config["resources"]
     metadata = {
         **dict(config.get("metadata") or {}),
-        "model_count": 24,
+        "model_count": 27,
         "execution": "independent-concurrent",
         "change_axes": ["fixed steepness", "selectivity"],
         "steepness_values": list(STEEPNESS_VALUES),
@@ -304,7 +335,7 @@ def job_payload(config: dict[str, Any], row: dict[str, str]) -> dict[str, Any]:
             "source_commit": run_git("rev-parse", "HEAD"),
             "independent_fit": True,
             "full_doitall": True,
-            "campaign_size": 24,
+            "campaign_size": 27,
         },
         "triggers": {},
     }
@@ -349,7 +380,7 @@ def verify_job(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--max-workers", type=int, default=24)
+    parser.add_argument("--max-workers", type=int, default=27)
     args = parser.parse_args()
 
     config = read_config()
