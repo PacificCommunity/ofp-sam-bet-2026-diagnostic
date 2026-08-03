@@ -453,7 +453,7 @@ def main() -> int:
         },
         indent=2,
     ))
-    if failures or len(present) + len(results) != 24:
+    if failures or len(present) + len(results) != 27:
         raise SystemExit("Grid submission or verification was incomplete.")
     return 0
 
