@@ -27,8 +27,9 @@ vector PDF figures, CSV and LaTeX tables, figure/table indexes and an offline
 interactive viewer. Report tables and figures include Word and LaTeX copy
 controls.
 
-The Hessian figure includes annual depletion, spawning potential and
-recruitment with nested pointwise 50%, 80% and 95% delta-method intervals.
+The Hessian section includes separate annual and quarterly figures for
+depletion, spawning potential and recruitment with nested pointwise 50%, 80%
+and 95% delta-method intervals.
 Quarterly recruitment is
 summed, spawning potential is averaged, and depletion is the annual mean of
 the quarterly spawning-potential ratios. These transformations use the native
@@ -37,5 +38,6 @@ rather than adding quarterly standard errors or confidence limits.
 
 The verified reference table can be regenerated from the native `bet.dep`,
 `bet.dp2`, label files and `bet.hes` with
-`diagnostic-report/R/generate_annual_uncertainty.R`. Its checksum locks prevent
-mixing gradients or a Hessian from another fit.
+`diagnostic-report/R/generate_annual_uncertainty.R`. The generator writes both
+annual and quarterly reference tables; its checksum locks prevent mixing
+gradients or a Hessian from another fit.

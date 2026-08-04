@@ -183,18 +183,59 @@ utils::write.csv(
   file.path(table_dir, "annual-hessian-time-series.csv"),
   row.names = FALSE
 )
+
+quarterly_file <- file.path(reference_dir, "quarterly-hessian-time-series.csv")
+if (!file.exists(quarterly_file)) {
+  stop("Missing verified quarterly Hessian uncertainty table: ", quarterly_file, call. = FALSE)
+}
+quarterly <- utils::read.csv(quarterly_file, stringsAsFactors = FALSE)
+quarterly_required <- c(
+  "year", "quarter", "period", "quantity", "estimate", "se_log",
+  "lower_50", "upper_50", "lower_80", "upper_80", "lower_95", "upper_95",
+  "final_par_sha256", "hessian_sha256", "method"
+)
+if (!all(quarterly_required %in% names(quarterly))) {
+  stop("The quarterly Hessian uncertainty table is incomplete.", call. = FALSE)
+}
+expected_period <- rep(1952:2024, each = 4L) + rep(0:3, times = 73L) / 4
+if (!identical(sort(unique(quarterly$quantity)), sort(quantities)) ||
+    any(table(quarterly$quantity) != 292L) ||
+    !identical(as.integer(quarterly$year[quarterly$quantity == "depletion"]), rep(1952:2024, each = 4L)) ||
+    !identical(as.integer(quarterly$quarter[quarterly$quantity == "depletion"]), rep(1:4, times = 73L)) ||
+    !isTRUE(all.equal(quarterly$period[quarterly$quantity == "depletion"], expected_period)) ||
+    any(!is.finite(quarterly$estimate)) || any(quarterly$estimate < 0) ||
+    any(!is.finite(quarterly$lower_95)) || any(quarterly$lower_95 < 0) ||
+    any(!is.finite(quarterly$upper_95)) || any(quarterly$upper_95 < quarterly$lower_95) ||
+    any(quarterly$lower_95 > quarterly$lower_80) || any(quarterly$lower_80 > quarterly$lower_50) ||
+    any(quarterly$lower_50 > quarterly$estimate) || any(quarterly$estimate > quarterly$upper_50) ||
+    any(quarterly$upper_50 > quarterly$upper_80) || any(quarterly$upper_80 > quarterly$upper_95) ||
+    !all(quarterly$final_par_sha256 == expected_final_sha) ||
+    !all(quarterly$hessian_sha256 == expected_hessian_sha)) {
+  stop("The quarterly Hessian uncertainty table failed its source or range checks.", call. = FALSE)
+}
+quarterly <- quarterly[
+  order(match(quarterly$quantity, quantities), quarterly$year, quarterly$quarter),
+  , drop = FALSE
+]
+utils::write.csv(
+  quarterly,
+  file.path(table_dir, "quarterly-hessian-time-series.csv"),
+  row.names = FALSE
+)
 saveRDS(
   list(
-    time_series = annual,
+    annual_time_series = annual,
+    quarterly_time_series = quarterly,
     source = list(
       model = "Diagnostic model",
       final_par_sha256 = expected_final_sha,
       hessian_sha256 = expected_hessian_sha,
       hessian_parameters = 1997L,
-      interval = "nested pointwise 50%, 80% and 95% Hessian delta method"
+      interval = "nested pointwise 50%, 80% and 95% Hessian delta method",
+      temporal_resolution = c("annual", "quarterly")
     )
   ),
-  file.path(output_dir, "diagnostic-annual-uncertainty.rds"),
+  file.path(output_dir, "diagnostic-time-series-uncertainty.rds"),
   compress = "xz"
 )
 
@@ -208,7 +249,7 @@ status <- data.frame(
     "Diagnostic model", "21641", "22020", "22196",
     "60/60 partitions; PDH; HIGH reliability",
     "Available for all 1,997 active parameters on the native MFCL optimization scale",
-    "Annual depletion, spawning potential and recruitment with full within-year covariance"
+    "Annual and quarterly depletion, spawning potential and recruitment; annual series retain full within-year covariance"
   ),
   stringsAsFactors = FALSE
 )
@@ -286,6 +327,61 @@ ggplot2::ggsave(
   width = 13, height = 8.8, device = grDevices::cairo_pdf, bg = "white"
 )
 
+quarterly_panel <- function(quantity, y_label, colour, show_x = TRUE) {
+  data <- quarterly[quarterly$quantity == quantity, , drop = FALSE]
+  p <- ggplot2::ggplot(data, ggplot2::aes(period, estimate)) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(ymin = lower_95, ymax = upper_95),
+      fill = colour, alpha = 0.16, colour = NA
+    ) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(ymin = lower_80, ymax = upper_80),
+      fill = colour, alpha = 0.22, colour = NA
+    ) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(ymin = lower_50, ymax = upper_50),
+      fill = colour, alpha = 0.30, colour = NA
+    ) +
+    ggplot2::geom_line(colour = colour, linewidth = 0.62, lineend = "round") +
+    ggplot2::scale_x_continuous(
+      breaks = seq(1960, 2020, by = 20),
+      expand = ggplot2::expansion(mult = c(0.015, 0.015))
+    ) +
+    ggplot2::scale_y_continuous(
+      limits = c(0, NA),
+      expand = ggplot2::expansion(mult = c(0, 0.055))
+    ) +
+    ggplot2::labs(x = if (isTRUE(show_x)) "Year" else NULL, y = y_label) +
+    theme_paper()
+  if (!isTRUE(show_x)) {
+    p <- p + ggplot2::theme(axis.text.x = ggplot2::element_blank(), axis.ticks.x = ggplot2::element_blank())
+  }
+  p
+}
+
+q_depletion <- quarterly_panel(
+  "depletion", expression(italic(SB)(t) / italic(SB)(F == 0, t)), "#c75415", FALSE
+) +
+  ggplot2::geom_hline(
+    yintercept = c(0.2, 0.5), linetype = "dashed",
+    colour = c("#b42318", "#2f855a"), linewidth = 0.45
+  )
+q_spawning <- quarterly_panel(
+  "spawning_potential", expression("Spawning potential (" * 10^3 * " MT)"), "#087f8c", FALSE
+)
+q_recruitment <- quarterly_panel("recruitment", "Recruitment (millions)", "#6f42a1", TRUE)
+quarterly_combined <- (q_depletion | q_spawning) / q_recruitment +
+  patchwork::plot_layout(heights = c(1, 1.05))
+
+ggplot2::ggsave(
+  file.path(figure_dir, "hessian-quarterly-time-series.png"), quarterly_combined,
+  width = 13, height = 8.8, dpi = dpi, bg = "white"
+)
+ggplot2::ggsave(
+  file.path(figure_dir, "hessian-quarterly-time-series.pdf"), quarterly_combined,
+  width = 13, height = 8.8, device = grDevices::cairo_pdf, bg = "white"
+)
+
 plot_data <- uncertainty[
   is.finite(uncertainty$hessian_se_internal) & uncertainty$hessian_se_internal > 0,
   , drop = FALSE
@@ -316,7 +412,9 @@ fragment <- c(
   '<section class="section-card" id="hessian-uncertainty">',
   '<h2>Hessian uncertainty</h2>',
   '<figure><img src="figures/hessian-annual-time-series.png" alt="Annual Hessian uncertainty for the Diagnostic model"><figcaption><strong>Figure.</strong> Annual estimates (lines) and pointwise 50%, 80% and 95% Hessian delta-method intervals (shaded from darkest to lightest) for the Diagnostic model. Recruitment is summed over quarters, spawning potential is averaged over quarters, and depletion is the annual mean of the quarterly spawning-potential ratios. Annual uncertainty retains the full within-year covariance among quarterly estimates. Dashed lines in the depletion panel mark 0.2 and 0.5.</figcaption></figure>',
-  '<p><a href="figures/hessian-annual-time-series.pdf" download>Annual uncertainty figure (PDF)</a> · <a href="tables/annual-hessian-time-series.csv" download>Annual estimates and intervals (CSV)</a> · <a href="diagnostic-annual-uncertainty.rds" download>Annual uncertainty data (RDS)</a></p>',
+  '<p><a href="figures/hessian-annual-time-series.pdf" download>Annual uncertainty figure (PDF)</a> · <a href="tables/annual-hessian-time-series.csv" download>Annual estimates and intervals (CSV)</a></p>',
+  '<figure><img src="figures/hessian-quarterly-time-series.png" alt="Quarterly Hessian uncertainty for the Diagnostic model"><figcaption><strong>Figure.</strong> Quarterly estimates (lines) and pointwise 50%, 80% and 95% Hessian delta-method intervals (shaded from darkest to lightest) for the Diagnostic model. Dashed lines in the depletion panel mark 0.2 and 0.5.</figcaption></figure>',
+  '<p><a href="figures/hessian-quarterly-time-series.pdf" download>Quarterly uncertainty figure (PDF)</a> · <a href="tables/quarterly-hessian-time-series.csv" download>Quarterly estimates and intervals (CSV)</a> · <a href="diagnostic-time-series-uncertainty.rds" download>Annual and quarterly uncertainty data (RDS)</a></p>',
   '<h3>Hessian quality control</h3>',
   '<p>All 60 partitions were completed and the 1,997-parameter Hessian is positive definite. The condition number indicates substantial scaling differences among parameter blocks, so the intervals are local and model-conditional.</p>',
   '<figure><img src="figures/hessian-parameter-uncertainty.png" alt="Hessian parameter uncertainty by model component"><figcaption><strong>Figure.</strong> Native marginal Hessian standard errors by parameter family. The logarithmic axis retains the full range of parameter scales.</figcaption></figure>',
@@ -325,4 +423,4 @@ fragment <- c(
 )
 writeLines(fragment, file.path(output_dir, "hessian-report-fragment.html"), useBytes = TRUE)
 
-message("Wrote verified annual Hessian uncertainty summaries to ", output_dir)
+message("Wrote verified annual and quarterly Hessian uncertainty summaries to ", output_dir)

@@ -3,9 +3,12 @@
 options(stringsAsFactors = FALSE)
 
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) != 3L) {
+if (length(args) != 4L) {
   stop(
-    "Usage: generate_annual_uncertainty.R NATIVE_GRADIENT_DIR NATIVE_TIMESERIES_CSV OUTPUT_CSV",
+    paste(
+      "Usage: generate_annual_uncertainty.R NATIVE_GRADIENT_DIR",
+      "NATIVE_TIMESERIES_CSV ANNUAL_OUTPUT_CSV QUARTERLY_OUTPUT_CSV"
+    ),
     call. = FALSE
   )
 }
@@ -13,6 +16,7 @@ if (length(args) != 3L) {
 gradient_dir <- normalizePath(args[[1L]], mustWork = TRUE)
 time_series_file <- normalizePath(args[[2L]], mustWork = TRUE)
 output_file <- args[[3L]]
+quarterly_output_file <- args[[4L]]
 
 expected_sha <- c(
   "final.par" = "21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3",
@@ -130,6 +134,11 @@ annual_gradient <- rbind(
   adult_gradient,
   recruitment_gradient
 )
+quarterly_gradient <- rbind(
+  gradient[adult_rows, , drop = FALSE] - gradient_noeff[adult_noeff_rows, , drop = FALSE],
+  gradient[adult_rows, , drop = FALSE],
+  gradient[recruitment_rows, , drop = FALSE]
+)
 quantity <- rep(c("depletion", "spawning_potential", "recruitment"), each = 73L)
 year <- rep(1952:2024, times = 3L)
 
@@ -159,15 +168,18 @@ if (max(relative_error) > 5e-4) {
 }
 
 chol_hessian <- chol(hessian)
-solved <- backsolve(
-  chol_hessian,
-  forwardsolve(t(chol_hessian), t(annual_gradient))
-)
-variance_log <- rowSums(annual_gradient * t(solved))
-if (any(!is.finite(variance_log)) || any(variance_log < -1e-10)) {
-  stop("Invalid annual delta-method variance from the native Hessian.", call. = FALSE)
+delta_se <- function(value) {
+  solved <- backsolve(
+    chol_hessian,
+    forwardsolve(t(chol_hessian), t(value))
+  )
+  variance_log <- rowSums(value * t(solved))
+  if (any(!is.finite(variance_log)) || any(variance_log < -1e-10)) {
+    stop("Invalid delta-method variance from the native Hessian.", call. = FALSE)
+  }
+  sqrt(pmax(variance_log, 0))
 }
-se_log <- sqrt(pmax(variance_log, 0))
+se_log <- delta_se(annual_gradient)
 
 result <- data.frame(
   year = year,
@@ -192,5 +204,39 @@ result <- data.frame(
 )
 
 dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE)
+dir.create(dirname(quarterly_output_file), recursive = TRUE, showWarnings = FALSE)
 utils::write.csv(result, output_file, row.names = FALSE)
+
+quarterly_estimate <- c(
+  adult_quarter / adult_noeff_quarter,
+  adult_quarter / 1e6,
+  recruitment_quarter / 1e6
+)
+quarterly_se_log <- delta_se(quarterly_gradient)
+quarterly_result <- data.frame(
+  year = rep(rep(1952:2024, each = 4L), times = 3L),
+  quarter = rep(rep(seq_len(4L), times = 73L), times = 3L),
+  period = rep(rep(1952:2024, each = 4L) + rep(0:3, times = 73L) / 4, times = 3L),
+  quantity = rep(c("depletion", "spawning_potential", "recruitment"), each = 292L),
+  estimate = quarterly_estimate,
+  se_log = quarterly_se_log,
+  lower_50 = quarterly_estimate * exp(-stats::qnorm(0.75) * quarterly_se_log),
+  upper_50 = quarterly_estimate * exp(stats::qnorm(0.75) * quarterly_se_log),
+  lower_80 = quarterly_estimate * exp(-stats::qnorm(0.90) * quarterly_se_log),
+  upper_80 = quarterly_estimate * exp(stats::qnorm(0.90) * quarterly_se_log),
+  lower_95 = quarterly_estimate * exp(-stats::qnorm(0.975) * quarterly_se_log),
+  upper_95 = quarterly_estimate * exp(stats::qnorm(0.975) * quarterly_se_log),
+  final_par_sha256 = unname(expected_sha[["final.par"]]),
+  hessian_sha256 = unname(expected_sha[["bet.hes"]]),
+  gradient_sha256 = unname(expected_sha[["bet.dep"]]),
+  noeff_gradient_sha256 = unname(expected_sha[["bet.dp2"]]),
+  method = "native MFCL quarterly dependent-variable gradients; log-scale delta method",
+  stringsAsFactors = FALSE
+)
+
+utils::write.csv(quarterly_result, quarterly_output_file, row.names = FALSE)
 message("Wrote ", nrow(result), " verified annual native-MFCL estimates to ", output_file)
+message(
+  "Wrote ", nrow(quarterly_result),
+  " verified quarterly native-MFCL estimates to ", quarterly_output_file
+)

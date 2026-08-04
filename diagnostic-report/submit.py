@@ -108,7 +108,7 @@ def main() -> int:
     title = "BET 2026 Diagnostic model report | Annual Hessian uncertainty"
     description = (
         f"Verified paper-ready report from Diagnostic model Job #{source_number}: h=0.90 and tau=2 fixed; "
-        "annual covariance-aware native-MFCL Hessian intervals for depletion, spawning potential and recruitment; "
+        "annual and quarterly native-MFCL Hessian intervals for depletion, spawning potential and recruitment; "
         "complete model diagnostics and report-ready downloads."
     )
     payload = {
@@ -164,7 +164,7 @@ def main() -> int:
 
     task_payload = {
             "name": "BET 2026 Diagnostic report",
-            "description": "Paper-ready Diagnostic model report with covariance-aware annual native-MFCL Hessian uncertainty for depletion, spawning potential and recruitment.",
+            "description": "Paper-ready Diagnostic model report with annual and quarterly native-MFCL Hessian uncertainty for depletion, spawning potential and recruitment.",
             "repo": REPO,
             "branch": args.branch,
             "make_target": "all",

@@ -17,6 +17,8 @@
   records.
 - `uncertainty/annual-hessian-time-series.csv`: annual native-MFCL estimates
   with nested 50%, 80% and 95% Hessian delta-method intervals.
+- `uncertainty/quarterly-hessian-time-series.csv`: matching quarterly estimates
+  and intervals before annual aggregation.
 
 The original compact Kflow attachment did not contain the large native
 `bet.hes`; Job 22196 restored it from all 60 verified partitions for report

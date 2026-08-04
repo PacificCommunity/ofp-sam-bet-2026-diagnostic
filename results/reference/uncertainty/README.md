@@ -1,9 +1,10 @@
 # Annual Hessian uncertainty
 
-`annual-hessian-time-series.csv` contains the verified annual point estimates
-and nested pointwise 50%, 80% and 95% Hessian delta-method intervals used by
-the Diagnostic model report. It covers depletion, spawning potential and
-recruitment for 1952--2024.
+`annual-hessian-time-series.csv` and `quarterly-hessian-time-series.csv`
+contain the verified annual and quarterly point estimates and nested pointwise
+50%, 80% and 95% Hessian delta-method intervals used by the Diagnostic model
+report. They cover depletion, spawning potential and recruitment for
+1952--2024.
 
 The table was calculated from the Job 21641 final fit and the full native MFCL
 Hessian restored by Job 22196. Native MFCL dependent-variable gradients were
@@ -19,7 +20,8 @@ The source hashes are recorded on every row. Regenerate the table with:
 Rscript diagnostic-report/R/generate_annual_uncertainty.R \
   /path/to/native-gradient-files \
   /path/to/native-timeseries.csv \
-  results/reference/uncertainty/annual-hessian-time-series.csv
+  results/reference/uncertainty/annual-hessian-time-series.csv \
+  results/reference/uncertainty/quarterly-hessian-time-series.csv
 ```
 
 The gradient directory must contain `final.par`, `bet.hes`, `bet.dep`,
