@@ -1,5 +1,5 @@
-name: ofp-sam-bet-2026-tau2-steepness-selectivity-grid
-description: Fit one of 27 BET 2026 fixed-steepness and selectivity models with tag tau fixed at 2, ordinary makepar initialization, tuna-flow v2.5 and pinned mfclkit/mfclshiny revisions; archive a portable MFCL Shiny payload and expose a task-level launcher that can also build the payload from completed raw outputs.
+name: ofp-sam-bet-2026-diagnostic
+description: BET 2026 Diagnostic model matching Job 21641: fixed steepness 0.90, F10 and F33 weak non-decreasing selectivity, tag tau fixed at 2, ordinary makepar initialization, and portable MFCL Shiny payload outputs.
 command: bash run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
 remote_host: suva
@@ -13,16 +13,16 @@ resources:
 exclude_machines: []
 exclude_slots: []
 env:
-  JOB_TITLE: S0.80-F1 | Diagnostic selectivity | tau=2 fixed
-  JOB_DESCRIPTION: Fixed steepness 0.80; F1 Diagnostic selectivity with F10 weak non-decreasing penalty 10000; direct negative-binomial tau=2 fixed; ordinary makepar initialization with no seed or checkpoint.
-  MODEL_LABEL: S0.80-F1 | tau=2 fixed
-  JOB_KEY: s080-f1-tau2-fixed
+  JOB_TITLE: BET 2026 Diagnostic model | Job 21641 basis | S0.90-F2 | h=0.90 fixed | tau=2 fixed
+  JOB_DESCRIPTION: Job 21641 Diagnostic model basis; fixed steepness 0.90; F10 and F33 weak non-decreasing selectivity (F2); direct negative-binomial tau=2 fixed; ordinary makepar initialization with no seed or checkpoint.
+  MODEL_LABEL: Diagnostic model | S0.90-F2 | h=0.90 fixed | tau=2 fixed
+  JOB_KEY: diagnostic-s090-f2-tau2-fixed
   FLOW_GROUP: bet-2026-tau2-steepness-selectivity-grid
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
   PROGRAM_PATH: /home/mfcl/mfclo64
-  MODEL_ID: S0.80-F1
+  MODEL_ID: S0.90-F2
   BET_PHASE10_11_CONVERGENCE: "-4"
   KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
   KFLOW_RUNTIME_UPDATE: auto
@@ -205,9 +205,9 @@ metadata:
   parest_305: "1"
   fish_pars_4: "0"
   fish_flag_43: "0"
-  model_id: S0.80-F1
+  model_id: S0.90-F2
   steepness: "0.80"
   selectivity_model: F1
   mfclkit_ref: cf786007b5261f84faac8f3d24f7084bd323119d
   mfclshiny_ref: 542ac93b7ce0b6d0df70301891e668701d439857
-  model_label: S0.80-F1 | tau=2 fixed
+  model_label: Diagnostic model | S0.90-F2 | h=0.90 fixed | tau=2 fixed
