@@ -25,6 +25,14 @@ jobs:
           grep -F -- '-999 43 0' model/doitall.sh
           grep -F -- '-999 44 0' model/doitall.sh
           test "$(grep -c '^audit_tau2_fixed [0-9][0-9]\.par' model/doitall.sh)" -eq 11
+      - name: Set up R for payload validation
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.4'
+      - name: Install mfclshiny payload builder
+        run: |
+          Rscript -e 'install.packages("remotes", repos="https://cloud.r-project.org")'
+          Rscript -e 'remotes::install_github("PacificCommunity/mfclshiny@diagnostic-caption-polish-latest", dependencies=TRUE, upgrade="never")'
       - name: Evaluate the reference final PAR
         run: ./run-final
       - name: Confirm the reference objective
