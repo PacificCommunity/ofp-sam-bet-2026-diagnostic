@@ -44,7 +44,12 @@ else
   exit 2
 fi
 
-if command -v Rscript >/dev/null 2>&1; then
+if [[ ${BUILD_PAYLOAD:-1} == 0 ]]; then
+  cp "$repo_root/results/reference/model_payload.rds" "$run_dir/model_payload.rds"
+  cp "$repo_root/results/reference/model_payload_manifest.json" "$run_dir/model_payload_manifest.json"
+  cp "$repo_root/results/reference/model_payload_manifest.csv" "$run_dir/model_payload_manifest.csv"
+  echo "Using the verified archived Diagnostic model payload for validation."
+elif command -v Rscript >/dev/null 2>&1; then
   Rscript "$repo_root/scripts/build-model-payload" "$run_dir"
 elif [[ -s "$run_dir/model_payload.rds" ]]; then
   echo "Rscript is unavailable; retaining the verified archived model_payload.rds."
