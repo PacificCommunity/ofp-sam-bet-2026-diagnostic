@@ -49,13 +49,17 @@ for (name in c("model_payload_manifest.csv", "model_payload_manifest.json")) {
 }
 hessian_source <- file.path(source_model_dir, "hessian")
 if (!dir.exists(hessian_source)) stop("Job 21641 Hessian attachment is required.", call. = FALSE)
+if (!file.exists(file.path(hessian_source, "bet.hes"))) {
+  stop("The full native bet.hes matrix is required; use the verified Job 22196 restoration.", call. = FALSE)
+}
 if (!file.copy(hessian_source, restored_dir, recursive = TRUE, overwrite = TRUE)) {
   stop("Could not stage the Job 21641 Hessian attachment.", call. = FALSE)
 }
 
 Sys.setenv(
   DIAGNOSTIC_MODEL_DIR = restored_dir,
-  DIAGNOSTIC_REPORT_OUTPUT_DIR = output_dir
+  DIAGNOSTIC_REPORT_OUTPUT_DIR = output_dir,
+  DIAGNOSTIC_REPORT_REFERENCE_DIR = file.path(repo_root, "results", "reference", "uncertainty")
 )
 source(file.path(repo_root, "diagnostic-report", "R", "build_uncertainty.R"), local = new.env(parent = globalenv()))
 
@@ -89,12 +93,13 @@ if (file.exists(fragment_file) && file.exists(result$html)) {
 provenance <- data.frame(
   item = c(
     "Model", "Source Kflow job", "Final PAR SHA-256", "Steepness",
-    "Tag tau", "Selectivity", "Hessian source job", "mfclkit ref", "mfclshiny ref"
+    "Tag tau", "Selectivity", "Hessian calculation", "Raw Hessian restoration",
+    "mfclkit ref", "mfclshiny ref"
   ),
   value = c(
     "Diagnostic", "21641", expected_final_sha, "0.90 fixed", "2 fixed",
     "33 independent groups; F10 and F33 weak non-decreasing penalties 10000",
-    "22020", Sys.getenv("MFCLKIT_GITHUB_REF", ""), Sys.getenv("MFCLSHINY_GITHUB_REF", "")
+    "22020", "22196", Sys.getenv("MFCLKIT_GITHUB_REF", ""), Sys.getenv("MFCLSHINY_GITHUB_REF", "")
   ),
   stringsAsFactors = FALSE
 )

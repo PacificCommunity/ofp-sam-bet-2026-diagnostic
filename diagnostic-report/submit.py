@@ -11,7 +11,7 @@ import urllib.error
 import urllib.request
 
 
-TASK = "ofp-sam-bet-2026-diagnostic-model-report"
+TASK = "ofp-sam-bet-2026-diagnostic-report"
 REPO = "PacificCommunity/ofp-sam-bet-2026-diagnostic"
 IMAGE = (
     "ghcr.io/pacificcommunity/tuna-flow:v2.5@"
@@ -53,6 +53,11 @@ def job_number(job: dict) -> int | None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("model_job")
+    parser.add_argument(
+        "--hessian-job",
+        default="22196",
+        help="Completed raw-Hessian restoration job containing the verified model payload.",
+    )
     parser.add_argument("--branch", default="main")
     parser.add_argument("--dpi", type=int, default=400)
     parser.add_argument("--dry-run", action="store_true")
@@ -72,6 +77,22 @@ def main() -> int:
     source_id = str(model.get("id") or "")
     if source_number is None or not source_id:
         raise RuntimeError("The source job is missing its Kflow number or internal id.")
+    if source_number != 21641:
+        raise RuntimeError("This report is checksum-locked to Diagnostic model Job #21641.")
+
+    hessian_response = api.request("GET", f"/api/job/{args.hessian_job.lstrip('#')}")
+    hessian = hessian_response.get("job", hessian_response)
+    hessian_status = str(hessian.get("status") or "").lower()
+    if hessian_status not in {"completed", "success"}:
+        raise RuntimeError(
+            f"Raw-Hessian job #{args.hessian_job} is {hessian_status or 'unknown'}, not completed."
+        )
+    hessian_number = job_number(hessian)
+    hessian_id = str(hessian.get("id") or "")
+    if hessian_number is None or not hessian_id:
+        raise RuntimeError("The raw-Hessian job is missing its Kflow number or internal id.")
+    if hessian_number != 22196:
+        raise RuntimeError("This report is checksum-locked to raw-Hessian restoration Job #22196.")
 
     provenance = {
         "model_job": source_number,
@@ -80,12 +101,15 @@ def main() -> int:
         "model_repo": model.get("repo", ""),
         "model_branch": model.get("branch", ""),
         "model_commit": model.get("commit_hash", model.get("source_version", "")),
+        "hessian_calculation_job": 22020,
+        "raw_hessian_restore_job": hessian_number,
+        "raw_hessian_restore_job_id": hessian_id,
     }
-    title = f"BET 2026 Diagnostic model | Job #{source_number} report"
+    title = "BET 2026 Diagnostic model report | Annual Hessian uncertainty"
     description = (
         f"Verified paper-ready report from Diagnostic model Job #{source_number}: h=0.90 and tau=2 fixed; "
-        "model and convergence summary, annual/recent stock status, data fits, fishery impact, selectivity, "
-        "movement, biology, tagging, Job 22020 Hessian QC and parameter uncertainty, plus report downloads."
+        "annual covariance-aware native-MFCL Hessian intervals for depletion, spawning potential and recruitment; "
+        "complete model diagnostics and report-ready downloads."
     )
     payload = {
         "repo": REPO,
@@ -95,11 +119,11 @@ def main() -> int:
         "remote_user": "kyuhank",
         "remote_host": "suva",
         "remote_base_dir": "/home/kyuhank/KflowOutput",
-        "input_jobs": [source_id],
+        "input_jobs": [hessian_id],
         "output_patterns": ["diagnostic-report-output/**"],
         "cpus": 4,
-        "memory": "16GB",
-        "disk": "30GB",
+        "memory": "24GB",
+        "disk": "40GB",
         "env": {
             "JOB_TITLE": title,
             "JOB_DESCRIPTION": description,
@@ -121,10 +145,14 @@ def main() -> int:
             "species": "BET",
             "assessment_year": "2026",
             "source_model_job": str(source_number),
+            "source_hessian_job": "22020",
+            "raw_hessian_restore_job": str(hessian_number),
         },
         "metadata": {
             "input_jobs_override": True,
             "source_model_job": provenance,
+            "source_hessian_job": 22020,
+            "raw_hessian_restore_job": hessian_number,
             "job_title": title,
             "job_description": description,
             "source_model_policy": "staged-job-only",
@@ -135,8 +163,8 @@ def main() -> int:
         return 0
 
     task_payload = {
-            "name": "BET 2026 Diagnostic model report",
-            "description": "Paper-ready report generated from the checksum-verified Job 21641 BET Diagnostic payload and attached Hessian diagnostics.",
+            "name": "BET 2026 Diagnostic report",
+            "description": "Paper-ready Diagnostic model report with covariance-aware annual native-MFCL Hessian uncertainty for depletion, spawning potential and recruitment.",
             "repo": REPO,
             "branch": args.branch,
             "make_target": "all",
@@ -146,8 +174,8 @@ def main() -> int:
             "remote_host": "suva",
             "remote_base_dir": "/home/kyuhank/KflowOutput",
             "cpus": 4,
-            "memory": "16GB",
-            "disk": "30GB",
+            "memory": "24GB",
+            "disk": "40GB",
             "slot_requirements": 'regexp("^suvofp", Machine)',
             "output_patterns": ["diagnostic-report-output/**"],
             "tags": {"stage": "diagnostic-model-report", "species": "BET", "assessment_year": "2026"},
@@ -160,7 +188,10 @@ def main() -> int:
             raise
     response = api.request("POST", f"/api/job/{TASK}", payload)
     job = response.get("job", response)
-    print(f"Submitted report Job #{job_number(job)} from Diagnostic model Job #{source_number} ({job.get('status')}).")
+    print(
+        f"Submitted report Job #{job_number(job)} from Diagnostic model Job #{source_number} "
+        f"and raw-Hessian Job #{hessian_number} ({job.get('status')})."
+    )
     return 0
 
 

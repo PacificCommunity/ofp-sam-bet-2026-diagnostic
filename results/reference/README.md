@@ -15,8 +15,10 @@
 - `hessian/check-unit-status.csv`: status of every partition.
 - `hessian/neigenvalues` and `hessian/mfcl_*_log.txt`: native eigen and stitch
   records.
+- `uncertainty/annual-hessian-time-series.csv`: annual native-MFCL estimates
+  with nested 50%, 80% and 95% Hessian delta-method intervals.
 
-The compact Kflow attachment does not contain the large native `bet.hes` or a
-derived `bet.var`; this repository does not substitute the preceding tau=1
-files. `../../restore-hessian` restores the matching diagnostic metadata and
-payload only. Use `../../verify` to validate every committed checksum.
+The original compact Kflow attachment did not contain the large native
+`bet.hes`; Job 22196 restored it from all 60 verified partitions for report
+rendering. This repository does not substitute files from the preceding tau=1
+model. Use `../../verify` to validate every committed checksum.

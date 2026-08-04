@@ -1,5 +1,5 @@
-name: ofp-sam-bet-2026-diagnostic-model-report
-description: Build a concise paper-ready BET 2026 report from the verified Job 21641 Diagnostic payload, including 400-DPI PNG/PDF figures, CSV/LaTeX tables, an offline viewer and 60-partition Hessian uncertainty diagnostics.
+name: ofp-sam-bet-2026-diagnostic-report
+description: Build the paper-ready BET 2026 Diagnostic model report, including annual covariance-aware Hessian intervals for depletion, spawning potential and recruitment, 400-DPI PNG/PDF figures, tables and an offline viewer.
 command: bash diagnostic-report/run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
 remote_host: suva
@@ -8,11 +8,11 @@ remote_base_dir: /home/kyuhank/KflowOutput
 slot_requirements: 'regexp("^suvofp", Machine)'
 resources:
   cpus: 4
-  memory: 16GB
-  disk: 30GB
+  memory: 24GB
+  disk: 40GB
 env:
-  JOB_TITLE: BET 2026 Diagnostic model | Job 21641 report
-  JOB_DESCRIPTION: Verified Job 21641 Diagnostic report; h=0.90 and tau=2 fixed; complete model, data-fit, stock-status, fishery, biological and tagging figures; Job 22020 Hessian QC and parameter uncertainty; report-ready downloads.
+  JOB_TITLE: BET 2026 Diagnostic model report | Annual Hessian uncertainty
+  JOB_DESCRIPTION: Verified Diagnostic model report from Job 21641; h=0.90 and tau=2 fixed; annual covariance-aware native-MFCL Hessian intervals for depletion, spawning potential and recruitment; report-ready figures, tables and downloads.
   MODEL_JOB: "21641"
   REPORT_OUTPUT_DIR: diagnostic-report-output
   DIAGNOSTIC_REPORT_DPI: "400"
@@ -35,6 +35,7 @@ metadata:
   source_model_count: 1
   source_model_job: 21641
   source_hessian_job: 22020
+  raw_hessian_restore_job: 22196
   expected_final_par_sha256: 21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3
   report_style: paper-ready
   source_model_policy: staged-job-only

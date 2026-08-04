@@ -18,15 +18,24 @@ bash diagnostic-report/run.sh
 ```
 
 The model directory must contain `model_payload.rds`; the payload must restore
-the exact Job 21641 final PAR checksum. The matching Job 22020 Hessian
-attachment is required and is checked before the report is rendered.
+the exact Job 21641 final PAR checksum. The matching Job 22020 Hessian,
+restored with its full native matrix by Job 22196, is required. Both
+`final.par` and `bet.hes` are checksum-verified before rendering.
 
 Outputs include a self-contained paper-ready HTML report, 400-dpi PNG and
 vector PDF figures, CSV and LaTeX tables, figure/table indexes and an offline
 interactive viewer. Report tables and figures include Word and LaTeX copy
 controls.
 
-The compact Hessian attachment contains PDH/eigen diagnostics and marginal
-standard errors for all 1,997 active parameters, but not a matching native
-`bet.var`. The report therefore presents real parameter uncertainty and does
-not invent confidence ribbons for derived biomass, depletion or recruitment.
+The Hessian figure includes annual depletion, spawning potential and
+recruitment with nested pointwise 50%, 80% and 95% delta-method intervals.
+Quarterly recruitment is
+summed, spawning potential is averaged, and depletion is the annual mean of
+the quarterly spawning-potential ratios. These transformations use the native
+MFCL dependent-variable gradients and retain the full within-year covariance
+rather than adding quarterly standard errors or confidence limits.
+
+The verified reference table can be regenerated from the native `bet.dep`,
+`bet.dp2`, label files and `bet.hes` with
+`diagnostic-report/R/generate_annual_uncertainty.R`. Its checksum locks prevent
+mixing gradients or a Hessian from another fit.
