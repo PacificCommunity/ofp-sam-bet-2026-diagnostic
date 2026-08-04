@@ -1,25 +1,25 @@
 # BET 2026 Diagnostic model report
 
-The report is built from Job 21641 or a model payload with the same final PAR.
+The report is built from the Diagnostic model payload with the committed final PAR.
 It never falls back to the earlier tau=1 Diagnostic result.
 
 Submit the report from the completed Diagnostic job:
 
 ```sh
-KFLOW_API_TOKEN=... python3 diagnostic-report/submit.py 21641
+KFLOW_API_TOKEN=... python3 diagnostic-report/submit.py MODEL_JOB
 ```
 
 For a local build:
 
 ```sh
-DIAGNOSTIC_MODEL_DIR=/path/to/Job21641/model \
+DIAGNOSTIC_MODEL_DIR=/path/to/model \
 MFCLSHINY_REPO=/path/to/mfclshiny \
 bash diagnostic-report/run.sh
 ```
 
 The model directory must contain `model_payload.rds`; the payload must restore
-the exact Job 21641 final PAR checksum. The matching Job 22020 Hessian,
-restored with its full native matrix by Job 22196, is required. Both
+the committed final PAR checksum. The matching native Hessian matrix is
+required. Both
 `final.par` and `bet.hes` are checksum-verified before rendering.
 
 Outputs include a self-contained paper-ready HTML report, 400-dpi PNG and

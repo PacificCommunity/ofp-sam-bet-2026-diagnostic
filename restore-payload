@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+output_dir=${1:-restored-payload}
+exec Rscript -e '
+  args <- commandArgs(trailingOnly = TRUE)
+  mfclshiny::restore_model_payload_files(args[[1]], output_dir = args[[2]], overwrite = TRUE)
+' results/reference/model_payload.rds "$output_dir"

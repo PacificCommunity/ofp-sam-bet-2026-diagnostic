@@ -1,9 +1,8 @@
-# Job 21641 reference result
+# Diagnostic model reference result
 
-- `final.par`: exact fitted PAR from Kflow Job 21641.
+- `final.par`: exact fitted PAR for the Diagnostic model.
 - `fit-summary.csv`: objective, gradient, terminal depletion and provenance.
-- `model_payload.rds`: current mfclshiny payload rebuilt from Job 21641 raw
-  output after the Job 22020 Hessian attachment.
+- `model_payload.rds`: compact MFCL Shiny payload for the Diagnostic model.
 - `model_payload_manifest.csv` and `.json`: payload contents, fit statistics
   and Hessian status.
 - `payload-restore-audit.csv`: checksum proof for the PAR restored from the
@@ -20,7 +19,6 @@
 - `uncertainty/quarterly-hessian-time-series.csv`: matching quarterly estimates
   and intervals before annual aggregation.
 
-The original compact Kflow attachment did not contain the large native
-`bet.hes`; Job 22196 restored it from all 60 verified partitions for report
-rendering. This repository does not substitute files from the preceding tau=1
-model. Use `../../verify` to validate every committed checksum.
+The native `bet.hes` and all 60 verified Hessian partitions are retained for
+report rendering. This repository does not substitute files from the preceding
+tau=1 model. Use `../../verify` to validate every committed checksum.

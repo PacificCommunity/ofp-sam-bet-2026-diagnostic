@@ -1,9 +1,8 @@
 # BET 2026 Diagnostic model
 
-This repository reproduces Kflow Job 21641, the BET 2026 Diagnostic model used
-as the basis of the tau=2 structural ensemble. The earlier Diagnostic `main`
-is preserved without modification on branch
-[`tau=1`](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/tree/tau%3D1).
+This repository contains the BET 2026 Diagnostic model used as the basis of
+the tau=2 structural ensemble. The earlier tau=1 configuration is preserved on
+the `tau=1` branch.
 
 ## Fixed model definition
 
@@ -30,16 +29,22 @@ On 64-bit Linux:
 ./doitall
 ```
 
-`./doitall` runs the `Diagnostic` model matching Job 21641. The legacy tau=1 workflow is retained on its separate branch.
-with:
+`./doitall` fits the Diagnostic model from the committed inputs. To evaluate
+the committed fitted result directly:
 
 ```sh
 ./run-final
 ```
 
+To restore the compact MFCL Shiny payload without running MFCL:
+
+```sh
+./restore-payload
+```
+
 ## Reference result
 
-| Item | Job 21641 value |
+| Item | Value |
 |---|---:|
 | Objective | 90,814.8573966593 |
 | Maximum gradient | 9.6794115e-05 |
@@ -56,14 +61,11 @@ directly in MFCL Shiny.
 ## Diagnostic report
 
 The branch includes one Kflow task using the same `model/doitall.sh` recipe as
-the standalone run. The main workflow uses the explicit `Diagnostic` input
-matching Job 21641. Jobs use the pinned `tuna-flow:v2.5` image and install
-the latest-at-submission `mfclkit` (`cf786007`) and `mfclshiny` (`542ac93b`)
-revisions before fitting. The original 24 definitions remain unchanged; the
-three `F5` jobs add the independent F10+F33-logistic comparison.
+the standalone run. It uses the explicit `Diagnostic` input, pinned
+`tuna-flow:v2.5` image, and recorded package revisions before fitting.
 
 ```sh
-DIAGNOSTIC_MODEL_DIR=/path/to/Job21641/model bash diagnostic-report/run.sh
+DIAGNOSTIC_MODEL_DIR=/path/to/model bash diagnostic-report/run.sh
 ```
 
 The report refuses a mismatched final PAR. It produces publication-resolution
@@ -73,8 +75,6 @@ self-contained HTML report and an offline viewer. See
 
 ## Provenance
 
-- Source Kflow model: Job 21641
-- Source repository commit: `3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6`
 - Runtime: Tuna Flow 2.5, pinned by image digest in `kflow.yaml`
 - MFCL executable SHA-256: `8995f72019869863c1d1c0b4f44fc6a6268d1f79031f5bc79dc354ee10f0a63e`
 
