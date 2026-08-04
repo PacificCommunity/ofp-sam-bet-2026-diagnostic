@@ -1,10 +1,10 @@
 # Frozen Job 21641 model files
 
 This directory is the complete input recipe for the BET 2026 **tau=2 fixed-
-steepness and selectivity grid**. Do not run it in place. Use `../doitall`,
-which copies these files to a fresh run directory and starts from ordinary
-`bet.ini -makepar` initialization. `MODEL_ID` selects one of the 27 files in
-`model-inputs/`; the default and only main-workflow model is `Diagnostic`, matching Job 21641
+steepness and selectivity Diagnostic model**. Do not run it in place. Use
+`../doitall`, which copies these files to a fresh run directory and starts
+from ordinary `bet.ini -makepar` initialization. The main workflow uses the
+single explicit `Diagnostic` input matching Job 21641
 (steepness 0.90 with the F10 and F33 weak non-decreasing selectivity setting).
 
 The committed `bet.ini` is the effective Job 21641 INI and contains
