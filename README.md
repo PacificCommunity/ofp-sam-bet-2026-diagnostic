@@ -1,145 +1,77 @@
-# BET 2026 Diagnostic model
+# BET 2026 Diagnostic model — tau=2 exploration
 
-Public, standalone reconstruction of the BET 2026 diagnostic model. This one
-repository contains the frozen inputs, deterministic seed-23 initialization,
-fitted `final.par`, compact R payload, completed Hessian and exact Linux MFCL
-executable.
+This branch fits 27 controlled BET 2026 models: three fixed steepness values
+(`0.80`, `0.85`, `0.90`) crossed with nine selectivity settings (`F1`-`F5`,
+`P1`-`P4`). Tag negative-binomial overdispersion is fixed at `tau=2` in every
+model.
 
-## Download the pre-generated outputs
+All models share two fitting differences from the original Diagnostic run:
 
-The [latest GitHub Release](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/releases/latest)
-contains two ready-to-use ZIP files. The complete archive retains the repository
-and its pre-generated `final-run/` outputs. The simpler standalone archive puts
-`mfclo64`, `final.par`, every model input, and all run scripts in one directory.
-In that directory, `./run-final` evaluates the fitted PAR, `./doitall.sh` fits
-from the ordinary `bet.ini -makepar` initialization, and `./doitall-seed23.sh`
-reproduces the seed-23 diagnostic initialization.
+- direct tau parameterization with `tau=2` fixed;
+- ordinary `bet.ini -makepar` initialization, with no jitter or seed-23
+  checkpoint.
 
-## Quick start
+The only differences among the 27 models are fixed steepness and the documented
+selectivity flags. All other inputs, phases and controls are common. See
+[SELECTIVITY_MODELS.md](SELECTIVITY_MODELS.md) for the exact definitions and
+[JOB19835_COMPARISON.md](JOB19835_COMPARISON.md) for the archived-input and
+control audit.
 
-On 64-bit Linux, no installation or Docker is needed:
+## Run
 
-```sh
-./run-final
-./doitall-seed23.sh
-```
-
-`run-final` evaluates the included fitted PAR in a few minutes.
-`doitall-seed23.sh` reproduces the complete diagnostic-model fit and can take
-several hours.
-
-On Windows or macOS, install
-[Docker Desktop](https://www.docker.com/products/docker-desktop/) and run:
-
-```powershell
-.\run-final.ps1
-.\doitall.ps1
-```
-
-The shell runners automatically use Docker on non-Linux systems. Linux users
-can force the pinned container with `USE_DOCKER=1 ./doitall-seed23.sh`. Results go to
-`run/` or `final-run/`; frozen repository files are never modified. Select a
-fresh directory with, for example,
-`RUN_DIR=run-2 ./doitall-seed23.sh`.
-
-Keep the extracted directory structure intact and use the bundled executable.
-The final PAR cannot be evaluated by passing only `final.par` to an arbitrary
-MFCL executable: the matching model inputs, executable version and command-line
-switches are also required. WSL2 on an x86-64 Windows computer is supported;
-run the commands from its Linux shell after restoring executable permissions.
-
-## Run the complete fit
-
-The bundled `mfclo64` is a statically linked Linux x86-64 executable. The
-complete fit starts from the frozen input files and reconstructs the selected
-seed-23 initialization path:
+On 64-bit Linux:
 
 ```sh
-./doitall-seed23.sh
+chmod +x mfclo64 doitall verify scripts/* model/doitall.sh
+./doitall
 ```
 
-## Run the fitted final PAR
-
-To evaluate the included reference fit without refitting:
+`./doitall` runs `S0.80-F1`. Select another model and a fresh output directory
+with:
 
 ```sh
-./run-final
+MODEL_ID=S0.85-P2 RUN_DIR=run-S0.85-P2 ./doitall
 ```
 
-or, in Windows PowerShell:
+The run is written to `run/`; the final fitted parameter file is
+`run/final.par`. Select another empty output directory with, for example,
+`RUN_DIR=run-2 ./doitall`.
 
-```powershell
-.\run-final.ps1
-```
+On Windows or macOS, install Docker Desktop and run `./doitall` from a Linux
+shell, or use `doitall.ps1`. The pinned runtime is
+`ghcr.io/pacificcommunity/tuna-flow:v2.5`.
 
-This performs a zero-iteration MFCL evaluation and regenerates the standard
-fitted-model outputs, including `evaluated.par`, `ests.rep`,
-`plot-evaluated.par.rep`, `catch.rep`, `tag.rep`, CPUE, selectivity,
-fishing-mortality and residual files. It then restores the completed full
-Hessian and compact R payload into `final-run/`; the Hessian is not recomputed.
+## Fixed-tau implementation
 
-To attach the archived Hessian to another copy of this exact reference fit:
+The run uses:
 
-```sh
-./restore-hessian path/to/fitted-model
-```
-
-PowerShell users can use `.\restore-hessian.ps1 path\to\fitted-model`. The
-command verifies the `final.par` SHA-256 and refuses a mismatched model, because
-a Hessian cannot be transferred safely to different fitted parameters.
-
-## Reference fit
-
-| Item | Reference value |
+| Control | Value |
 |---|---:|
-| Objective | 89054.3397838085 |
-| Maximum gradient | 9.2968286e-05 |
-| 2024 depletion | 0.3287955046 |
-| Final PAR SHA-256 | `6a7a4489ec40fa8223c9c3aac831a46c4eaa810654a35af0a537cf6b04fb2eed` |
-| Hessian | PDH; 1,997/1,997 positive eigenvalues |
-| Smallest eigenvalue | 1.62641e-07 |
+| parest flag 111 | 4 |
+| parest flag 305 | 1 |
+| parest flag 306 | 0 |
+| fish flags 43/44 | 0/0 |
+| `fish_pars(4)` | 0 for all fisheries |
 
-The fitted files are in [`results/reference/`](results/reference/README.md).
-
-## Diagnostic report
-
-Build the paper-ready Diagnostic model report and offline viewer with:
-
-```sh
-bash diagnostic-report/run.sh
-```
-
-The self-contained HTML, publication-resolution figures, CSV tables and compact
-Hessian uncertainty RDS are written to `diagnostic-report-output/`. The report
-includes stock status, model fit, length and conditional age-at-length fits,
-tagging, regional dynamics, biological assumptions and native MFCL
-delta-method intervals. See [`diagnostic-report/`](diagnostic-report/README.md)
-for standalone and Kflow settings.
-
-> **Seed 23 note.** Seed 23 was the best-objective converged jitter selected for
-> this diagnostic model; it was not the lowest-depletion run. The complete fit
-> applies CV=0.1 perturbations only when parameter groups first become active:
-> seed 23 at Phase 1, derived seed 2410802 for eight new parameters at Phase 2,
-> and derived seed 2413829 for 25 new parameters at Phase 5. Phases 3, 4 and
-> 6–11 only carry the preceding PAR forward; they do not jitter it again. The
-> archived checkpoints are hash-verified before use.
-
-## Exact runtime
-
-- Docker image: `ghcr.io/pacificcommunity/tuna-flow:v2.5`
-- Pinned digest: `sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360`
-- MFCL executable in the image: `/home/mfcl/mfclo64`
-- Bundled native executable: `./mfclo64` (Linux x86-64 only)
-- MFCL executable SHA-256: `8995f72019869863c1d1c0b4f44fc6a6268d1f79031f5bc79dc354ee10f0a63e`
-
-See [`PROVENANCE.md`](PROVENANCE.md) for the model definition and source
-record. Run `./verify` to check all committed inputs and reference results.
+Under the direct parameterization,
+`tau = 1 + exp(fish_pars(4))`; therefore `fish_pars(4)=0` fixes `tau=2`.
+The script writes this value into the makepar-generated PAR before Phase 1 and
+checks it after every phase. See [TAU2_EXPLORATION.md](TAU2_EXPLORATION.md) for
+the source and manual audit. A portable implementation for other `doitall`
+scripts is in [TAU2_FIXED_SNIPPET.md](TAU2_FIXED_SNIPPET.md).
 
 ## Kflow
 
-The public Kflow task is `ofp-sam-bet-2026-diagnostic`. It uses the same pinned
-image and the same `model/doitall.sh`; Kflow does not maintain a second model
-recipe.
+The branch includes one Kflow task using the same `model/doitall.sh` recipe as
+the standalone run. `MODEL_ID` selects one of the 27 explicit model inputs; the
+default is `S0.80-F1`. Jobs use the pinned `tuna-flow:v2.5` image and install
+the latest-at-submission `mfclkit` (`cf786007`) and `mfclshiny` (`542ac93b`)
+revisions before fitting. The original 24 definitions remain unchanged; the
+three `F5` jobs add the independent F10+F33-logistic comparison.
 
-The earlier experimental MCMC files are preserved on the public `legacy`
-branch and are intentionally absent from `main`.
+## Baseline reference files
+
+The committed `results/reference/`, completed Hessian, `final.par` and
+`run-final` belong to the main-branch Diagnostic fit. They are retained for
+comparison and are **not** tau=2 exploration results. The fitted tau=2 result
+must come from `./doitall` or the Kflow task above.

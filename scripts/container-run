@@ -11,7 +11,7 @@ cd "$run_dir"
 chmod +x doitall.sh
 
 if [[ $mode == fit ]]; then
-  PROGRAM_PATH="$program_path" ./doitall.sh 2>&1 | tee mfcl.log
+  MODEL_ID="${MODEL_ID:-S0.80-F1}" PROGRAM_PATH="$program_path" ./doitall.sh 2>&1 | tee mfcl.log
   test -s 11.par
   cp 11.par final.par
   sha256sum final.par > final.par.sha256
@@ -43,3 +43,5 @@ else
   echo "Unknown run mode: $mode" >&2
   exit 2
 fi
+
+Rscript "$repo_root/scripts/build-model-payload" "$run_dir"

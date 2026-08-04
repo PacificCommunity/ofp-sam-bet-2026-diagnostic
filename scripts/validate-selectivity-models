@@ -1,0 +1,122 @@
+#!/bin/bash
+set -euo pipefail
+
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+mfcl="$root/mfclo64"
+reference="$root/results/reference/final.par"
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+
+audit_par()
+{
+  model=$1
+  par_file=$2
+  awk -v model="$model" '
+    function expected_group(fishery, groups) {
+      if (substr(model, 1, 1) == "F") return fishery
+      split("1 2 2 3 4 5 6 7 6 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31", groups, " ")
+      return groups[fishery]
+    }
+    function expected_nodes(fishery) {
+      if (fishery == 25 || fishery == 26) return 7
+      if (model == "P1" && (fishery == 1 || fishery == 2 || fishery == 3 || fishery == 5 || fishery == 29)) return 4
+      return 5
+    }
+    function expected_form(fishery) {
+      if (model == "F3" && (fishery == 3 || fishery == 10)) return 1
+      if (model == "F4" && fishery == 33) return 1
+      if ((model == "P1" || model == "P2") && fishery == 33) return 1
+      if (model == "P3" && (fishery == 10 || fishery == 33)) return 1
+      return 3
+    }
+    function expected_penalty(fishery) {
+      if (fishery == 10 && (model == "F1" || model == "F2" || model == "P4")) return 1
+      if (fishery == 33 && (model == "F2" || model == "P4")) return 1
+      return 0
+    }
+    /^# fish flags/ { in_fish=1; next }
+    in_fish && /^#/ { in_fish=0 }
+    in_fish && NF {
+      fishery++
+      expected16=expected_penalty(fishery)
+      expected56=expected16 == 1 ? 10000 : 0
+      if ($16 != expected16 || $24 != expected_group(fishery) ||
+          $56 != expected56 || $57 != expected_form(fishery) ||
+          $61 != expected_nodes(fishery)) failures++
+      if (fishery == 33) exit
+    }
+    END { exit(fishery == 33 && failures == 0 ? 0 : 1) }
+  ' "$par_file"
+}
+
+for steepness in 0.80 0.85 0.90; do
+  for model in F1 F2 F3 F4 P1 P2 P3 P4; do
+    model_id="S${steepness}-${model}"
+    controls=$(
+      cd "$root/model"
+      MODEL_ID="$model_id" SELECTIVITY_PRINT_CONTROLS=1 \
+        PROGRAM_PATH="$mfcl" ./doitall.sh |
+        awk '/^[[:space:]]+-[0-9]+[[:space:]]/ { print }'
+    )
+
+    if ! printf '%s\n' "$controls" | awk '
+      NF && $2 != 16 && $2 != 24 && $2 != 56 && $2 != 57 && $2 != 61 {
+        print "Unexpected model-specific fish flag: " $0 > "/dev/stderr"
+        exit 1
+      }
+    '; then
+      exit 1
+    fi
+
+    input_par="$work/$model_id.input.par"
+    awk -v steepness="$steepness" '
+      /^# Seasonal growth parameters/ {
+        print
+        getline
+        if (NF < 29) exit 1
+        $29=steepness
+        for (i=1; i<=NF; i++) printf "%s%s", $i, (i == NF ? "\n" : " ")
+        changed++
+        next
+      }
+      { print }
+      END { if (changed != 1) exit 1 }
+    ' "$reference" > "$input_par"
+
+    model_work="$work/$model_id-run"
+    mkdir -p "$model_work"
+    cp -R "$root/model/." "$model_work/"
+    set +e
+    printf '%s\n' "$controls" '  1 1 0' |
+      (cd "$model_work" &&
+        "$mfcl" bet.frq "$input_par" "$work/$model_id.par" -file -) \
+          > "$work/$model_id.log" 2>&1
+    status=${PIPESTATUS[1]}
+    set -e
+    if [[ $status -ne 0 && $status -ne 3 ]]; then
+      echo "$model_id zero-evaluation MFCL application failed with status $status." >&2
+      tail -40 "$work/$model_id.log" >&2
+      exit "$status"
+    fi
+    test -s "$work/$model_id.par"
+    audit_par "$model" "$work/$model_id.par"
+    (
+      cd "$root/model"
+      MODEL_ID="$model_id" SELECTIVITY_AUDIT_PAR="$work/$model_id.par" \
+        PROGRAM_PATH="$mfcl" ./doitall.sh
+    ) > "$work/$model_id.internal-audit.log"
+    if ! awk -v expected="$steepness" '
+      /^# age flags/ { getline; age162=$162 }
+      /^# Seasonal growth parameters/ { getline; observed=$29 }
+      END {
+        difference=observed-expected
+        if (difference < 0) difference=-difference
+        exit(age162 == 0 && difference <= 1e-12 ? 0 : 1)
+      }
+    ' "$work/$model_id.par"; then
+      echo "$model_id fixed-steepness audit failed." >&2
+      exit 1
+    fi
+    echo "$model_id: MFCL fixed-steepness and fish-flag audit passed."
+  done
+done

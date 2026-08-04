@@ -72,15 +72,13 @@ jobs:
             "dist/stage/$standalone_name/README.md"
           cp mfclo64 "dist/stage/$standalone_name/mfclo64"
           cp results/reference/final.par "dist/stage/$standalone_name/final.par"
-          cp standalone/doitall.sh "dist/stage/$standalone_name/doitall.sh"
-          cp standalone/doitall-seed23.sh "dist/stage/$standalone_name/doitall-seed23.sh"
+          cp model/doitall.sh "dist/stage/$standalone_name/doitall.sh"
           cp standalone/run-final "dist/stage/$standalone_name/run-final"
           cp standalone/README.txt "dist/stage/$standalone_name/README.txt"
           chmod +x \
             "dist/stage/$standalone_name/mfclo64" \
             "dist/stage/$standalone_name/run-final" \
-            "dist/stage/$standalone_name/doitall.sh" \
-            "dist/stage/$standalone_name/doitall-seed23.sh"
+            "dist/stage/$standalone_name/doitall.sh"
 
           (
             cd "dist/stage/$standalone_name"
@@ -91,14 +89,14 @@ jobs:
             test -s plot-evaluated.par.rep
             test -s catch.rep
             test -s tag.rep
-            sh -n run-final doitall.sh doitall-seed23.sh
-            if grep -Eiq 'seed.?23|PROGRAM_PATH|program_path|doitall-core' doitall.sh; then
-              echo "The standard doitall.sh contains seed-23 or external-program logic." >&2
+            sh -n run-final doitall.sh
+            if grep -Eiq 'seed.?23|doitall-core' doitall.sh; then
+              echo "The tau=2 doitall.sh contains seed-23 or external-core logic." >&2
               exit 1
             fi
-            grep -F 'seed23_initialization=${SEED23_INITIALIZATION:-1}' doitall-seed23.sh
-            test "$(grep -c '^\./mfclo64 bet.frq' doitall.sh)" -eq 12
-            test "$(grep -c '^\./mfclo64 bet.frq' doitall-seed23.sh)" -eq 12
+            grep -F '1 305 1' doitall.sh
+            grep -F -- '-999 43 0' doitall.sh
+            grep -F 'audit_tau2_fixed 11.par' doitall.sh
             sha256sum final.par > final.par.sha256
             find . -type f ! -name SHA256SUMS -print0 \
               | LC_ALL=C sort -z \
@@ -152,7 +150,7 @@ jobs:
             '' \
             'The archive also includes the frozen final PAR, inputs, completed Hessian, compact R payload, executable and reproduction scripts.' \
             '' \
-            'A separate standalone ZIP places the executable, final PAR, all inputs and run scripts in one directory. Use `./run-final` for the supplied fit, `./doitall.sh` for ordinary makepar initialization, or `./doitall-seed23.sh` for the diagnostic-model initialization.' \
+            'A separate standalone ZIP places the executable, baseline final PAR, all inputs and run scripts in one directory. On the tau2-exploration branch, use `./doitall.sh` to fit the fixed-tau model from ordinary makepar initialization.' \
             '' \
             "Source commit: $GITHUB_SHA" \
             > "$notes"

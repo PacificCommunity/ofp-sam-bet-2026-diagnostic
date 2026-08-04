@@ -1,0 +1,283 @@
+#!/usr/bin/env python3
+"""Attach one compact, restorable MFCL payload job to every grid model."""
+
+from __future__ import annotations
+
+import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import json
+import os
+import urllib.error
+import urllib.parse
+import urllib.request
+from typing import Any
+
+
+SOURCE_TASK = "ofp-sam-bet-2026-tau2-steepness-selectivity-grid"
+PAYLOAD_TASK = "ofp-sam-bet-2026-tau2-compact-model-payloads"
+CHECKS_REPO = "PacificCommunity/ofp-sam-bet-2026-checks"
+CHECKS_REF = "main"
+CHECKS_COMMIT = "2198d12049a04f7a0b7d53f4bbb37f4d0f944398"
+IMAGE = (
+    "ghcr.io/pacificcommunity/tuna-flow:v2.5@"
+    "sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360"
+)
+FLR4MFCL_REF = "ff8367fcec19baff98333170c0f1bca3f9903029"
+MFCLKIT_REF = "cf786007b5261f84faac8f3d24f7084bd323119d"
+MFCLSHINY_REF = "542ac93b7ce0b6d0df70301891e668701d439857"
+RUNTIME_PACKAGES = (
+    f"FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@{FLR4MFCL_REF},"
+    f"mfclkit=PacificCommunity/ofp-sam-mfclkit@{MFCLKIT_REF},"
+    f"mfclshiny=PacificCommunity/mfclshiny@{MFCLSHINY_REF}"
+)
+
+
+def api_json(
+    method: str,
+    base_url: str,
+    path: str,
+    token: str,
+    payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    body = None if payload is None else json.dumps(payload).encode("utf-8")
+    request = urllib.request.Request(
+        base_url.rstrip("/") + path,
+        data=body,
+        method=method,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=120) as response:
+            raw = response.read()
+    except urllib.error.HTTPError as error:
+        detail = error.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"{method} {path}: HTTP {error.code}: {detail}") from error
+    return json.loads(raw) if raw else {}
+
+
+def task_jobs(base_url: str, token: str, task: str) -> list[dict[str, Any]]:
+    task_path = urllib.parse.quote(task, safe="")
+    jobs: list[dict[str, Any]] = []
+    for page in range(1, 20):
+        response = api_json("GET", base_url, f"/api/jobs/{task_path}/?page={page}", token)
+        page_jobs = response.get("jobs") or []
+        if not page_jobs:
+            break
+        jobs.extend(page_jobs)
+    return jobs
+
+
+def source_model(job: dict[str, Any]) -> str:
+    env = job.get("env") or job.get("env_json") or {}
+    metadata = job.get("metadata") or job.get("metadata_json") or {}
+    return str(env.get("MODEL_ID") or metadata.get("model_id") or "").strip()
+
+
+def job_number(job: dict[str, Any]) -> int:
+    return int(job.get("job_number") or job.get("run_number"))
+
+
+def task_payload() -> dict[str, Any]:
+    return {
+        "name": PAYLOAD_TASK,
+        "description": (
+            "Build one validated, compact and independently restorable MFCL Shiny "
+            "payload for each of the 27 tau=2 steepness/selectivity models. Jobs wait "
+            "for their exact fitted-model parent and attach the compact output back to it."
+        ),
+        "repo_full_name": CHECKS_REPO,
+        "branch": CHECKS_REF,
+        "command": "bash run.sh",
+        "target_folder": "payload-build",
+        "docker_image": IMAGE,
+        "cpus": 2,
+        "memory": "12GB",
+        "disk": "12GB",
+        "remote_host": "suva",
+        "remote_user": "kyuhank",
+        "remote_base_dir": "/home/kyuhank/KflowOutput",
+        "slot_requirements": 'regexp("^suvofp", Machine)',
+        "env": {
+            "CHECK_TYPE": "payload-build",
+            "MODEL_SOURCE_REPO": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+            "MODEL_SOURCE_REF": "tau2-exploration",
+            "PROGRAM_PATH": "/home/mfcl/mfclo64",
+            "KFLOW_RUNTIME_PACKAGES": "none",
+            "KFLOW_REPO_RUNTIME_PACKAGES": RUNTIME_PACKAGES,
+            "KFLOW_REPO_RUNTIME_UPDATE": "always",
+            "KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES": "true",
+            "KFLOW_RUNTIME_UPDATE": "always",
+            "TUNA_FLOW_RUNTIME_UPDATE": "always",
+            "KFLOW_RUNTIME_GITHUB_AUTH": "true",
+            "KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME": "true",
+        },
+        "tags": {
+            "stage": "compact-model-payload",
+            "species": "BET",
+            "assessment_year": "2026",
+        },
+        "metadata": {
+            "source_task": SOURCE_TASK,
+            "source_model_count": 27,
+            "checks_commit": CHECKS_COMMIT,
+            "payload_object_cache": "all",
+            "payload_artifacts": "all",
+            "restore_validation_required": True,
+            "output_policy": "compact-payload-only",
+        },
+        "output_patterns": ["outputs/**"],
+        "input_jobs": [],
+        "triggers": {},
+    }
+
+
+def compact_job_payload(parent: dict[str, Any]) -> dict[str, Any]:
+    model = source_model(parent)
+    number = job_number(parent)
+    parent_id = str(parent.get("id") or "")
+    if not model or not parent_id:
+        raise ValueError(f"Source Job {number} is missing MODEL_ID or internal id.")
+    job_key = f"job-{number}-{model.lower().replace('.', '')}-compact-payload-v1"
+    title = f"{model} | compact restorable MFCL payload | source Job {number}"
+    description = (
+        f"Build the permanent compact payload for {model} from exact fitted-model Job "
+        f"{number}. Embed all MFCL Shiny objects and restorable core model artifacts, "
+        "restore them in a clean directory, verify checksums, and archive only the RDS, "
+        "manifests, audit and small provenance files. No model fitting is repeated."
+    )
+    return {
+        "repo": CHECKS_REPO,
+        "branch": CHECKS_REF,
+        "command": "bash run.sh",
+        "target_folder": "payload-build",
+        "docker_image": IMAGE,
+        "remote_host": "suva",
+        "remote_user": "kyuhank",
+        "remote_base_dir": "/home/kyuhank/KflowOutput",
+        "slot_requirements": 'regexp("^suvofp", Machine)',
+        "cpus": 2,
+        "memory": "12GB",
+        "disk": "12GB",
+        "batch_name": "bet-2026-tau2-compact-model-payloads",
+        "input_jobs": [parent_id],
+        "output_patterns": ["outputs/**"],
+        "env": {
+            **task_payload()["env"],
+            "MODEL_SELECTOR": model,
+            "FLOW_GROUP": "bet-2026-tau2-compact-model-payloads",
+            "JOB_KEY": job_key,
+            "KFLOW_JOB_TITLE": title,
+            "KFLOW_JOB_DESCRIPTION": description,
+        },
+        "tags": {
+            **task_payload()["tags"],
+            "model": model,
+            "source_job": str(number),
+        },
+        "metadata": {
+            **task_payload()["metadata"],
+            "input_jobs_override": True,
+            "job_key": job_key,
+            "job_title": title,
+            "job_description": description,
+            "model_selector": model,
+            "base_job": str(number),
+            "source_model_job": str(number),
+            "source_model_job_id": parent_id,
+            "attached_work_parent_job": str(number),
+            "attached_work_latest": True,
+            "attached_work_slot": f"model-payload:{model}",
+            "attached_work_group": f"bet-2026-tau2:{model}:model-output",
+            "attached_work_headline": "Model payload",
+            "attached_work_label": f"{model} compact MFCL payload",
+            "attached_work_summary": (
+                "Permanent MFCL Shiny payload with verified raw-file restoration."
+            ),
+            "attached_work_role": "updated output",
+            "attached_output_overlay": False,
+            "attached_output_overlay_mode": "standalone",
+            "attach_output_mode": "standalone",
+            "auto_attach": True,
+        },
+        "triggers": {},
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--workers", type=int, default=12)
+    parser.add_argument(
+        "--kflow-url",
+        default=os.environ.get("KFLOW_URL", "http://127.0.0.1:8088"),
+    )
+    args = parser.parse_args()
+    token = os.environ.get("KFLOW_API_TOKEN", "").strip()
+    if not token and not args.dry_run:
+        raise SystemExit("Set KFLOW_API_TOKEN before submission.")
+
+    if args.dry_run:
+        print(json.dumps({"task": task_payload()}, indent=2))
+        return 0
+
+    source_jobs = task_jobs(args.kflow_url, token, SOURCE_TASK)
+    if len(source_jobs) != 27:
+        raise SystemExit(f"Expected 27 source jobs; found {len(source_jobs)}.")
+    models = [source_model(job) for job in source_jobs]
+    if len(set(models)) != 27 or any(not model for model in models):
+        raise SystemExit("The source task does not expose 27 unique MODEL_ID values.")
+
+    task_path = urllib.parse.quote(PAYLOAD_TASK, safe="")
+    api_json("POST", args.kflow_url, f"/api/report/{task_path}", token, task_payload())
+    existing = task_jobs(args.kflow_url, token, PAYLOAD_TASK)
+    existing_keys = {
+        str((job.get("env") or job.get("env_json") or {}).get("JOB_KEY") or "")
+        for job in existing
+    }
+    pending = []
+    for parent in source_jobs:
+        payload = compact_job_payload(parent)
+        if payload["env"]["JOB_KEY"] not in existing_keys:
+            pending.append(payload)
+
+    submitted: list[dict[str, Any]] = []
+    with ThreadPoolExecutor(max_workers=max(1, min(args.workers, len(pending) or 1))) as pool:
+        futures = {
+            pool.submit(
+                api_json,
+                "POST",
+                args.kflow_url,
+                f"/api/job/{task_path}",
+                token,
+                payload,
+            ): payload
+            for payload in pending
+        }
+        for future in as_completed(futures):
+            payload = futures[future]
+            response = future.result()
+            job = response.get("job", response)
+            submitted.append({
+                "job_number": job_number(job),
+                "status": job.get("status"),
+                "model": payload["env"]["MODEL_SELECTOR"],
+                "source_job": payload["metadata"]["source_model_job"],
+            })
+
+    final_jobs = task_jobs(args.kflow_url, token, PAYLOAD_TASK)
+    if len(final_jobs) != 27:
+        raise SystemExit(f"Expected 27 compact payload jobs; found {len(final_jobs)}.")
+    print(json.dumps({
+        "task": PAYLOAD_TASK,
+        "already_present": len(existing),
+        "submitted": sorted(submitted, key=lambda item: item["model"]),
+        "total": len(final_jobs),
+    }, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
