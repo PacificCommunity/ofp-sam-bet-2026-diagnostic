@@ -54,6 +54,6 @@ else
     -e RUN_DIR=/work \
     -e HOME=/tmp \
     -e PROGRAM_PATH=/home/mfcl/mfclo64 \
-    -e MODEL_ID="${MODEL_ID:-S0.80-F1}" \
+    -e MODEL_ID="${MODEL_ID:-Diagnostic}" \
     "$image" /repo/scripts/container-run "$mode"
 fi

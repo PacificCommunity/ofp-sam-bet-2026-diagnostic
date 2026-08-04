@@ -12,5 +12,6 @@ docker run --rm --entrypoint /bin/bash `
   --mount "type=bind,src=$RunDir,dst=/work" `
   --workdir /work -e REPO_ROOT=/repo -e RUN_DIR=/work `
   -e PROGRAM_PATH=/home/mfcl/mfclo64 `
+  -e MODEL_ID=Diagnostic `
   $Image /repo/scripts/container-run fit
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

@@ -1,9 +1,7 @@
 # MFCL files are checksum-locked scientific artifacts. Preserve their bytes
 # and suppress misleading line-oriented diffs.
 model/bet.* -text -diff
-model/checkpoints/*.par -text -diff
 results/reference/final.par -text -diff
-results/reference/hessian/*.hes -text -diff
 *.rds -text -diff
 mfclo64 -text -diff
 

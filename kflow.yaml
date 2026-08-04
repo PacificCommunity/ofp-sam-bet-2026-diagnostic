@@ -28,13 +28,13 @@ env:
   KFLOW_RUNTIME_UPDATE: auto
   TUNA_FLOW_RUNTIME_UPDATE: auto
   KFLOW_RUNTIME_FORCE_UPDATE: "1"
-  KFLOW_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@cf786007b5261f84faac8f3d24f7084bd323119d,mfclshiny=PacificCommunity/mfclshiny@542ac93b7ce0b6d0df70301891e668701d439857
+  KFLOW_RUNTIME_PACKAGES: mfclkit=PacificCommunity/ofp-sam-mfclkit@cf786007b5261f84faac8f3d24f7084bd323119d,mfclshiny=PacificCommunity/mfclshiny@a8dffd78de61c99af8cf5b1f6995e861157dc96c
   MFCLKIT_GITHUB_REF: cf786007b5261f84faac8f3d24f7084bd323119d
-  MFCLSHINY_GITHUB_REF: 542ac93b7ce0b6d0df70301891e668701d439857
+  MFCLSHINY_GITHUB_REF: a8dffd78de61c99af8cf5b1f6995e861157dc96c
   KFLOW_RUNTIME_GITHUB_AUTH: "true"
   KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
 tags:
-  stage: tau2-steepness-selectivity-grid
+  stage: diagnostic-model
   species: BET
   assessment_year: "2026"
 output_patterns:
@@ -200,6 +200,8 @@ local_apps:
       RS
 metadata:
   public_reproducible_model: true
+  source_job: 21641
+  source_commit: 3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6
   initialization: ordinary-makepar
   fixed_tau: "2"
   parest_305: "1"

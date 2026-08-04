@@ -1,19 +1,21 @@
-# Completed native Hessian
+# Job 21641 Hessian diagnostics
 
-This directory contains the full MFCL Hessian and compact diagnostics for the
-included `final.par`. It is a frozen result, not a recipe for another model.
+These are the portable diagnostics attached by Kflow Job 22020 to Job 21641.
+They describe the included `final.par` and no other model.
 
 | Item | Value |
 |---|---:|
 | Parameters | 1,997 |
-| Completed partitions | 70 / 70 |
+| Completed partitions | 60 / 60 |
 | Status | PDH (HIGH reliability) |
 | Positive eigenvalues | 1,997 |
 | Negative eigenvalues | 0 |
 | Zero eigenvalues | 0 |
-| Minimum eigenvalue | 1.62641e-07 |
-| Maximum eigenvalue | about 398 |
-| Positive condition number | about 2.45e9 |
+| Minimum eigenvalue | 2.55194e-07 |
+| Maximum eigenvalue | about 1,079 |
+| Positive condition number | about 4.23e9 |
 
-`bet.hes` is already stitched. Use the repository-root `restore-hessian`
-command to copy it only to a fitted model with the matching `final.par` hash.
+The compact attachment records the validated native calculation but does not
+archive the large stitched `bet.hes`. `hessian_info.rds` contains all 1,997
+parameter labels and marginal standard errors. `check-unit-status.csv` records
+all 60 successful partitions.

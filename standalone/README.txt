@@ -1,17 +1,15 @@
-BET 2026 DIAGNOSTIC MODEL: FIXED TAU=2 EXPLORATION
-==================================================
+BET 2026 DIAGNOSTIC MODEL — JOB 21641
+====================================
 
-Open a Linux terminal in this directory and run:
+This bundle uses fixed steepness h=0.90, Diagnostic F10/F33 weak selectivity
+penalties, direct negative-binomial tau=2 fixed, and ordinary makepar with no
+seed or checkpoint.
+
+To evaluate the provided Job 21641 final.par:
 
   chmod +x mfclo64 run-final doitall.sh
-
-To generate reports from the provided final.par:
-
   ./run-final
 
-To fit tau=2 from the standard bet.ini starting values:
+To refit the same model from the committed h=0.90 bet.ini:
 
   ./doitall.sh
-
-The provided final.par and run-final output belong to the baseline Diagnostic
-fit, not the tau=2 exploration. The tau=2 result is produced by doitall.sh.

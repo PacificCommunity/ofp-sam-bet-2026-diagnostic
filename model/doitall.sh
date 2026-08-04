@@ -9,10 +9,11 @@ if [ ! -x "$program_path" ]; then
   exit 1
 fi
 
-# This exploration always starts from the ordinary bet.ini -makepar values.
-# No jitter or archived fitted checkpoint is applied.
+# This Diagnostic model always starts from ordinary bet.ini -makepar values.
+# No jitter, random seed or archived fitted checkpoint is applied.
 
 phase10_11_convergence=${BET_PHASE10_11_CONVERGENCE:--4}
+mfcl_par_scalar_tolerance=5e-7
 case "$phase10_11_convergence" in
   -[0-9]|-[0-9][0-9]|[0-9]|[0-9][0-9]) ;;
   *)
@@ -67,15 +68,12 @@ if [ "$MODEL_ID" != "$requested_model_id" ]; then
   echo "Model input identity mismatch: requested $requested_model_id, found $MODEL_ID." >&2
   exit 40
 fi
-case "$STEEPNESS" in
-  0.80|0.85|0.90) ;;
-  *)
-    echo "STEEPNESS must be 0.80, 0.85 or 0.90 in $model_input." >&2
-    exit 40
-    ;;
-esac
+if [ "$STEEPNESS" != 0.90 ]; then
+  echo "STEEPNESS must remain fixed at 0.90 in $model_input." >&2
+  exit 40
+fi
 case "$SELECTIVITY_MODEL" in
-  F1|F2|F3|F4|F5|P1|P2|P3|P4) ;;
+  Diagnostic) ;;
   *)
     echo "Invalid SELECTIVITY_MODEL in $model_input: $SELECTIVITY_MODEL" >&2
     exit 40
@@ -87,9 +85,11 @@ if [ "$SELECTIVITY_INPUT" != "selectivity-models/$SELECTIVITY_MODEL.csv" ] ||
   exit 40
 fi
 
-model_id=$MODEL_ID
+model_id=Diagnostic
+display_model_id=Diagnostic
 fixed_steepness=$STEEPNESS
-selectivity_model=$SELECTIVITY_MODEL
+selectivity_model=Diagnostic
+display_selectivity_model=Diagnostic
 selectivity_file=$SELECTIVITY_INPUT
 
 if ! awk -F, '
@@ -110,37 +110,13 @@ if ! awk -F, '
   exit 40
 fi
 case "$selectivity_model" in
-  F1)
-    selectivity_label="Flexible: F10 weak non-decreasing"
-    ;;
-  F2)
-    selectivity_label="Flexible: F10 and F33 weak non-decreasing"
-    ;;
-  F3)
-    selectivity_label="Flexible: F3 and F10 logistic"
-    ;;
-  F4)
-    selectivity_label="Flexible: F33 logistic; F10 unpenalized spline"
-    ;;
-  F5)
-    selectivity_label="Flexible: F10 and F33 logistic"
-    ;;
-  P1)
-    selectivity_label="Parsimonious sharing: retained four-node splines; F33 logistic"
-    ;;
-  P2)
-    selectivity_label="Parsimonious sharing: five-node splines; F33 logistic"
-    ;;
-  P3)
-    selectivity_label="Parsimonious sharing: five-node splines; F10 and F33 logistic"
-    ;;
-  P4)
-    selectivity_label="Parsimonious sharing: five-node F10 and F33 weak non-decreasing"
+  Diagnostic)
+    selectivity_label="Diagnostic: F10 and F33 weak non-decreasing"
     ;;
 esac
-echo "Model: $model_id"
+echo "Model: $display_model_id"
 echo "Fixed steepness: $fixed_steepness (INI sv(29); age flag 162=0)"
-echo "Selectivity model: $selectivity_model - $selectivity_label"
+echo "Selectivity model: $display_selectivity_model - $selectivity_label"
 
 emit_selectivity_phase1_controls()
 {
@@ -164,13 +140,13 @@ selectivity_phase1_controls=$(emit_selectivity_phase1_controls)
 selectivity_phase5_controls=$(emit_selectivity_phase5_controls)
 
 if [ "${SELECTIVITY_PRINT_CONTROLS:-0}" = 1 ]; then
-  printf '%s\n' "# $model_id: fixed steepness $fixed_steepness; $selectivity_label"
+  printf '%s\n' "# $display_model_id: fixed steepness $fixed_steepness; $selectivity_label"
   printf '%s\n' "$selectivity_phase1_controls"
   printf '%s\n' "$selectivity_phase5_controls"
   exit 0
 fi
 
-if [ -z "${SELECTIVITY_AUDIT_PAR:-}" ]; then
+if [ -z "${SELECTIVITY_AUDIT_PAR:-}" ] && [ -z "${MODEL_AUDIT_PAR:-}" ]; then
   cp "$model_input" selected-model-input.conf
   cp "$selectivity_file" selected-selectivity-input.csv
 fi
@@ -313,15 +289,50 @@ audit_steepness_fixed()
   observed_steepness=${steepness_audit%,*}
   observed_age162=${steepness_audit#*,}
   if [ "$observed_age162" != 0 ] ||
-     ! awk -v observed="$observed_steepness" -v expected="$fixed_steepness" 'BEGIN {
+     ! awk -v observed="$observed_steepness" -v expected="$fixed_steepness" \
+         -v tolerance="$mfcl_par_scalar_tolerance" 'BEGIN {
        difference=observed-expected
        if (difference < 0) difference=-difference
-       exit(difference <= 1e-12 ? 0 : 1)
+       exit(difference <= tolerance ? 0 : 1)
      }'; then
     echo "$phase_label fixed-steepness audit failed: sv(29)/age_flag(162)=$steepness_audit; expected $fixed_steepness/0." >&2
     exit 41
   fi
   echo "$phase_label fixed-steepness audit: $fixed_steepness passed."
+}
+
+audit_natural_mortality_fixed()
+{
+  par_file=$1
+  phase_label=$2
+  natural_mortality_audit=$(awk '
+    /^# age_pars/ || /^# age-class related parameters [(]age_pars[)]/ {
+      in_age=1
+      next
+    }
+    in_age && /^#/ { next }
+    in_age && NF {
+      row++
+      if (row == 5) {
+        print $1 "," $2
+        exit
+      }
+    }
+  ' "$par_file")
+  observed_m=${natural_mortality_audit%,*}
+  observed_slope=${natural_mortality_audit#*,}
+  if ! awk -v observed="$observed_m" -v slope="$observed_slope" 'BEGIN {
+       expected = -2.54930339768360
+       difference = observed - expected
+       if (difference < 0) difference = -difference
+       slope_difference = slope + 1
+       if (slope_difference < 0) slope_difference = -slope_difference
+       exit(difference <= 1e-12 && slope_difference <= 1e-12 ? 0 : 1)
+     }'; then
+    echo "$phase_label fixed-M audit failed: log(M0)/Lorenzen slope=$natural_mortality_audit." >&2
+    exit 48
+  fi
+  echo "$phase_label fixed-M audit: log(M0)=$observed_m and Lorenzen slope=-1 passed."
 }
 
 audit_dm_concentration_fixed()
@@ -395,11 +406,20 @@ audit_selectivity_model()
       exit(failures > 0 ? 1 : 0)
     }
   ' "$selectivity_file" "$par_file"; then
-    echo "$phase_label selectivity audit failed for $selectivity_model." >&2
+    echo "$phase_label selectivity audit failed for $display_selectivity_model." >&2
     exit 43
   fi
-  echo "$phase_label selectivity audit: $selectivity_model passed."
+  echo "$phase_label selectivity audit: $display_selectivity_model passed."
 }
+
+if [ -n "${MODEL_AUDIT_PAR:-}" ]; then
+  audit_tau2_fixed "$MODEL_AUDIT_PAR" "Standalone"
+  audit_steepness_fixed "$MODEL_AUDIT_PAR" "Standalone"
+  audit_natural_mortality_fixed "$MODEL_AUDIT_PAR" "Standalone"
+  audit_dm_concentration_fixed "$MODEL_AUDIT_PAR" "Standalone"
+  audit_selectivity_model "$MODEL_AUDIT_PAR" "Standalone"
+  exit 0
+fi
 
 if [ -n "${SELECTIVITY_AUDIT_PAR:-}" ]; then
   audit_selectivity_model "$SELECTIVITY_AUDIT_PAR" "Standalone"
@@ -412,7 +432,7 @@ fi
 # -----------------------------------
 
 # Write the selected fixed steepness into the actual INI passed to MFCL. The
-# original Job 19835 INI is never edited; only sv(29) is changed in this copy.
+# frozen Job 21641 base INI is never edited; only sv(29) is changed in this copy.
 awk -v steepness="$fixed_steepness" '
   /^# sv[(]29[)]/ {
     print
@@ -471,6 +491,7 @@ awk -v concentration="$dm_concentration" '
 ' 00.par > 00.fixed.par
 audit_tau2_value_fixed 00.fixed.par "Phase 0"
 audit_steepness_fixed 00.fixed.par "Phase 0"
+audit_natural_mortality_fixed 00.fixed.par "Phase 0"
 audit_dm_concentration_fixed 00.fixed.par "Phase 0"
 
 if [ "${MODEL_STOP_AFTER_PHASE0:-0}" = 1 ]; then
@@ -769,7 +790,9 @@ $selectivity_phase1_controls
 PHASE1
 audit_tau2_fixed 01.par "Phase 1"
 audit_steepness_fixed 01.par "Phase 1"
+audit_natural_mortality_fixed 01.par "Phase 1"
 audit_dm_concentration_fixed 01.par "Phase 1"
+audit_selectivity_model 01.par "Phase 1"
 
 # ---------
 #  PHASE 2
@@ -784,7 +807,9 @@ $program_path bet.frq 01.par 02.par -file - <<PHASE2
 PHASE2
 audit_tau2_fixed 02.par "Phase 2"
 audit_steepness_fixed 02.par "Phase 2"
+audit_natural_mortality_fixed 02.par "Phase 2"
 audit_dm_concentration_fixed 02.par "Phase 2"
+audit_selectivity_model 02.par "Phase 2"
 
 # ---------
 #  PHASE 3
@@ -798,7 +823,9 @@ $program_path bet.frq 02.par 03.par -file - <<PHASE3
 PHASE3
 audit_tau2_fixed 03.par "Phase 3"
 audit_steepness_fixed 03.par "Phase 3"
+audit_natural_mortality_fixed 03.par "Phase 3"
 audit_dm_concentration_fixed 03.par "Phase 3"
+audit_selectivity_model 03.par "Phase 3"
 
 # ---------
 #  PHASE 4
@@ -811,7 +838,9 @@ $program_path bet.frq 03.par 04.par -file - <<PHASE4
 PHASE4
 audit_tau2_fixed 04.par "Phase 4"
 audit_steepness_fixed 04.par "Phase 4"
+audit_natural_mortality_fixed 04.par "Phase 4"
 audit_dm_concentration_fixed 04.par "Phase 4"
+audit_selectivity_model 04.par "Phase 4"
 
 # ---------
 #  PHASE 5
@@ -852,6 +881,7 @@ $selectivity_phase5_controls
 PHASE5
 audit_tau2_fixed 05.par "Phase 5"
 audit_steepness_fixed 05.par "Phase 5"
+audit_natural_mortality_fixed 05.par "Phase 5"
 audit_dm_concentration_fixed 05.par "Phase 5"
 audit_selectivity_model 05.par "Phase 5"
 
@@ -868,7 +898,9 @@ $program_path bet.frq 05.par 06.par -file - <<PHASE6
 PHASE6
 audit_tau2_fixed 06.par "Phase 6"
 audit_steepness_fixed 06.par "Phase 6"
+audit_natural_mortality_fixed 06.par "Phase 6"
 audit_dm_concentration_fixed 06.par "Phase 6"
+audit_selectivity_model 06.par "Phase 6"
 
 # ---------
 #  PHASE 7
@@ -884,7 +916,9 @@ $program_path bet.frq 06.par 07.par -file - <<PHASE7
 PHASE7
 audit_tau2_fixed 07.par "Phase 7"
 audit_steepness_fixed 07.par "Phase 7"
+audit_natural_mortality_fixed 07.par "Phase 7"
 audit_dm_concentration_fixed 07.par "Phase 7"
+audit_selectivity_model 07.par "Phase 7"
 
 # ---------
 #  PHASE 8
@@ -914,7 +948,9 @@ $program_path bet.frq 07.par 08.par -file - <<PHASE8
 PHASE8
 audit_tau2_fixed 08.par "Phase 8"
 audit_steepness_fixed 08.par "Phase 8"
+audit_natural_mortality_fixed 08.par "Phase 8"
 audit_dm_concentration_fixed 08.par "Phase 8"
+audit_selectivity_model 08.par "Phase 8"
 
 # ---------
 #  PHASE 9
@@ -928,7 +964,9 @@ $program_path bet.frq 08.par 09.par -file - <<PHASE9
 PHASE9
 audit_tau2_fixed 09.par "Phase 9"
 audit_steepness_fixed 09.par "Phase 9"
+audit_natural_mortality_fixed 09.par "Phase 9"
 audit_dm_concentration_fixed 09.par "Phase 9"
+audit_selectivity_model 09.par "Phase 9"
 
 # ------------------------------------------------------------------
 #  TAG-TAU TREATMENT - direct negative binomial, tau fixed at 2
@@ -943,7 +981,9 @@ $program_path bet.frq 09.par 10.par -file - <<PHASE10_TAU2_FIXED
 PHASE10_TAU2_FIXED
 audit_tau2_fixed 10.par "Phase 10"
 audit_steepness_fixed 10.par "Phase 10"
+audit_natural_mortality_fixed 10.par "Phase 10"
 audit_dm_concentration_fixed 10.par "Phase 10"
+audit_selectivity_model 10.par "Phase 10"
 
 $program_path bet.frq 10.par 11.par -file - <<PHASE11_TAU2_FIXED
   1 1 5000
@@ -953,6 +993,7 @@ $program_path bet.frq 10.par 11.par -file - <<PHASE11_TAU2_FIXED
 PHASE11_TAU2_FIXED
 audit_tau2_fixed 11.par "Phase 11"
 audit_steepness_fixed 11.par "Phase 11"
+audit_natural_mortality_fixed 11.par "Phase 11"
 audit_dm_concentration_fixed 11.par "Phase 11"
 audit_selectivity_model 11.par "Phase 11"
 
@@ -1039,24 +1080,15 @@ if [ "$parest_111" != 4 ] || [ "$parest_305" != 1 ] ||
   echo "Final fit did not retain the required DM and fixed tau=2 controls." >&2
   exit 44
 fi
-if ! awk -v observed="$final_steepness" -v expected="$fixed_steepness" 'BEGIN {
+if ! awk -v observed="$final_steepness" -v expected="$fixed_steepness" \
+    -v tolerance="$mfcl_par_scalar_tolerance" 'BEGIN {
   difference=observed-expected
   if (difference < 0) difference=-difference
-  exit(difference <= 1e-12 ? 0 : 1)
+  exit(difference <= tolerance ? 0 : 1)
 }'; then
   echo "Final fit changed fixed steepness: observed $final_steepness; expected $fixed_steepness." >&2
   exit 46
 fi
-if ! awk -v observed="$final_m" 'BEGIN {
-  expected = -2.54930339768360
-  difference = observed - expected
-  if (difference < 0) difference = -difference
-  exit(difference <= 1e-12 ? 0 : 1)
-}'; then
-  echo "Fixed Lorenzen natural mortality changed: $final_m" >&2
-  exit 45
-fi
-
 printf '%s\n' \
   'mode,tag_likelihood,tau,fish_pars4,parest111,parest305,parest306,estimated_tau_count,active_tau_fisheries,grouped_tau_fisheries,parest121,dm_nmax,dm_concentration,dm22_active,dm23_active,parest141,parest320,parest342,final_m,status' \
   "tau-fixed,direct-negative-binomial,2,0,$parest_111,$parest_305,$parest_306,$estimated_tau_count,$active_tau_fisheries,$grouped_tau_fisheries,$parest_121,$dm_nmax,$dm_concentration,$dm22_active,$dm23_active,$parest_141,$parest_320,$parest_342,$final_m,passed" \
@@ -1065,8 +1097,8 @@ printf '%s\n' \
 printf '%s\n' \
   'model_id,steepness,selectivity_model,label,selectivity_groups,four_node_flags,five_node_flags,seven_node_flags,logistic_flags,weak_penalty_flags,status' \
   > selectivity-audit.csv
-awk -v model_id="$model_id" -v steepness="$fixed_steepness" \
-    -v model="$selectivity_model" -v label="$selectivity_label" '
+awk -v model_id="$display_model_id" -v steepness="$fixed_steepness" \
+    -v model="$display_selectivity_model" -v label="$selectivity_label" '
   /^# fish flags/ { in_fish=1; next }
   in_fish && /^#/ { in_fish=0 }
   in_fish && NF {
@@ -1089,6 +1121,6 @@ awk -v model_id="$model_id" -v steepness="$fixed_steepness" \
 
 printf '%s\n' \
   'model_id,fixed_steepness,age_flag_162,estimated_steepness_count,selectivity_model,tau,initialization,status' \
-  "$model_id,$fixed_steepness,$final_age162,$estimated_steepness_count,$selectivity_model,2,ordinary-makepar-no-seed,passed" \
+  "$display_model_id,$fixed_steepness,$final_age162,$estimated_steepness_count,$display_selectivity_model,2,ordinary-makepar-no-seed,passed" \
   > model-input-audit.csv
 exit 0

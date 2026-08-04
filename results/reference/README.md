@@ -1,20 +1,26 @@
-# Reference fitted result
+# Job 21641 reference result
 
-- `final.par`: fitted MFCL parameter file; use `./run-final` from the repository root.
+- `final.par`: exact fitted PAR from Kflow Job 21641.
 - `fit-summary.csv`: objective, gradient, terminal depletion and provenance.
-- `model_payload.rds`: compact Hessian-enriched model object used by the BET diagnostic viewer.
-- `model_payload_manifest.csv` and `.json`: payload contents and fit statistics.
-- `run-summary.csv`: final-stage and final-PAR checksum.
-- `seed23-initialization-summary.csv`: Phase 1, 2 and 5 seed audit.
-- `tag-tau-audit.csv`: retained tag, DM and natural-mortality controls.
-- `hessian/bet.hes`: complete 1,997 by 1,997 native MFCL Hessian.
+- `model_payload.rds`: current mfclshiny payload rebuilt from Job 21641 raw
+  output after the Job 22020 Hessian attachment.
+- `model_payload_manifest.csv` and `.json`: payload contents, fit statistics
+  and Hessian status.
+- `payload-restore-audit.csv`: checksum proof for the PAR restored from the
+  payload.
+- `run-summary.csv`: final-stage and source checksums.
+- `tag-tau-audit.csv`: fixed tau, DM and natural-mortality controls.
 - `hessian/hessian_info.rds`: portable parameter-level Hessian diagnostics.
-- `hessian/check-summary.csv`: partition completion and eigenvalue summary.
-- `hessian/neigenvalues`: MFCL negative/total eigenvalue counts.
-- `hessian/mfcl_*_log.txt`: retained stitch and eigen logs.
-- `uncertainty/bet.var`: native all-period delta-method estimates and standard
-  errors used by the Diagnostic report.
+- `hessian/check-summary.csv`: 60-partition completion and eigenvalue summary.
+- `hessian/check-unit-status.csv`: status of every partition.
+- `hessian/neigenvalues` and `hessian/mfcl_*_log.txt`: native eigen and stitch
+  records.
+- `uncertainty/annual-hessian-time-series.csv`: annual native-MFCL estimates
+  with nested 50%, 80% and 95% Hessian delta-method intervals.
+- `uncertainty/quarterly-hessian-time-series.csv`: matching quarterly estimates
+  and intervals before annual aggregation.
 
-Run `../../run-final` to regenerate standard MFCL outputs and restore these
-Hessian files without repeating the long calculation. Use `../../verify` to
-validate all committed SHA-256 checksums.
+The original compact Kflow attachment did not contain the large native
+`bet.hes`; Job 22196 restored it from all 60 verified partitions for report
+rendering. This repository does not substitute files from the preceding tau=1
+model. Use `../../verify` to validate every committed checksum.

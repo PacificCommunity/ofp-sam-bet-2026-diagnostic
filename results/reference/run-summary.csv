@@ -1,2 +1,2 @@
-model,source_dir,final_stage,final_par_sha256,status
-K020-tau-not-estimated-sel20c-f10-ndpen-weak-seed23-base,explorations/K020-tau-not-estimated-sel20c-f10-ndpen-weak-seed23-base,11.par,6a7a4489ec40fa8223c9c3aac831a46c4eaa810654a35af0a537cf6b04fb2eed,completed
+model,source_job,source_commit,final_stage,final_par_sha256,effective_ini_sha256,status
+Diagnostic,21641,3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6,11.par,21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3,fbd064c3d0ccb4d2e1b9beb06fe3eacf0180677821e6a1773d20b308474d984e,completed

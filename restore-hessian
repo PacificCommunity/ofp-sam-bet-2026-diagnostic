@@ -5,7 +5,7 @@ root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 target=${1:-$root/final-run}
 case "$target" in /*) ;; *) target=$root/$target ;; esac
 reference=$root/results/reference
-expected=6a7a4489ec40fa8223c9c3aac831a46c4eaa810654a35af0a537cf6b04fb2eed
+expected=21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3
 
 if [ ! -s "$target/final.par" ]; then
   echo "Missing fitted PAR: $target/final.par" >&2
@@ -13,7 +13,7 @@ if [ ! -s "$target/final.par" ]; then
 fi
 observed=$(sha256sum "$target/final.par" | awk '{print $1}')
 if [ "$observed" != "$expected" ]; then
-  echo "The archived Hessian belongs to a different final PAR." >&2
+  echo "The archived Hessian diagnostics belong to a different final PAR." >&2
   echo "Expected: $expected" >&2
   echo "Observed: $observed" >&2
   exit 2
@@ -30,4 +30,4 @@ cp "$reference/model_payload.rds" "$target/model_payload.rds"
 cp "$reference/model_payload_manifest.csv" "$target/model_payload_manifest.csv"
 cp "$reference/model_payload_manifest.json" "$target/model_payload_manifest.json"
 (cd "$target/hessian" && sha256sum -c SHA256SUMS)
-echo "Archived full Hessian and compact diagnostic payload restored to: $target"
+echo "Archived Hessian diagnostics and compact diagnostic payload restored to: $target"
