@@ -30,7 +30,7 @@ On 64-bit Linux:
 ./doitall
 ```
 
-`./doitall` runs the Diagnostic model `S0.90-F2`, matching Job 21641. Select another model and a fresh output directory
+`./doitall` runs the `Diagnostic` model matching Job 21641. The legacy tau=1 workflow is retained on its separate branch.
 with:
 
 ```sh
@@ -56,8 +56,8 @@ directly in MFCL Shiny.
 ## Diagnostic report
 
 The branch includes one Kflow task using the same `model/doitall.sh` recipe as
-the standalone run. `MODEL_ID` selects one of the 27 explicit model inputs; the
-default is `S0.90-F2` (the Job 21641 Diagnostic model). Jobs use the pinned `tuna-flow:v2.5` image and install
+the standalone run. The main workflow uses the explicit `Diagnostic` input
+matching Job 21641. Jobs use the pinned `tuna-flow:v2.5` image and install
 the latest-at-submission `mfclkit` (`cf786007`) and `mfclshiny` (`542ac93b`)
 revisions before fitting. The original 24 definitions remain unchanged; the
 three `F5` jobs add the independent F10+F33-logistic comparison.

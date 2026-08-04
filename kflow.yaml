@@ -13,16 +13,16 @@ resources:
 exclude_machines: []
 exclude_slots: []
 env:
-  JOB_TITLE: BET 2026 Diagnostic model | Job 21641 basis | S0.90-F2 | h=0.90 fixed | tau=2 fixed
+  JOB_TITLE: BET 2026 Diagnostic model | Job 21641 | h=0.90 fixed | F10+F33 weak penalties | tau=2 fixed
   JOB_DESCRIPTION: Job 21641 Diagnostic model basis; fixed steepness 0.90; F10 and F33 weak non-decreasing selectivity (F2); direct negative-binomial tau=2 fixed; ordinary makepar initialization with no seed or checkpoint.
-  MODEL_LABEL: Diagnostic model | S0.90-F2 | h=0.90 fixed | tau=2 fixed
-  JOB_KEY: diagnostic-s090-f2-tau2-fixed
+  MODEL_LABEL: Diagnostic model | h=0.90 fixed | F10+F33 weak penalties | tau=2 fixed
+  JOB_KEY: diagnostic-job21641-tau2-fixed
   FLOW_GROUP: bet-2026-tau2-steepness-selectivity-grid
   FLOW_SPECIES: BET
   FLOW_SPECIES_LABEL: bigeye tuna
   FLOW_ASSESSMENT_YEAR: "2026"
   PROGRAM_PATH: /home/mfcl/mfclo64
-  MODEL_ID: S0.90-F2
+  MODEL_ID: Diagnostic
   BET_PHASE10_11_CONVERGENCE: "-4"
   KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "true"
   KFLOW_RUNTIME_UPDATE: auto
@@ -207,9 +207,9 @@ metadata:
   parest_305: "1"
   fish_pars_4: "0"
   fish_flag_43: "0"
-  model_id: S0.90-F2
+  model_id: Diagnostic
   steepness: "0.80"
   selectivity_model: F1
   mfclkit_ref: cf786007b5261f84faac8f3d24f7084bd323119d
   mfclshiny_ref: 542ac93b7ce0b6d0df70301891e668701d439857
-  model_label: Diagnostic model | S0.90-F2 | h=0.90 fixed | tau=2 fixed
+  model_label: Diagnostic model | h=0.90 fixed | F10+F33 weak penalties | tau=2 fixed

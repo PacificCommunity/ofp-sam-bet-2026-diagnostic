@@ -44,14 +44,12 @@ dm_concentration=7
 echo "DM controls: Nmax=$dm_nmax; grouped fish_pars(22) fixed at $dm_concentration; fish_pars(23) estimated"
 echo "Tag overdispersion: tau fixed at 2 under the direct parameterization (parest 305=1; fish_pars(4)=0; fish flags 43/44=0)"
 
-requested_model_id=${MODEL_ID:-S0.90-F2}
+requested_model_id=${MODEL_ID:-Diagnostic}
 case "$requested_model_id" in
-  S0.80-F1|S0.80-F2|S0.80-F3|S0.80-F4|S0.80-F5|S0.80-P1|S0.80-P2|S0.80-P3|S0.80-P4|\
-  S0.85-F1|S0.85-F2|S0.85-F3|S0.85-F4|S0.85-F5|S0.85-P1|S0.85-P2|S0.85-P3|S0.85-P4|\
-  S0.90-F1|S0.90-F2|S0.90-F3|S0.90-F4|S0.90-F5|S0.90-P1|S0.90-P2|S0.90-P3|S0.90-P4)
+  Diagnostic)
     ;;
   *)
-    echo "MODEL_ID must be S0.80, S0.85 or S0.90 followed by F1-F5 or P1-P4." >&2
+    echo "MODEL_ID must be Diagnostic for the Job 21641 main workflow." >&2
     exit 40
     ;;
 esac
