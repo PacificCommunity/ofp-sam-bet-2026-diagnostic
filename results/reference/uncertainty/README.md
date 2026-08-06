@@ -6,8 +6,8 @@ contain the verified annual and quarterly point estimates and nested pointwise
 report. They cover depletion, spawning potential and recruitment for
 1952--2024.
 
-The table was calculated from the Job 21641 final fit and the full native MFCL
-Hessian restored by Job 22196. Native MFCL dependent-variable gradients were
+The table was calculated from the Job 21641 final fit and the full MFCL
+Hessian restored by Job 22196. MFCL dependent-variable gradients were
 used for the fitted and zero-fishing trajectories. Quarterly spawning potential
 was averaged, quarterly recruitment was summed, and annual depletion was formed
 as the annual mean of the quarterly spawning-potential ratios. The corresponding

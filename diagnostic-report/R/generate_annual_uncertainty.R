@@ -35,11 +35,11 @@ sha256 <- function(path) {
 
 source_files <- file.path(gradient_dir, names(expected_sha))
 missing <- source_files[!file.exists(source_files)]
-if (length(missing)) stop("Missing native MFCL source file: ", missing[[1L]], call. = FALSE)
+if (length(missing)) stop("Missing MFCL source file: ", missing[[1L]], call. = FALSE)
 observed_sha <- vapply(source_files, sha256, character(1L))
 if (!identical(unname(observed_sha), unname(expected_sha))) {
   mismatch <- names(expected_sha)[observed_sha != expected_sha]
-  stop("Native MFCL source checksum mismatch: ", paste(mismatch, collapse = ", "), call. = FALSE)
+  stop("MFCL source checksum mismatch: ", paste(mismatch, collapse = ", "), call. = FALSE)
 }
 
 read_native_matrix <- function(path) {
@@ -52,7 +52,7 @@ read_native_matrix <- function(path) {
     size = 8L, endian = "little"
   )
   if (length(values) != n_parameter * n_derived) {
-    stop("Incomplete native MFCL gradient matrix: ", path, call. = FALSE)
+    stop("Incomplete MFCL gradient matrix: ", path, call. = FALSE)
   }
   matrix(values, nrow = n_derived, ncol = n_parameter, byrow = TRUE)
 }
@@ -66,7 +66,7 @@ read_native_hessian <- function(path) {
     size = 8L, endian = "little"
   )
   if (length(values) != n_parameter * n_parameter) {
-    stop("Incomplete native MFCL Hessian: ", path, call. = FALSE)
+    stop("Incomplete MFCL Hessian: ", path, call. = FALSE)
   }
   value <- matrix(values, nrow = n_parameter, ncol = n_parameter, byrow = TRUE)
   (value + t(value)) / 2
@@ -74,7 +74,7 @@ read_native_hessian <- function(path) {
 
 read_labels <- function(path) {
   lines <- readLines(path, warn = FALSE)
-  if (length(lines) %% 2L != 0L) stop("Incomplete native MFCL label file: ", path, call. = FALSE)
+  if (length(lines) %% 2L != 0L) stop("Incomplete MFCL label file: ", path, call. = FALSE)
   data.frame(
     value = as.numeric(lines[seq.int(1L, length(lines), by = 2L)]),
     label = lines[seq.int(2L, length(lines), by = 2L)],
@@ -85,7 +85,7 @@ read_labels <- function(path) {
 indexed_rows <- function(labels, prefix, count) {
   wanted <- paste0(prefix, "(", seq_len(count), ")")
   rows <- match(wanted, labels$label)
-  if (anyNA(rows)) stop("Missing native MFCL dependent variable: ", wanted[is.na(rows)][[1L]], call. = FALSE)
+  if (anyNA(rows)) stop("Missing MFCL dependent variable: ", wanted[is.na(rows)][[1L]], call. = FALSE)
   rows
 }
 
@@ -107,13 +107,13 @@ gradient <- read_native_matrix(file.path(gradient_dir, "bet.dep"))
 gradient_noeff <- read_native_matrix(file.path(gradient_dir, "bet.dp2"))
 hessian <- read_native_hessian(file.path(gradient_dir, "bet.hes"))
 if (ncol(gradient) != 1997L || ncol(gradient_noeff) != 1997L || nrow(hessian) != 1997L) {
-  stop("Native MFCL Hessian and gradient dimensions do not match 1,997 parameters.", call. = FALSE)
+  stop("MFCL Hessian and gradient dimensions do not match 1,997 parameters.", call. = FALSE)
 }
 
 labels <- read_labels(file.path(gradient_dir, "deplabel.tmp"))
 labels_noeff <- read_labels(file.path(gradient_dir, "deplabel_noeff.tmp"))
 if (nrow(labels) != nrow(gradient) || nrow(labels_noeff) != nrow(gradient_noeff)) {
-  stop("Native MFCL labels do not match the gradient matrices.", call. = FALSE)
+  stop("MFCL labels do not match the gradient matrices.", call. = FALSE)
 }
 
 adult_rows <- indexed_rows(labels, "adult_rbio", 292L)
@@ -164,7 +164,7 @@ label_estimate <- c(
 )
 relative_error <- abs(label_estimate - estimate) / pmax(abs(estimate), .Machine$double.eps)
 if (max(relative_error) > 5e-4) {
-  stop("Annual aggregation does not reproduce the native MFCL point estimates.", call. = FALSE)
+  stop("Annual aggregation does not reproduce the MFCL point estimates.", call. = FALSE)
 }
 
 chol_hessian <- chol(hessian)
@@ -197,7 +197,7 @@ result <- data.frame(
   gradient_sha256 = unname(expected_sha[["bet.dep"]]),
   noeff_gradient_sha256 = unname(expected_sha[["bet.dp2"]]),
   method = paste(
-    "native MFCL dependent-variable gradients; annual log-scale delta method",
+    "MFCL dependent-variable gradients; annual log-scale delta method",
     "retaining full within-year covariance"
   ),
   stringsAsFactors = FALSE
@@ -230,13 +230,13 @@ quarterly_result <- data.frame(
   hessian_sha256 = unname(expected_sha[["bet.hes"]]),
   gradient_sha256 = unname(expected_sha[["bet.dep"]]),
   noeff_gradient_sha256 = unname(expected_sha[["bet.dp2"]]),
-  method = "native MFCL quarterly dependent-variable gradients; log-scale delta method",
+  method = "MFCL quarterly dependent-variable gradients; log-scale delta method",
   stringsAsFactors = FALSE
 )
 
 utils::write.csv(quarterly_result, quarterly_output_file, row.names = FALSE)
-message("Wrote ", nrow(result), " verified annual native-MFCL estimates to ", output_file)
+message("Wrote ", nrow(result), " verified annual MFCL estimates to ", output_file)
 message(
   "Wrote ", nrow(quarterly_result),
-  " verified quarterly native-MFCL estimates to ", quarterly_output_file
+  " verified quarterly MFCL estimates to ", quarterly_output_file
 )

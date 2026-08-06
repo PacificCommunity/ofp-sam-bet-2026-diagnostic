@@ -14,7 +14,7 @@
 - `hessian/check-unit-status.csv`: status of every partition.
 - `hessian/neigenvalues` and `hessian/mfcl_*_log.txt`: native eigen and stitch
   records.
-- `uncertainty/annual-hessian-time-series.csv`: annual native-MFCL estimates
+- `uncertainty/annual-hessian-time-series.csv`: annual MFCL estimates
   with nested 50%, 80% and 95% Hessian delta-method intervals.
 - `uncertainty/quarterly-hessian-time-series.csv`: matching quarterly estimates
   and intervals before annual aggregation.

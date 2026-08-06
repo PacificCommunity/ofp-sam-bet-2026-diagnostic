@@ -25,7 +25,7 @@ dir.create(figure_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(table_dir, recursive = TRUE, showWarnings = FALSE)
 
 if (!file.exists(variance_file)) {
-  stop("Missing native MFCL delta-method file: ", variance_file, call. = FALSE)
+  stop("Missing MFCL delta-method file: ", variance_file, call. = FALSE)
 }
 
 parse_native_var <- function(path) {
@@ -263,13 +263,13 @@ if (file.exists(hessian_file)) {
 if (file.exists(fit_file)) invisible(file.copy(fit_file, file.path(table_dir, "fit-summary.csv"), overwrite = TRUE))
 
 read_native_hessian <- function(path) {
-  if (!file.exists(path)) stop("Missing native MFCL Hessian: ", path, call. = FALSE)
+  if (!file.exists(path)) stop("Missing MFCL Hessian: ", path, call. = FALSE)
   con <- file(path, "rb")
   on.exit(close(con), add = TRUE)
   n <- readBin(con, integer(), n = 1L, size = 4L, endian = .Platform$endian)
   values <- readBin(con, numeric(), n = n * n, size = 8L, endian = .Platform$endian)
   if (!is.finite(n) || n < 1L || length(values) != n * n) {
-    stop("Native MFCL Hessian is incomplete or has an invalid dimension.", call. = FALSE)
+    stop("The MFCL Hessian is incomplete or has an invalid dimension.", call. = FALSE)
   }
   hessian <- matrix(values, nrow = n, ncol = n, byrow = TRUE)
   # MFCL itself averages the two finite-difference triangles before its
@@ -384,7 +384,7 @@ build_growth_uncertainty <- function(model_dir,
   if (length(report_mean) < 40L || length(report_sd) < 40L ||
       max(abs(fitted$mean_length - report_mean[seq_len(40L)])) > 1e-3 ||
       max(abs(fitted$sd_length - report_sd[seq_len(40L)])) > 1e-3) {
-    stop("Reconstructed mean/SD length-at-age does not match the native MFCL report.", call. = FALSE)
+    stop("Reconstructed mean/SD length-at-age does not match the MFCL report.", call. = FALSE)
   }
 
   rows <- lapply(seq_len(nrow(fitted)), function(age) {
@@ -479,7 +479,7 @@ build_growth_uncertainty <- function(model_dir,
     internal_estimate = internal_estimate,
     hessian_index = index,
     bound_scale = bound_scale,
-    interval_method = "Multivariate-normal Hessian approximation on the MFCL bounded internal scale, transformed through the native sine bounds",
+    interval_method = "Multivariate-normal Hessian approximation on the MFCL bounded internal scale, transformed through the model sine bounds",
     draws = draws,
     seed = seed,
     draws_at_penalized_bound = outside_bounds,
@@ -491,7 +491,7 @@ build_growth_uncertainty <- function(model_dir,
 
 if (file.exists(hessian_file)) {
   native_hessian_candidates <- list.files(hessian_dir, pattern = "\\.hes$", recursive = TRUE, full.names = TRUE)
-  if (!length(native_hessian_candidates)) stop("Missing matching native MFCL Hessian under: ", hessian_dir, call. = FALSE)
+  if (!length(native_hessian_candidates)) stop("Missing matching MFCL Hessian under: ", hessian_dir, call. = FALSE)
   native_hessian_file <- native_hessian_candidates[[1L]]
   growth_uncertainty <- build_growth_uncertainty(
     model_dir = model_dir,
@@ -521,7 +521,7 @@ if (file.exists(hessian_file)) {
     facet_ncol = 3L
   ) + ggplot2::labs(
     subtitle = paste(
-      "Observed age-length cells by region; all five growth/SD parameters and their covariance are propagated from the native MFCL Hessian"
+      "Observed age-length cells by region; all five growth/SD parameters and their covariance are propagated from the MFCL Hessian"
     )
   )
   uncertainty_width <- rbind(
@@ -556,4 +556,4 @@ if (file.exists(hessian_file)) {
   saveRDS(uncertainty_payload, uncertainty_path, compress = "xz")
 }
 
-message("Wrote native MFCL uncertainty outputs to ", normalizePath(output_dir, mustWork = TRUE))
+message("Wrote MFCL uncertainty outputs to ", normalizePath(output_dir, mustWork = TRUE))

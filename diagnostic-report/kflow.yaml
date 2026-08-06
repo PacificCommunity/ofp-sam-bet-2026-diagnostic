@@ -1,19 +1,26 @@
 name: ofp-sam-bet-2026-diagnostic-report
-description: Build the paper-ready BET 2026 Diagnostic model report, including annual and quarterly native-MFCL Hessian intervals for depletion, spawning potential and recruitment, 400-DPI PNG/PDF figures, tables and an offline viewer.
+description: Build the public BET 2026 Diagnostic model report with model-fit and diagnostic figures, supported Hessian intervals, Word/LaTeX tables and a self-contained likelihood-profile viewer.
+branch: main
 command: bash diagnostic-report/run.sh
 docker_image: ghcr.io/pacificcommunity/tuna-flow:v2.5@sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360
-remote_host: suva
+remote_host: kflow-local-kyuhank-nc240124
 remote_user: kyuhank
 remote_base_dir: /home/kyuhank/KflowOutput
-slot_requirements: 'regexp("^suvofp", Machine)'
+checkout:
+  mode: sparse
+  paths:
+    - diagnostic-report
+    - results/reference/model_payload.rds
+    - model/fishery_map.R
+    - model/tag_rep_map.R
 resources:
   cpus: 4
   memory: 24GB
   disk: 40GB
 env:
-  JOB_TITLE: BET 2026 Diagnostic model report | Annual Hessian uncertainty
-  JOB_DESCRIPTION: Verified Diagnostic model report from Job 21641; h=0.90 and tau=2 fixed; annual and quarterly native-MFCL Hessian intervals for depletion, spawning potential and recruitment; report-ready figures, tables and downloads.
-  MODEL_JOB: "21641"
+  JOB_TITLE: BET 2026 Diagnostic model report
+  JOB_DESCRIPTION: Public report for Diagnostic Job 22974 with model fit, diagnostic checks, supported Hessian intervals and a self-contained likelihood-profile viewer.
+  MODEL_JOB: "22974"
   REPORT_OUTPUT_DIR: diagnostic-report-output
   DIAGNOSTIC_REPORT_DPI: "400"
   FLOW_SPECIES: BET
@@ -22,20 +29,30 @@ env:
   FLR4MFCL_GITHUB_REF: ff8367fcec19baff98333170c0f1bca3f9903029
   MFCLKIT_GITHUB_REF: cf786007b5261f84faac8f3d24f7084bd323119d
   MFCLSHINY_GITHUB_REF: a8dffd78de61c99af8cf5b1f6995e861157dc96c
-  KFLOW_RUNTIME_GITHUB_AUTH: "true"
-  KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME: "true"
+  KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES: "false"
+  KFLOW_RUNTIME_UPDATE: "off"
 tags:
   stage: diagnostic-model-report
   species: BET
   assessment_year: "2026"
 output_patterns:
   - diagnostic-report-output/**
+artifacts:
+  - path: diagnostic-report-output/bet-2026-diagnostic-report.html
+    label: BET 2026 Diagnostic model report
+    render: true
+  - path: diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
+    label: Likelihood-profile viewer
+    render: true
+  - path: diagnostic-report-output/latex-table-validation.pdf
+    label: LaTeX table validation
+    render: true
 metadata:
   input_jobs_override: true
   source_model_count: 1
-  source_model_job: 21641
+  source_model_job: 22974
   source_hessian_job: 22020
   raw_hessian_restore_job: 22196
   expected_final_par_sha256: 21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3
   report_style: paper-ready
-  source_model_policy: staged-job-only
+  source_model_policy: repository-compact-payload

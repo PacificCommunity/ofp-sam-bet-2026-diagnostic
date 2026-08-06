@@ -1,43 +1,57 @@
 # BET 2026 Diagnostic model report
 
-The report is built from the Diagnostic model payload with the committed final PAR.
-It never falls back to the earlier tau=1 Diagnostic result.
+This directory builds the public report for Diagnostic Job 22974. The report
+uses only repository-contained, compact inputs:
 
-Submit the report from the completed Diagnostic job:
+- `data/diagnostic-report-data.rds` contains the summarized Hessian, jitter,
+  retrospective, self-test, ASPM and likelihood-profile results.
+- `../results/reference/model_payload.rds` contains the fitted model output
+  needed for the model-fit figures.
+
+No Kflow job output is staged at report-render time. The compact RDS contains
+no scheduler paths, access credentials or raw working directories.
+
+## Outputs
+
+The build creates:
+
+- a tabbed public HTML report;
+- a self-contained likelihood-profile viewer;
+- 400-dpi PNG and vector PDF figures;
+- CSV tables and LaTeX `longtable` fragments;
+- an A4 PDF that compiles every LaTeX table fragment; and
+- captions and a build manifest.
+
+Hessian delta-method intervals are shown only where the required derivatives
+are available. Length-composition bands are observation-level predictive
+intervals, regional age-length bands describe fitted length-at-age
+variability, and CPUE bands use the model's fixed regional log-scale
+observation errors. These bands are labelled separately in the report.
+
+## Local build
 
 ```sh
-KFLOW_API_TOKEN=... python3 diagnostic-report/submit.py MODEL_JOB
-```
-
-For a local build:
-
-```sh
-DIAGNOSTIC_MODEL_DIR=/path/to/model \
 MFCLSHINY_REPO=/path/to/mfclshiny \
-bash diagnostic-report/run.sh
+  REPORT_OUTPUT_DIR=diagnostic-report-output \
+  bash diagnostic-report/run.sh
 ```
 
-The model directory must contain `model_payload.rds`; the payload must restore
-the committed final PAR checksum. The matching native Hessian matrix is
-required. Both
-`final.par` and `bet.hes` are checksum-verified before rendering.
+When `MFCLSHINY_REPO` is not supplied, the script installs the pinned public
+package revisions into a report-local R library.
 
-Outputs include a self-contained paper-ready HTML report, 400-dpi PNG and
-vector PDF figures, CSV and LaTeX tables, figure/table indexes and an offline
-interactive viewer. Report tables and figures include Word and LaTeX copy
-controls.
+## Kflow Local
 
-The Hessian section includes separate annual and quarterly figures for
-depletion, spawning potential and recruitment with nested pointwise 50%, 80%
-and 95% delta-method intervals.
-Quarterly recruitment is
-summed, spawning potential is averaged, and depletion is the annual mean of
-the quarterly spawning-potential ratios. These transformations use the native
-MFCL dependent-variable gradients and retain the full within-year covariance
-rather than adding quarterly standard errors or confidence limits.
+The checked-in Kflow configuration targets the configured Kflow Local worker, not a remote cluster.
 
-The verified reference table can be regenerated from the native `bet.dep`,
-`bet.dp2`, label files and `bet.hes` with
-`diagnostic-report/R/generate_annual_uncertainty.R`. The generator writes both
-annual and quarterly reference tables; its checksum locks prevent mixing
-gradients or a Hessian from another fit.
+```sh
+KFLOW_API_TOKEN=... python3 diagnostic-report/submit.py
+```
+
+Use `--dry-run` to inspect the submission payload without contacting Kflow.
+
+## Rebuilding the compact payload
+
+`R/prepare_public_payload.R` recreates the report RDS from the completed check
+archives and applies the public-output audit. This preparation step is not
+part of the report-render job because the public report is intentionally
+independent of raw scheduler artifacts.
