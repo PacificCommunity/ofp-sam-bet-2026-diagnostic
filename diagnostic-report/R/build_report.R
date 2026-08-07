@@ -299,39 +299,89 @@ save_figure(p_dynamics, "diagnostic-population-dynamics", width = 7.1, height = 
 
 # Likelihood profiles: each curve is expressed relative to its own minimum --
 profile <- report_data$likelihood_profile$components
+expected_profile_components <- c("Total", "Indices", "LFs", "Age", "Tags", "Penalties")
+if (!all(expected_profile_components %in% unique(profile$component))) {
+  stop("Likelihood-profile payload is missing one or more broad components.", call. = FALSE)
+}
+if (any(!is.finite(profile$biomass_ratio)) || any(!is.finite(profile$value))) {
+  stop("Likelihood-profile payload contains non-finite broad-component values.", call. = FALSE)
+}
 profile$component <- factor(
   profile$component,
-  levels = c("Total", "Indices", "LFs", "Age", "Tags", "Penalties")
+  levels = expected_profile_components
 )
 profile <- profile[!is.na(profile$component), , drop = FALSE]
+profile_wide <- reshape(
+  profile[, c("biomass_ratio", "component", "value")],
+  idvar = "biomass_ratio", timevar = "component", direction = "wide"
+)
+profile_value_columns <- paste0("value.", expected_profile_components)
+if (!all(profile_value_columns %in% names(profile_wide)) || any(!stats::complete.cases(profile_wide[, profile_value_columns]))) {
+  stop("Broad likelihood components do not share a complete profile grid.", call. = FALSE)
+}
+profile_closure <- profile_wide$value.Total - rowSums(profile_wide[, profile_value_columns[-1L], drop = FALSE])
+if (max(abs(profile_closure)) > 1e-6) {
+  stop("Broad likelihood components do not close to the total objective.", call. = FALSE)
+}
+profile_objective <- merge(
+  profile_wide[, c("biomass_ratio", "value.Total")],
+  report_data$likelihood_profile$points[, c("biomass_ratio", "objective")],
+  by = "biomass_ratio"
+)
+if (!nrow(profile_objective) || max(abs(profile_objective$value.Total - profile_objective$objective)) > 1e-6) {
+  stop("Total likelihood profile does not match the profile objective values.", call. = FALSE)
+}
 component_minimum <- do.call(rbind, lapply(split(profile, profile$component), function(z) {
   z[which.min(z$value), c("component", "value"), drop = FALSE]
 }))
 names(component_minimum)[names(component_minimum) == "value"] <- "minimum_value"
 profile <- merge(profile, component_minimum, by = "component", all.x = TRUE)
 profile$delta_nll <- profile$value - profile$minimum_value
+if (any(abs(vapply(split(profile$delta_nll, profile$component), min, numeric(1L))) > 1e-10)) {
+  stop("Broad likelihood profiles were not normalized to their own minima.", call. = FALSE)
+}
 profile$component <- factor(profile$component, levels = c("Total", "Indices", "LFs", "Age", "Tags", "Penalties"))
+profile_colours <- c(
+  "Total" = navy,
+  "Indices" = "#0072B2",
+  "LFs" = "#D55E00",
+  "Age" = "#6A5AA7",
+  "Tags" = "#009E73",
+  "Penalties" = "#6B7280"
+)
+profile_labels <- c(
+  "Total" = "Total",
+  "Indices" = "CPUE indices",
+  "LFs" = "Size composition",
+  "Age" = "Age-at-length",
+  "Tags" = "Tag data",
+  "Penalties" = "Penalties"
+)
 p_profile <- ggplot2::ggplot(profile, ggplot2::aes(x = biomass_ratio, y = delta_nll)) +
   ggplot2::geom_hline(yintercept = 0, colour = "#8A989E", linewidth = 0.35) +
   ggplot2::geom_vline(xintercept = 1, colour = red, linetype = 2, linewidth = 0.55) +
-  ggplot2::geom_line(colour = navy, linewidth = 0.8) +
-  ggplot2::geom_point(colour = teal, size = 1.2) +
-  ggplot2::geom_hline(
-    data = data.frame(component = factor("Total", levels = levels(profile$component)), threshold = 1.92),
-    ggplot2::aes(yintercept = threshold), colour = orange, linetype = 3, linewidth = 0.55,
-    inherit.aes = FALSE
-  ) +
-  ggplot2::facet_wrap(~component, scales = "free_y", ncol = 3) +
+  ggplot2::geom_hline(yintercept = 1.92, colour = orange, linetype = 3, linewidth = 0.55) +
+  ggplot2::geom_line(ggplot2::aes(colour = component), linewidth = 0.82, lineend = "round") +
+  ggplot2::geom_point(ggplot2::aes(colour = component), size = 1.25) +
+  ggplot2::scale_colour_manual(values = profile_colours, labels = profile_labels, drop = FALSE) +
   ggplot2::labs(
     x = "Total average biomass / fitted value",
-    y = expression(Delta~"negative log likelihood")
+    y = expression(Delta~"negative log likelihood"),
+    colour = NULL
   ) +
   theme_report(10) +
-  ggplot2::theme(legend.position = "none")
-save_figure(p_profile, "likelihood-profile-components", width = 7.1, height = 5.3)
+  ggplot2::theme(
+    legend.position = "bottom",
+    legend.box = "horizontal",
+    legend.text = ggplot2::element_text(size = 8)
+  )
+save_figure(p_profile, "likelihood-profile-components", width = 7.1, height = 4.8)
 
 # Interactive likelihood-profile viewer ------------------------------------
 detail <- report_data$likelihood_profile$detail
+if (any(!is.finite(detail$biomass_ratio)) || any(!is.finite(detail$value))) {
+  stop("Likelihood-profile payload contains non-finite detailed-component values.", call. = FALSE)
+}
 detail_minimum <- do.call(rbind, lapply(split(detail, interaction(detail$detail_group, detail$detail, drop = TRUE)), function(z) {
   z[which.min(z$value), c("detail_group", "detail", "value"), drop = FALSE]
 }))
@@ -339,17 +389,31 @@ names(detail_minimum)[names(detail_minimum) == "value"] <- "minimum_value"
 detail <- merge(detail, detail_minimum, by = c("detail_group", "detail"), all.x = TRUE)
 detail$delta_nll <- detail$value - detail$minimum_value
 detail <- detail[is.finite(detail$biomass_ratio) & is.finite(detail$delta_nll), , drop = FALSE]
+detail_curve <- interaction(detail$detail_group, detail$detail, drop = TRUE)
+if (any(abs(vapply(split(detail$delta_nll, detail_curve), min, numeric(1L))) > 1e-10)) {
+  stop("Detailed likelihood profiles were not normalized to their own minima.", call. = FALSE)
+}
 
 viewer <- plotly::plot_ly()
 trace_groups <- character()
+detail_colours <- c(
+  "CPUE index" = "rgba(0,114,178,0.58)",
+  "Length frequency" = "rgba(213,94,0,0.58)",
+  "Penalty" = "rgba(107,114,128,0.58)",
+  "Tag release group" = "rgba(204,121,167,0.58)",
+  "Weight frequency" = "rgba(0,158,115,0.58)"
+)
 for (component in levels(profile$component)) {
   z <- profile[profile$component == component, , drop = FALSE]
   if (!nrow(z)) next
   z <- z[order(z$biomass_ratio), , drop = FALSE]
   viewer <- plotly::add_trace(
     viewer, data = z, x = ~biomass_ratio, y = ~delta_nll,
-    type = "scatter", mode = "lines+markers", name = component,
-    line = list(width = 2), marker = list(size = 5), visible = TRUE,
+    type = "scatter", mode = "lines+markers", name = unname(profile_labels[[component]]),
+    line = list(color = unname(profile_colours[[component]]), width = 2.35),
+    marker = list(color = unname(profile_colours[[component]]), size = 4.6,
+                  line = list(color = "#FFFFFF", width = 0.55)),
+    visible = TRUE,
     text = ~paste0(
       "Component: ", component,
       "<br>Biomass ratio: ", sprintf("%.3f", biomass_ratio),
@@ -369,7 +433,8 @@ for (group in detail_groups) {
     viewer <- plotly::add_trace(
       viewer, data = z, x = ~biomass_ratio, y = ~delta_nll,
       type = "scatter", mode = "lines", name = item,
-      legendgroup = group, visible = FALSE, line = list(width = 1.4),
+      legendgroup = group, showlegend = FALSE, visible = FALSE,
+      line = list(color = unname(detail_colours[[group]]), width = 1.35),
       text = ~paste0(
         "Group: ", detail_group,
         "<br>Item: ", detail,
@@ -386,7 +451,10 @@ buttons <- lapply(c("Broad components", detail_groups), function(group) {
     method = "update",
     args = list(
       list(visible = trace_groups == group),
-      list(title = list(text = group, x = 0.02, xanchor = "left"), showlegend = TRUE)
+      list(
+        title = list(text = group, x = 0.02, xanchor = "left"),
+        showlegend = identical(group, "Broad components")
+      )
     ),
     label = group
   )
@@ -394,9 +462,16 @@ buttons <- lapply(c("Broad components", detail_groups), function(group) {
 viewer <- plotly::layout(
   viewer,
   title = list(text = "Broad components", x = 0.02, xanchor = "left"),
-  xaxis = list(title = "Total average biomass / fitted value", zeroline = FALSE),
-  yaxis = list(title = "Change in negative log likelihood", zeroline = TRUE),
-  legend = list(orientation = "h", y = -0.22),
+  xaxis = list(
+    title = "Total average biomass / fitted value", zeroline = FALSE,
+    gridcolor = "#E5ECEF", linecolor = "#78909C", ticks = "outside"
+  ),
+  yaxis = list(title = "Change in negative log likelihood", zeroline = TRUE,
+               zerolinecolor = "#8A989E", gridcolor = "#E5ECEF",
+               linecolor = "#78909C", ticks = "outside"),
+  legend = list(orientation = "h", y = -0.22, x = 0.01, xanchor = "left"),
+  font = list(family = "Arial, sans-serif", color = "#17384A", size = 13),
+  paper_bgcolor = "#FFFFFF", plot_bgcolor = "#FFFFFF",
   margin = list(l = 75, r = 25, b = 125, t = 90),
   updatemenus = list(list(
     type = "dropdown", buttons = buttons, x = 0.99, xanchor = "right",
