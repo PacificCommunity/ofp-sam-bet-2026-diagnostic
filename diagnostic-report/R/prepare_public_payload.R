@@ -130,6 +130,29 @@ fishery_map <- read_mapping(file.path(repo_root, "model", "fishery_map.R"), "fis
 tag_reporting_groups <- read_mapping(file.path(repo_root, "model", "tag_rep_map.R"), "tag_rep_map")
 tag_release_groups <- read_mapping(file.path(repo_root, "model", "tag_rep_map.R"), "tag_release_map")
 
+# MFCL stores the age-at-length likelihood as one value per observed
+# year--month--fishery record.  Preserve that file order, then map records to
+# regions through the public fishery mapping.  This is the same alignment used
+# by mfclshiny; it is deliberately not inferred from a positional split.
+age_profile_records <- function(age_out, fishery_map) {
+  if (is.null(age_out) || !("ALK" %in% methods::slotNames(age_out))) {
+    stop("The diagnostic payload does not contain the age-at-length records.", call. = FALSE)
+  }
+  alk <- methods::slot(age_out, "ALK")
+  key <- c("year", "month", "fishery")
+  if (!all(key %in% names(alk))) {
+    stop("Age-at-length records are missing year, month or fishery identifiers.", call. = FALSE)
+  }
+  records <- alk[!duplicated(alk[, key, drop = FALSE]), key, drop = FALSE]
+  records$fishery <- as.integer(records$fishery)
+  records$region <- fishery_map$region[match(records$fishery, fishery_map$fishery)]
+  if (!nrow(records) || any(!is.finite(records$region))) {
+    stop("Could not map every age-at-length record to a model region.", call. = FALSE)
+  }
+  records
+}
+age_records <- age_profile_records(payload$data$AgeOut, fishery_map)
+
 # Retrospective checks -------------------------------------------------------
 retro_root <- file.path(model_dir(jobs[["retrospective"]]), "retro")
 retro_files <- list.files(
@@ -228,7 +251,7 @@ selftest_summary <- read_csv(file.path(selftest_root, "check-summary.csv"))
 
 # ASPM checks ----------------------------------------------------------------
 aspm_root <- file.path(model_dir(jobs[["aspm"]]), "aspm")
-aspm_variants <- c(constant = "ASPM, constant recruitment", fitted = "ASPM, fitted recruitment")
+aspm_variants <- c(constant = "ASPM")
 aspm_annual <- bind_rows_base(lapply(names(aspm_variants), function(variant) {
   folder <- file.path(aspm_root, variant)
   value <- get("mfclshiny_diagnostic_payload", asNamespace("mfclshiny"))(
@@ -257,7 +280,7 @@ aspm_info <- bind_rows_base(lapply(names(aspm_variants), function(variant) {
     completed = isTRUE(first_value(x$run_completed, FALSE)),
     converged = isTRUE(first_value(x$converged, FALSE)),
     active_parameters = as.integer(first_value(x$active_parameter_count)),
-    recruitment = if (identical(variant, "constant")) "Constant" else "Estimated",
+    recruitment = "Constant",
     stringsAsFactors = FALSE
   )
 }))
@@ -313,6 +336,24 @@ slot_detail <- function(likelihood, slot_name, component, labels = NULL) {
     stringsAsFactors = FALSE
   )
 }
+age_region_detail <- function(likelihood, records, expected_age) {
+  if (is.null(likelihood) || !("age_length" %in% methods::slotNames(likelihood))) return(data.frame())
+  values <- suppressWarnings(as.numeric(methods::slot(likelihood, "age_length")))
+  if (length(values) != nrow(records) || any(!is.finite(values))) {
+    stop("Age-at-length likelihood values do not align with the observed-record map.", call. = FALSE)
+  }
+  totals <- vapply(seq_len(5L), function(region) sum(values[records$region == region]), numeric(1L))
+  tolerance <- 1e-6 * max(1, abs(expected_age))
+  if (!is.finite(expected_age) || abs(sum(totals) - expected_age) > tolerance) {
+    stop("Regional age-at-length likelihood does not close to the broad CAAL component.", call. = FALSE)
+  }
+  data.frame(
+    detail_group = "CAAL region",
+    detail = paste("Region", seq_len(5L)),
+    value = totals,
+    stringsAsFactors = FALSE
+  )
+}
 
 profile_points <- list()
 profile_components <- list()
@@ -350,6 +391,7 @@ for (i in seq_along(profile_files)) {
     stringsAsFactors = FALSE
   )
 
+  broad <- NULL
   if (is.data.frame(component_rows) && nrow(component_rows)) {
     broad <- tool_env$mfclshiny_profile_component_values(
       component_rows,
@@ -367,9 +409,10 @@ for (i in seq_along(profile_files)) {
 
   detail <- bind_rows_base(list(
     slot_detail(likelihood, "survey_index", "CPUE index", fishery_map$fishery_name),
-    slot_detail(likelihood, "total_length_fish", "Length frequency", fishery_map$fishery_name),
+    slot_detail(likelihood, "total_length_fish", "LF", fishery_map$fishery_name),
     slot_detail(likelihood, "total_weight_fish", "Weight frequency", fishery_map$fishery_name),
-    slot_detail(likelihood, "tag_rel_fish", "Tag release group", paste0("Group ", seq_len(98L)))
+    slot_detail(likelihood, "tag_rel_fish", "Tag release group", paste0("Group ", seq_len(98L))),
+    if (!is.null(broad) && "Age" %in% names(broad)) age_region_detail(likelihood, age_records, as.numeric(broad[["Age"]])) else data.frame()
   ))
   if (is.data.frame(component_rows) && nrow(component_rows)) {
     data_components <- c("Tag", "Length frequency", "Weight frequency", "Age", "CPUE", "Catch")
