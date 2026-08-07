@@ -21,6 +21,11 @@ IMAGE = (
 FLR4MFCL_REF = "ff8367fcec19baff98333170c0f1bca3f9903029"
 MFCLKIT_REF = "cf786007b5261f84faac8f3d24f7084bd323119d"
 MFCLSHINY_REF = "a8dffd78de61c99af8cf5b1f6995e861157dc96c"
+RUNTIME_PACKAGES = (
+    f"FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@{FLR4MFCL_REF},"
+    f"mfclkit=PacificCommunity/ofp-sam-mfclkit@{MFCLKIT_REF},"
+    f"mfclshiny=PacificCommunity/mfclshiny@{MFCLSHINY_REF}"
+)
 
 
 class Kflow:
@@ -109,8 +114,15 @@ def build_payload(branch: str, dpi: int) -> dict:
             "FLR4MFCL_GITHUB_REF": FLR4MFCL_REF,
             "MFCLKIT_GITHUB_REF": MFCLKIT_REF,
             "MFCLSHINY_GITHUB_REF": MFCLSHINY_REF,
-            "KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES": "false",
-            "KFLOW_RUNTIME_UPDATE": "off",
+            "KFLOW_RUNTIME_PACKAGES": "none",
+            "KFLOW_REPO_RUNTIME_PACKAGES": RUNTIME_PACKAGES,
+            "KFLOW_REPO_RUNTIME_UPDATE": "always",
+            "KFLOW_RUNTIME_UPDATE": "always",
+            "TUNA_FLOW_RUNTIME_UPDATE": "always",
+            "KFLOW_RUNTIME_UPDATE_INTERVAL_HOURS": "0",
+            "KFLOW_RUNTIME_REQUIRE_PRIVATE_PACKAGES": "true",
+            "KFLOW_RUNTIME_GITHUB_AUTH": "true",
+            "KFLOW_FORWARD_GITHUB_TOKEN_TO_RUNTIME": "true",
         },
         "tags": {
             "stage": "diagnostic-model-report",
