@@ -36,8 +36,9 @@ MFCLSHINY_REPO=/path/to/mfclshiny \
   bash diagnostic-report/run.sh
 ```
 
-When `MFCLSHINY_REPO` is not supplied, the script installs the pinned public
-package revisions into a report-local R library.
+The Kflow task installs the pinned package revisions before invoking the report.
+For a local build, install those revisions first; `MFCLSHINY_REPO` may point to
+the matching source checkout when developing report figures.
 
 ## Kflow Local
 

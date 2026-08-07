@@ -114,7 +114,7 @@ def build_payload(branch: str, dpi: int) -> dict:
             "FLR4MFCL_GITHUB_REF": FLR4MFCL_REF,
             "MFCLKIT_GITHUB_REF": MFCLKIT_REF,
             "MFCLSHINY_GITHUB_REF": MFCLSHINY_REF,
-            "KFLOW_RUNTIME_PACKAGES": "none",
+            "KFLOW_RUNTIME_PACKAGES": RUNTIME_PACKAGES,
             "KFLOW_REPO_RUNTIME_PACKAGES": RUNTIME_PACKAGES,
             "KFLOW_REPO_RUNTIME_UPDATE": "always",
             "KFLOW_RUNTIME_UPDATE": "always",

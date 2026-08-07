@@ -29,7 +29,7 @@ env:
   FLR4MFCL_GITHUB_REF: ff8367fcec19baff98333170c0f1bca3f9903029
   MFCLKIT_GITHUB_REF: cf786007b5261f84faac8f3d24f7084bd323119d
   MFCLSHINY_GITHUB_REF: a8dffd78de61c99af8cf5b1f6995e861157dc96c
-  KFLOW_RUNTIME_PACKAGES: none
+  KFLOW_RUNTIME_PACKAGES: FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@ff8367fcec19baff98333170c0f1bca3f9903029,mfclkit=PacificCommunity/ofp-sam-mfclkit@cf786007b5261f84faac8f3d24f7084bd323119d,mfclshiny=PacificCommunity/mfclshiny@a8dffd78de61c99af8cf5b1f6995e861157dc96c
   KFLOW_REPO_RUNTIME_PACKAGES: FLR4MFCL=PacificCommunity/ofp-sam-flr4mfcl@ff8367fcec19baff98333170c0f1bca3f9903029,mfclkit=PacificCommunity/ofp-sam-mfclkit@cf786007b5261f84faac8f3d24f7084bd323119d,mfclshiny=PacificCommunity/mfclshiny@a8dffd78de61c99af8cf5b1f6995e861157dc96c
   KFLOW_REPO_RUNTIME_UPDATE: always
   KFLOW_RUNTIME_UPDATE: always

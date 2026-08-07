@@ -18,23 +18,16 @@ if [[ ! -s "$report_root/diagnostic-report/data/diagnostic-report-data.rds" ]]; 
 fi
 export DIAGNOSTIC_REPORT_DPI=${DIAGNOSTIC_REPORT_DPI:-400}
 
-if [[ ! -d "${MFCLSHINY_REPO:-}" ]]; then
-  runtime_root=$(mktemp -d)
-
-  install_repo() {
-    local package=$1
-    local repo=$2
-    local ref=$3
-    local source_dir=$runtime_root/$package
-    echo "[diagnostic-report] installing $package at $ref"
-    GIT_TERMINAL_PROMPT=0 git clone --quiet --filter=blob:none "https://github.com/$repo.git" "$source_dir"
-    GIT_TERMINAL_PROMPT=0 git -C "$source_dir" checkout --quiet "$ref"
-    R CMD INSTALL -l "$report_lib" "$source_dir"
+Rscript -e '
+  required <- c("FLR4MFCL", "mfclkit", "mfclshiny")
+  missing <- required[!vapply(required, requireNamespace, logical(1), quietly = TRUE)]
+  if (length(missing)) {
+    stop(
+      "Missing Kflow runtime package(s): ", paste(missing, collapse = ", "),
+      ". Install the pinned revisions before running the report.",
+      call. = FALSE
+    )
   }
-
-  install_repo FLR4MFCL PacificCommunity/ofp-sam-flr4mfcl "${FLR4MFCL_GITHUB_REF:-ff8367fcec19baff98333170c0f1bca3f9903029}"
-  install_repo mfclkit PacificCommunity/ofp-sam-mfclkit "${MFCLKIT_GITHUB_REF:-cf786007b5261f84faac8f3d24f7084bd323119d}"
-  install_repo mfclshiny PacificCommunity/mfclshiny "${MFCLSHINY_GITHUB_REF:-a8dffd78de61c99af8cf5b1f6995e861157dc96c}"
-fi
+'
 
 exec Rscript "$report_root/diagnostic-report/R/build_report.R" "$report_root" "$output_dir"
