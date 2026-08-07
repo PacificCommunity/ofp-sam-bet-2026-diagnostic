@@ -95,7 +95,7 @@ def build_payload(branch: str, dpi: int) -> dict:
         "output_patterns": ["diagnostic-report-output/**"],
         "artifacts": artifacts,
         "cpus": 4,
-        "memory": "24GB",
+        "memory": "10GB",
         "disk": "40GB",
         "env": {
             "JOB_TITLE": title,
@@ -160,7 +160,7 @@ def main() -> int:
         "remote_host": LOCAL_HOST,
         "remote_base_dir": "/home/kyuhank/KflowOutput",
         "cpus": 4,
-        "memory": "24GB",
+        "memory": "10GB",
         "disk": "40GB",
         "output_patterns": ["diagnostic-report-output/**"],
         "artifacts": payload["artifacts"],
