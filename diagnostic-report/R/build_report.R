@@ -394,7 +394,7 @@ if (any(abs(vapply(split(detail$delta_nll, detail_curve), min, numeric(1L))) > 1
   stop("Detailed likelihood profiles were not normalized to their own minima.", call. = FALSE)
 }
 
-viewer <- plotly::plot_ly()
+viewer <- plotly::plot_ly(height = 650)
 trace_groups <- character()
 detail_colours <- c(
   "CPUE index" = "rgba(0,114,178,0.58)",
