@@ -134,91 +134,18 @@ diagnostic_payload <- get("mfclshiny_diagnostic_payload", asNamespace("mfclshiny
 )
 rep_out <- diagnostic_payload$data$RepOut
 if (is.null(rep_out)) stop("The repository model payload does not contain RepOut.", call. = FALSE)
+par_out <- diagnostic_payload$data$ParOut
+if (is.null(par_out)) stop("The repository model payload does not contain ParOut.", call. = FALSE)
 
-# The profile jobs intentionally omit the fitted scalar from their profile
-# grid.  Recover the original fitted likelihood from the immutable diagnostic
-# payload so that every displayed curve contains its actual x = 1 baseline.
-# This is an observed model output, not an interpolated profile point.
-profile_base_file <- file.path(model_dir, "test_plot_output")
-if (!file.exists(profile_base_file)) {
-  stop("The restored diagnostic payload is missing test_plot_output for the fitted profile baseline.", call. = FALSE)
-}
-profile_base_likelihood <- tryCatch(
-  FLR4MFCL::read.MFCLLikelihood(profile_base_file),
-  error = function(e) NULL
-)
-if (is.null(profile_base_likelihood)) {
-  stop("Could not read the fitted likelihood output for the profile baseline.", call. = FALSE)
-}
-sum_profile_numeric <- function(x) {
-  values <- suppressWarnings(as.numeric(unlist(x, recursive = TRUE, use.names = FALSE)))
-  values <- values[is.finite(values)]
-  if (length(values)) sum(values) else NA_real_
-}
-profile_slot_detail <- function(slot_name, group, labels) {
-  if (!(slot_name %in% methods::slotNames(profile_base_likelihood))) return(data.frame())
-  values <- methods::slot(profile_base_likelihood, slot_name)
-  values <- if (is.list(values)) vapply(values, sum_profile_numeric, numeric(1L)) else suppressWarnings(as.numeric(values))
-  if (length(values) != length(labels)) {
-    stop("Fitted profile baseline has an unexpected ", slot_name, " length.", call. = FALSE)
-  }
-  data.frame(detail_group = group, detail = as.character(labels), value = values, stringsAsFactors = FALSE)
-}
 profile_fishery_map <- report_data$mappings$fisheries
-profile_fishery_labels <- profile_fishery_map$fishery_name[order(profile_fishery_map$fishery)]
-profile_base_detail <- list(
-  profile_slot_detail("survey_index", "CPUE index", profile_fishery_labels),
-  profile_slot_detail("total_length_fish", "LF", profile_fishery_labels),
-  profile_slot_detail("total_weight_fish", "Weight frequency", profile_fishery_labels),
-  profile_slot_detail("tag_rel_fish", "Tag release group", paste0("Group ", seq_len(98L)))
-)
+# The compact public payload deliberately omits raw composition arrays.  Read
+# the age-fit object directly from the materialised public model payload for
+# the report figures below; no execution paths or private model files are
+# retained in the report output.
 profile_age_payload <- get("mfclshiny_diagnostic_payload", asNamespace("mfclshiny"))(
-  model_dir, roles = c("AgeOut", "AgeFitOut")
+  model_dir,
+  roles = c("AgeFitOut")
 )
-profile_age_out <- profile_age_payload$data$AgeOut
-if (!is.null(profile_age_out) && "ALK" %in% methods::slotNames(profile_age_out) &&
-    "age_length" %in% methods::slotNames(profile_base_likelihood)) {
-  profile_age_key <- c("year", "month", "fishery")
-  profile_age_records <- methods::slot(profile_age_out, "ALK")
-  if (!all(profile_age_key %in% names(profile_age_records))) {
-    stop("The fitted age-length records do not identify year, month and fishery.", call. = FALSE)
-  }
-  profile_age_records <- profile_age_records[
-    !duplicated(profile_age_records[, profile_age_key, drop = FALSE]), profile_age_key, drop = FALSE
-  ]
-  profile_age_values <- suppressWarnings(as.numeric(methods::slot(profile_base_likelihood, "age_length")))
-  if (length(profile_age_values) != nrow(profile_age_records)) {
-    stop("The fitted age-length likelihood does not align with its observed records.", call. = FALSE)
-  }
-  profile_age_records$region <- profile_fishery_map$region[
-    match(as.integer(profile_age_records$fishery), profile_fishery_map$fishery)
-  ]
-  if (any(!is.finite(profile_age_records$region))) {
-    stop("Could not map fitted age-length records to model regions.", call. = FALSE)
-  }
-  profile_base_detail[[length(profile_base_detail) + 1L]] <- data.frame(
-    detail_group = "CAAL region",
-    detail = paste("Region", seq_len(5L)),
-    value = vapply(seq_len(5L), function(region) sum(profile_age_values[profile_age_records$region == region]), numeric(1L)),
-    stringsAsFactors = FALSE
-  )
-}
-profile_base_payload <- readRDS(model_payload_file)
-profile_base_components <- profile_base_payload$data$LikelihoodComponents
-if (!is.data.frame(profile_base_components) || !all(c("Component", "Value") %in% names(profile_base_components))) {
-  stop("The restored diagnostic payload lacks fitted likelihood components.", call. = FALSE)
-}
-profile_data_components <- c("Tag", "Length frequency", "Weight frequency", "Age", "CPUE", "Catch")
-profile_base_penalties <- profile_base_components[
-  !(profile_base_components$Component %in% profile_data_components), c("Component", "Value"), drop = FALSE
-]
-names(profile_base_penalties) <- c("detail", "value")
-profile_base_penalties$detail_group <- "Penalty"
-profile_base_detail[[length(profile_base_detail) + 1L]] <- profile_base_penalties[, c("detail_group", "detail", "value")]
-profile_base_detail <- do.call(rbind, Filter(function(x) is.data.frame(x) && nrow(x), profile_base_detail))
-rownames(profile_base_detail) <- NULL
-profile_base_detail$scalar <- 100
-profile_base_detail$biomass_ratio <- 1
 flatten_flquant <- function(x, value_name) {
   value <- as.array(x)
   grid <- expand.grid(dimnames(value), KEEP.OUT.ATTRS = FALSE, stringsAsFactors = FALSE)
@@ -244,19 +171,63 @@ cpue$observed <- exp(cpue$obs_log)
 cpue$fitted <- exp(cpue$fit_log)
 cpue$lower <- exp(cpue$fit_log - stats::qnorm(0.975) * cpue$sd_log)
 cpue$upper <- exp(cpue$fit_log + stats::qnorm(0.975) * cpue$sd_log)
+cpue$standardized_residual <- (cpue$obs_log - cpue$fit_log) / cpue$sd_log
 fishery_lookup <- report_data$mappings$fisheries
 cpue$series <- fishery_lookup$fishery_name[match(cpue$unit, fishery_lookup$fishery)]
 cpue$series <- sub("^[0-9]+[.]", "", cpue$series)
-p_cpue_band <- ggplot2::ggplot(cpue, ggplot2::aes(x = period)) +
-  ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper), fill = blue80, alpha = 0.72) +
-  ggplot2::geom_line(ggplot2::aes(y = fitted, colour = "Fitted"), linewidth = 0.72) +
-  ggplot2::geom_point(ggplot2::aes(y = observed, colour = "Observed"), size = 1.0, alpha = 0.72) +
-  ggplot2::facet_wrap(~series, ncol = 2, scales = "free_y") +
+
+# Pair each index fit directly with its standardised residuals.  The 95%
+# observation-error interval is on the original relative-CPUE scale, whereas
+# the residual reference band is ±1.96 on the model's log-scale SD units.
+cpue$panel <- paste0(cpue$series, " | fit")
+residual_cpue <- cpue
+residual_cpue$panel <- paste0(residual_cpue$series, " | residual")
+panel_order <- as.vector(rbind(
+  paste0(unique(cpue$series), " | fit"),
+  paste0(unique(cpue$series), " | residual")
+))
+cpue$panel <- factor(cpue$panel, levels = panel_order)
+residual_cpue$panel <- factor(residual_cpue$panel, levels = panel_order)
+p_cpue_fit_residual <- ggplot2::ggplot() +
+  ggplot2::geom_rect(
+    data = residual_cpue,
+    ggplot2::aes(xmin = -Inf, xmax = Inf, ymin = -1.96, ymax = 1.96),
+    inherit.aes = FALSE, fill = "#dceff3", alpha = 0.78
+  ) +
+  ggplot2::geom_ribbon(
+    data = cpue,
+    ggplot2::aes(x = period, ymin = lower, ymax = upper),
+    inherit.aes = FALSE, fill = blue80, alpha = 0.68
+  ) +
+  ggplot2::geom_hline(
+    data = residual_cpue, ggplot2::aes(yintercept = 0),
+    inherit.aes = FALSE, colour = "#52656e", linewidth = 0.38, linetype = "22"
+  ) +
+  ggplot2::geom_line(
+    data = cpue, ggplot2::aes(x = period, y = fitted, colour = "Fitted"),
+    inherit.aes = FALSE, linewidth = 1.08
+  ) +
+  ggplot2::geom_point(
+    data = cpue, ggplot2::aes(x = period, y = observed, colour = "Observed"),
+    inherit.aes = FALSE, size = 1.15, alpha = 0.72
+  ) +
+  ggplot2::geom_point(
+    data = residual_cpue, ggplot2::aes(x = period, y = standardized_residual),
+    inherit.aes = FALSE, colour = "#4f2c7f", size = 1.12, alpha = 0.72
+  ) +
+  ggplot2::facet_wrap(~panel, ncol = 2, scales = "free_y") +
   ggplot2::scale_colour_manual(values = c("Observed" = "#313D43", "Fitted" = navy)) +
-  ggplot2::labs(x = "Year", y = "Relative CPUE", colour = NULL, fill = NULL) +
-  theme_report(9.5) +
-  ggplot2::theme(legend.position = "bottom")
-save_figure(p_cpue_band, "cpue-fit-observation-intervals", width = 7.1, height = 6.0)
+  ggplot2::labs(
+    x = "Year", y = "Relative CPUE / standardised residual", colour = NULL,
+    caption = "Residual panels: shaded band = ±1.96 fixed observation-error SD."
+  ) +
+  theme_report(9.2) +
+  ggplot2::theme(
+    legend.position = "bottom",
+    strip.text = ggplot2::element_text(size = 8.8, face = "bold"),
+    plot.caption = ggplot2::element_text(hjust = 0, size = 8.2)
+  )
+save_figure(p_cpue_fit_residual, "cpue-fit-residuals", width = 10.8, height = 12.0)
 
 # Use the requested mfclshiny source tree for the figure registry after the
 # compact payload has been materialized with the installed public API.
@@ -267,7 +238,6 @@ if (isTRUE(use_source_mfclshiny)) {
 mfcl_items <- c(
   "region-map",
   "total-catch-fits", "catch-by-fishery-fits",
-  "cpue-residuals",
   "length-frequency", "length-frequency-residuals",
   "age-data-fit", "age-data-fit-by-region", "age-data-growth-by-region",
   "age-data-residuals-by-region", "age-data-coverage",
@@ -312,10 +282,6 @@ set_selection_state(
     "age-data-residuals-by-region", "age-data-coverage"),
   list(age_fit_facet_ncol = "3")
 )
-set_selection_state(
-  c("fishery-process", "fishery-selectivity-length"),
-  list(fishery_process_facet_ncol = "2")
-)
 set_selection_state("regional-movement", list(fishery_process_facet_ncol = "2"))
 set_selection_state(
   c("depletion-by-area", "recruitment-by-area", "f-juvenile-adult-by-area"),
@@ -330,7 +296,6 @@ selection <- list(
     lf_unc_level = 95,
     population_biology_show_growth_band = TRUE,
     age_fit_facet_ncol = "3",
-    fishery_process_facet_ncol = "2",
     harvest_facet_ncol = "3",
     harvest_show_bmsy = FALSE
   ),
@@ -394,41 +359,121 @@ if (is.list(age_fit) && nrow(age_fit$residuals %||% data.frame())) {
       ggplot2::labs(title = NULL, subtitle = NULL, caption = NULL) +
       ggplot2::theme(plot.margin = ggplot2::margin(5, 7, 5, 5))
   }
-  # `include_all_regions` was added after the pinned report-runtime release.
-  # The older exporter already includes the pooled panel by default, whereas
-  # newer versions need it requested explicitly.  Detect the supported API so
-  # the public report renders with either runtime.
-  age_fit_plot <- function(type) {
-    args <- list(
-      age_fit, type = type, fishery_map = report_data$mappings$fisheries,
-      facet_ncol = 3L
+
+  # The all-fishery mean-age and sampling figures contain 17 fisheries with
+  # age data.  Preserve the full diagnostic information, but use three
+  # columns and enough vertical space for the labels and time series to stay
+  # legible after export.
+  age_fisheries <- sort(unique(suppressWarnings(as.integer(age_fit$annual_fit$fishery))))
+  age_rows <- ceiling(length(age_fisheries) / 3)
+  save_mfcl_figure(
+    regional_age_plot(mfclshiny::plot_mfcl_age_length_fit(
+      age_fit, type = "mean_age", fisheries = age_fisheries,
+      fishery_map = report_data$mappings$fisheries, facet_ncol = 3L
+    )),
+    "age-data-fit", width = 10.8, height = max(15, 1.3 * age_rows + 2)
+  )
+  save_mfcl_figure(
+    regional_age_plot(mfclshiny::plot_mfcl_age_length_fit(
+      age_fit, type = "coverage", fisheries = age_fisheries,
+      fishery_map = report_data$mappings$fisheries, facet_ncol = 3L
+    )),
+    "age-data-coverage", width = 10.8, height = max(24, 2.2 * age_rows + 2)
+  )
+
+  # Construct the regional age cells directly so that the pooled observations
+  # are calculated from the same fitted and observed counts as the regional
+  # panels.  The app's older regional fit helper omits the pooled panel, while
+  # the report needs a consistent 3-by-2 arrangement with All regions last.
+  age_region_map <- unique(report_data$mappings$fisheries[, c("fishery", "region")])
+  age_region_map$fishery <- suppressWarnings(as.integer(age_region_map$fishery))
+  age_region_map$region <- suppressWarnings(as.integer(age_region_map$region))
+  age_residuals <- dplyr::inner_join(
+    age_fit$residuals,
+    age_region_map[is.finite(age_region_map$fishery) & is.finite(age_region_map$region), , drop = FALSE],
+    by = "fishery"
+  )
+  age_regional_counts <- age_residuals |>
+    dplyr::group_by(region, length, age) |>
+    dplyr::summarise(
+      observed = sum(observed, na.rm = TRUE),
+      fitted = sum(fitted, na.rm = TRUE),
+      .groups = "drop"
     )
-    if ("include_all_regions" %in% names(formals(mfclshiny::plot_mfcl_age_length_fit))) {
-      args$include_all_regions <- TRUE
-    }
-    do.call(mfclshiny::plot_mfcl_age_length_fit, args)
-  }
-  age_growth_plot <- function() {
-    args <- list(
+  age_pooled_counts <- age_regional_counts |>
+    dplyr::group_by(length, age) |>
+    dplyr::summarise(
+      observed = sum(observed, na.rm = TRUE),
+      fitted = sum(fitted, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    dplyr::mutate(region = NA_integer_, region_label = "All regions")
+  age_regional_counts <- age_regional_counts |>
+    dplyr::mutate(region_label = paste("Region", region))
+  age_region_levels <- c(
+    paste("Region", sort(unique(age_regional_counts$region))),
+    "All regions"
+  )
+  age_region_counts <- dplyr::bind_rows(age_regional_counts, age_pooled_counts) |>
+    dplyr::group_by(region_label, length) |>
+    dplyr::mutate(
+      observed_prop = observed / pmax(sum(observed, na.rm = TRUE), 1e-8),
+      fitted_prop = fitted / pmax(sum(fitted, na.rm = TRUE), 1e-8),
+      variance = sum(observed, na.rm = TRUE) * fitted_prop * (1 - fitted_prop),
+      pearson_residual = (observed - fitted) / sqrt(pmax(variance, 1e-8))
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(region_label = factor(region_label, levels = age_region_levels))
+  age_observed <- age_region_counts[age_region_counts$observed_prop > 0, , drop = FALSE]
+  p_age_region_fit <- ggplot2::ggplot(
+    age_region_counts, ggplot2::aes(length, age, fill = fitted_prop)
+  ) +
+    ggplot2::geom_tile() +
+    ggplot2::geom_point(
+      data = age_observed,
+      ggplot2::aes(length, age, size = observed_prop),
+      inherit.aes = FALSE, shape = 21, fill = NA, colour = "#111111", stroke = 0.45
+    ) +
+    ggplot2::facet_wrap(~region_label, ncol = 3) +
+    ggplot2::scale_fill_gradientn(
+      colours = c("white", "#D8EDF2", "#1F8A8A", "#F2A65A", "#B2182B"),
+      values = scales::rescale(c(0, 0.01, 0.1, 0.4, 1)), trans = "sqrt",
+      limits = c(0, 1), name = "Fitted\nproportion"
+    ) +
+    ggplot2::scale_size_area(max_size = 4.8, limits = c(0, 1), name = "Observed\nproportion") +
+    ggplot2::labs(x = "Length", y = "Age class") +
+    theme_report(10.2) +
+    ggplot2::theme(legend.position = "bottom")
+  age_residual_limit <- max(2, min(6, stats::quantile(
+    abs(age_region_counts$pearson_residual), 0.98, na.rm = TRUE
+  )))
+  p_age_region_residuals <- ggplot2::ggplot(
+    age_region_counts,
+    ggplot2::aes(length, age, fill = pmax(-age_residual_limit, pmin(age_residual_limit, pearson_residual)))
+  ) +
+    ggplot2::geom_tile() +
+    ggplot2::facet_wrap(~region_label, ncol = 3) +
+    ggplot2::scale_fill_gradient2(
+      low = "#2166AC", mid = "white", high = "#B2182B", midpoint = 0,
+      limits = c(-age_residual_limit, age_residual_limit), name = "Pearson\nresidual"
+    ) +
+    ggplot2::labs(x = "Length", y = "Age class") +
+    theme_report(10.2) +
+    ggplot2::theme(legend.position = "bottom")
+  save_mfcl_figure(
+    regional_age_plot(p_age_region_fit),
+    "age-data-fit-by-region", width = 10.8, height = 7.65
+  )
+  save_mfcl_figure(
+    regional_age_plot(mfclshiny::plot_mfcl_age_length_growth(
       age_fit, growth = age_growth, fishery_map = report_data$mappings$fisheries,
-      facet_ncol = 3L
-    )
-    if ("include_all_regions" %in% names(formals(mfclshiny::plot_mfcl_age_length_growth))) {
-      args$include_all_regions <- TRUE
-    }
-    do.call(mfclshiny::plot_mfcl_age_length_growth, args)
-  }
-  save_mfcl_figure(
-    regional_age_plot(age_fit_plot("region_fit")),
-    "age-data-fit-by-region"
+      facet_ncol = 3L, include_all_regions = TRUE
+    )),
+    "age-data-growth-by-region", width = 10.8, height = 7.65
   )
   save_mfcl_figure(
-    regional_age_plot(age_growth_plot()),
-    "age-data-growth-by-region"
-  )
-  save_mfcl_figure(
-    regional_age_plot(age_fit_plot("region_residuals")),
-    "age-data-residuals-by-region"
+    regional_age_plot(p_age_region_residuals),
+    "age-data-residuals-by-region", width = 10.8, height = 7.65
   )
 }
 
@@ -485,10 +530,201 @@ regional_depletion_plot <- function(rep_out) {
 }
 save_mfcl_figure(regional_depletion_plot(rep_out), "depletion-by-area")
 
+# The general application export places one selectivity curve in each of 33
+# small facets.  For a paper-ready report, retain every fitted curve but group
+# them in the five biological regions.  This makes the spline shapes visible
+# while keeping one complete, non-overlapping fishery key below the panels.
+selectivity_plot <- function(x = c("age", "length")) {
+  x <- match.arg(x)
+  selectivity <- as.data.frame(FLR4MFCL::sel(rep_out), drop = TRUE)
+  selectivity$fishery <- suppressWarnings(as.integer(as.character(selectivity$unit)))
+  selectivity$age <- suppressWarnings(as.numeric(selectivity$age))
+  selectivity$selectivity <- suppressWarnings(as.numeric(selectivity$data))
+  selectivity <- dplyr::inner_join(
+    selectivity,
+    report_data$mappings$fisheries[, c("fishery", "fishery_name", "region")],
+    by = "fishery"
+  )
+  if (!nrow(selectivity) || any(!is.finite(selectivity$selectivity))) {
+    stop("The fitted selectivity output is incomplete.", call. = FALSE)
+  }
+  selectivity$fishery_label <- sprintf(
+    "F%02d %s", selectivity$fishery,
+    sub("^[0-9]+[.]", "", selectivity$fishery_name)
+  )
+  selectivity$region_label <- factor(
+    paste("Region", selectivity$region), levels = paste("Region", 1:5)
+  )
+  labels <- unique(selectivity[, c("fishery", "fishery_label")])
+  labels <- labels[order(labels$fishery), , drop = FALSE]
+  selectivity$fishery_label <- factor(selectivity$fishery_label, levels = labels$fishery_label)
+  palette <- stats::setNames(
+    scales::hue_pal(l = 52, c = 95)(nrow(labels)), labels$fishery_label
+  )
+  if (identical(x, "length")) {
+    length_at_age <- suppressWarnings(as.numeric(c(aperm(
+      FLR4MFCL::mean_laa(rep_out), c(4, 1, 2, 3, 5, 6)
+    ))))
+    selectivity$length <- length_at_age[selectivity$age]
+    x_aes <- ggplot2::aes(x = length, y = selectivity, colour = fishery_label, group = fishery)
+    x_label <- "Length (cm)"
+  } else {
+    x_aes <- ggplot2::aes(x = age, y = selectivity, colour = fishery_label, group = fishery)
+    x_label <- "Age class"
+  }
+  ggplot2::ggplot(selectivity, x_aes) +
+    ggplot2::geom_line(linewidth = 0.82, lineend = "round") +
+    ggplot2::facet_wrap(~region_label, ncol = 3) +
+    ggplot2::scale_colour_manual(values = palette, name = "Fishery") +
+    ggplot2::scale_y_continuous(limits = c(0, 1.05), breaks = c(0, 0.5, 1)) +
+    ggplot2::labs(x = x_label, y = "Selectivity") +
+    theme_report(9.8) +
+    ggplot2::guides(colour = ggplot2::guide_legend(ncol = 3, byrow = TRUE, override.aes = list(linewidth = 1.5))) +
+    ggplot2::theme(
+      legend.position = "bottom",
+      legend.text = ggplot2::element_text(size = 7.1),
+      legend.title = ggplot2::element_text(size = 8.2),
+      legend.key.width = grid::unit(1.05, "cm"),
+      legend.key.height = grid::unit(0.32, "cm"),
+      strip.text = ggplot2::element_text(size = 9.5, face = "bold")
+    )
+}
+save_mfcl_figure(
+  selectivity_plot("age"), "fishery-process", width = 10.8, height = 10.6
+)
+save_mfcl_figure(
+  selectivity_plot("length"), "fishery-selectivity-length", width = 10.8, height = 10.6
+)
+
+# Keep the spatial state time series on a common A4-ready panel arrangement:
+# five model regions followed by the stock-wide total.  These use the fitted
+# model outputs directly and deliberately begin their y axes at zero.
+area_levels <- c(paste("Region", 1:5), "All regions")
+regional_recruitment_plot <- function(rep_out) {
+  rec <- as.data.frame(rep_out@rec_region)
+  regional <- rec |>
+    dplyr::group_by(year, area) |>
+    dplyr::summarise(recruitment = sum(data, na.rm = TRUE) / 1e6, .groups = "drop") |>
+    dplyr::mutate(area_label = paste("Region", as.integer(as.character(area))))
+  total <- rec |>
+    dplyr::group_by(year) |>
+    dplyr::summarise(recruitment = sum(data, na.rm = TRUE) / 1e6, .groups = "drop") |>
+    dplyr::mutate(area_label = "All regions")
+  z <- dplyr::bind_rows(
+    dplyr::select(regional, year, recruitment, area_label),
+    dplyr::select(total, year, recruitment, area_label)
+  )
+  z$area_label <- factor(z$area_label, levels = area_levels)
+  ggplot2::ggplot(z, ggplot2::aes(year, recruitment)) +
+    ggplot2::geom_line(colour = navy, linewidth = 0.76) +
+    ggplot2::coord_cartesian(ylim = c(0, NA)) +
+    ggplot2::facet_wrap(~area_label, ncol = 3, scales = "free_y") +
+    ggplot2::labs(x = "Year", y = "Recruitment (millions of fish)") +
+    theme_report(10.2)
+}
+save_mfcl_figure(
+  regional_recruitment_plot(rep_out), "recruitment-by-area", width = 10.8, height = 7.65
+)
+
+regional_f_plot <- function(rep_out, par_out) {
+  fm <- as.data.frame(rep_out@fm)
+  popn <- as.data.frame(rep_out@popN)
+  names(fm)[names(fm) == "data"] <- "fishing_mortality"
+  names(popn)[names(popn) == "data"] <- "population"
+  maturity <- as.data.frame(par_out@mat)
+  maturity <- maturity[order(
+    suppressWarnings(as.numeric(maturity$age)),
+    suppressWarnings(as.numeric(as.character(maturity$season)))
+  ), , drop = FALSE]
+  maturity$age_index <- seq_len(nrow(maturity))
+  maturity <- maturity[, c("age_index", "data"), drop = FALSE]
+  names(maturity)[names(maturity) == "data"] <- "maturity"
+  z <- dplyr::inner_join(
+    fm, popn,
+    by = c("age", "year", "unit", "season", "area", "iter")
+  ) |>
+    dplyr::mutate(age_index = suppressWarnings(as.integer(age))) |>
+    dplyr::left_join(maturity, by = "age_index") |>
+    dplyr::mutate(
+      juvenile = (1 - maturity) * population,
+      adult = maturity * population,
+      juvenile_catch = fishing_mortality * juvenile,
+      adult_catch = fishing_mortality * adult
+    )
+  if (any(!is.finite(z$maturity))) {
+    stop("Maturity values do not align with the fishing-mortality age classes.", call. = FALSE)
+  }
+  regional_seasonal <- z |>
+    dplyr::group_by(year, season, area) |>
+    dplyr::summarise(
+      juvenile_catch = sum(juvenile_catch, na.rm = TRUE),
+      juvenile = sum(juvenile, na.rm = TRUE),
+      adult_catch = sum(adult_catch, na.rm = TRUE),
+      adult = sum(adult, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    dplyr::mutate(
+      juvenile_f = -log(pmax(1 - juvenile_catch / juvenile, 0.001)),
+      adult_f = -log(pmax(1 - adult_catch / adult, 0.001))
+    ) |>
+    dplyr::group_by(year, area) |>
+    dplyr::summarise(
+      juvenile_f = sum(juvenile_f, na.rm = TRUE),
+      adult_f = sum(adult_f, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    dplyr::mutate(area_label = paste("Region", as.integer(as.character(area))))
+  total_seasonal <- z |>
+    dplyr::group_by(year, season) |>
+    dplyr::summarise(
+      juvenile_catch = sum(juvenile_catch, na.rm = TRUE),
+      juvenile = sum(juvenile, na.rm = TRUE),
+      adult_catch = sum(adult_catch, na.rm = TRUE),
+      adult = sum(adult, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    dplyr::mutate(
+      juvenile_f = -log(pmax(1 - juvenile_catch / juvenile, 0.001)),
+      adult_f = -log(pmax(1 - adult_catch / adult, 0.001))
+    ) |>
+    dplyr::group_by(year) |>
+    dplyr::summarise(
+      juvenile_f = sum(juvenile_f, na.rm = TRUE),
+      adult_f = sum(adult_f, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    dplyr::mutate(area_label = "All regions")
+  plot_data <- dplyr::bind_rows(
+    dplyr::select(regional_seasonal, year, juvenile_f, adult_f, area_label),
+    dplyr::select(total_seasonal, year, juvenile_f, adult_f, area_label)
+  ) |>
+    tidyr::pivot_longer(
+      cols = c(juvenile_f, adult_f), names_to = "life_stage", values_to = "fishing_mortality"
+    )
+  plot_data$area_label <- factor(plot_data$area_label, levels = area_levels)
+  plot_data$life_stage <- factor(
+    plot_data$life_stage, levels = c("juvenile_f", "adult_f"),
+    labels = c("Juvenile F", "Adult F")
+  )
+  ggplot2::ggplot(plot_data, ggplot2::aes(year, fishing_mortality, linetype = life_stage)) +
+    ggplot2::geom_line(colour = navy, linewidth = 0.78) +
+    ggplot2::coord_cartesian(ylim = c(0, NA)) +
+    ggplot2::facet_wrap(~area_label, ncol = 3, scales = "free_y") +
+    ggplot2::scale_linetype_manual(values = c("Juvenile F" = "22", "Adult F" = "solid"), name = NULL) +
+    ggplot2::labs(x = "Year", y = "Annual instantaneous fishing mortality") +
+    theme_report(10.2) +
+    ggplot2::theme(legend.position = "bottom")
+}
+save_mfcl_figure(
+  regional_f_plot(rep_out, par_out), "f-juvenile-adult-by-area", width = 10.8, height = 7.65
+)
+
 required_mfcl_figures <- c(
-  "region-map", "cpue-residuals", "length-frequency", "age-data-fit",
-  "age-data-fit-by-region", "age-data-growth-by-region", "tag-returns-all",
-  "population-biology", "growth-curve", "f-juvenile-adult-by-area"
+  "region-map", "length-frequency", "age-data-fit",
+  "age-data-coverage", "age-data-fit-by-region", "age-data-growth-by-region",
+  "age-data-residuals-by-region", "tag-returns-all", "population-biology",
+  "growth-curve", "fishery-process", "fishery-selectivity-length",
+  "depletion-by-area", "recruitment-by-area", "f-juvenile-adult-by-area"
 )
 missing_mfcl_figures <- required_mfcl_figures[
   !file.exists(file.path(mfcl_dir, "figures", paste0(required_mfcl_figures, ".png")))
@@ -547,37 +783,32 @@ objective_values <- stats::setNames(
   as.numeric(report_data$model$objective$Value),
   as.character(report_data$model$objective$Component)
 )
-required_objective_components <- c("Total objective", "Tag", "Length frequency", "Weight frequency", "Age", "CPUE")
-if (!all(required_objective_components %in% names(objective_values))) {
-  stop("The fitted objective does not contain the components required for the profile baseline.", call. = FALSE)
+if (!"Total objective" %in% names(objective_values)) {
+  stop("The fitted objective does not contain the total likelihood.", call. = FALSE)
 }
-profile_anchor_values <- c(
-  Total = objective_values[["Total objective"]],
-  Indices = objective_values[["CPUE"]],
-  LFs = objective_values[["Length frequency"]] + objective_values[["Weight frequency"]],
-  Age = objective_values[["Age"]],
-  Tags = objective_values[["Tag"]]
-)
-profile_anchor_values[["Penalties"]] <- profile_anchor_values[["Total"]] -
-  sum(profile_anchor_values[c("Indices", "LFs", "Age", "Tags")])
-profile_anchor <- data.frame(
+# The profile runs deliberately omit the fitted scalar.  Add its exact
+# objective only to the overall total.  Do not inject independently extracted
+# component values: they are not evaluated on the conditional profile path and
+# create artificial discontinuities (most visibly in CPUE) at x = 1.
+profile_total_anchor <- data.frame(
   scalar = 100,
   biomass_ratio = 1,
-  component = names(profile_anchor_values),
-  value = as.numeric(profile_anchor_values),
+  component = "Total",
+  value = as.numeric(objective_values[["Total objective"]]),
   stringsAsFactors = FALSE
 )
-# A profile-chain value at one is not a substitute for the original fitted
-# output.  Replace any such row with the recorded fitted objective values.
-profile <- profile[abs(profile$biomass_ratio - 1) > 1e-10, , drop = FALSE]
-profile <- rbind(profile, profile_anchor)
+# Replace only a pre-existing total row at the fitted scalar; all component
+# curves retain the smooth, conditional likelihood values from the profile run.
+profile <- profile[!(profile$component == "Total" & abs(profile$biomass_ratio - 1) <= 1e-10), , drop = FALSE]
+profile <- rbind(profile, profile_total_anchor)
 profile$component <- factor(
   profile$component,
   levels = expected_profile_components
 )
 profile <- profile[!is.na(profile$component), , drop = FALSE]
+profile_chain <- profile[abs(profile$biomass_ratio - 1) > 1e-10, , drop = FALSE]
 profile_wide <- reshape(
-  profile[, c("biomass_ratio", "component", "value")],
+  profile_chain[, c("biomass_ratio", "component", "value")],
   idvar = "biomass_ratio", timevar = "component", direction = "wide"
 )
 profile_value_columns <- paste0("value.", expected_profile_components)
@@ -655,13 +886,6 @@ fishery_detail <- detail$detail_group %in% c("CPUE index", "LF", "Weight frequen
 fishery_id <- suppressWarnings(as.integer(sub("^([0-9]+).*", "\\1", as.character(detail$detail))))
 fishery_label <- profile_fishery_map$fishery_name[match(fishery_id, profile_fishery_map$fishery)]
 detail$detail[fishery_detail & !is.na(fishery_label)] <- fishery_label[fishery_detail & !is.na(fishery_label)]
-profile_base_detail <- profile_base_detail[
-  profile_base_detail$detail_group %in% unique(detail$detail_group), , drop = FALSE
-]
-if (nrow(profile_base_detail)) {
-  detail <- detail[abs(detail$biomass_ratio - 1) > 1e-10, , drop = FALSE]
-  detail <- rbind(detail, profile_base_detail[, names(detail), drop = FALSE])
-}
 detail_minimum <- do.call(rbind, lapply(split(detail, interaction(detail$detail_group, detail$detail, drop = TRUE)), function(z) {
   z[which.min(z$value), c("detail_group", "detail", "value"), drop = FALSE]
 }))
@@ -750,38 +974,36 @@ for (group in names(detail_group_labels)) {
   }
 }
 
-profile_viewer_group <- function(key, label, z, colour, labels = NULL, add_total = FALSE) {
+profile_viewer_group <- function(key, label, z, colour, labels = NULL, total_label = NULL) {
   if (is.null(z) || !nrow(z)) return(NULL)
   z <- z[order(as.character(z$curve), z$biomass_ratio), , drop = FALSE]
   curve_names <- sort(unique(as.character(z$curve)))
-  if (isTRUE(add_total) && length(curve_names) > 1L) {
+  total_key <- "__component_total__"
+  if (!is.null(total_label) && length(curve_names) > 1L) {
     total_values <- stats::aggregate(value ~ biomass_ratio, data = z, FUN = sum)
-    # Keep the same columns as the component data while allocating one row
-    # for every profile scalar.  A zero-row data frame cannot be populated
-    # with a vector, which previously stopped the viewer build here.
     total <- z[rep.int(1L, nrow(total_values)), , drop = FALSE]
     total$biomass_ratio <- total_values$biomass_ratio
     total$value <- total_values$value
-    total$curve <- "Total component"
+    total$curve <- total_key
     total$delta_nll <- total$value - min(total$value)
     z <- rbind(z, total)
-    curve_names <- c("Total component", curve_names)
+    curve_names <- c(total_key, curve_names)
   }
   curve_colours <- if (length(curve_names) == 1L) {
     stats::setNames(unname(colour[[1L]]), curve_names)
   } else {
     stats::setNames(scales::hue_pal(l = 54, c = 90)(length(curve_names)), curve_names)
   }
-  curve_colours[["Total component"]] <- navy
+  curve_colours[[total_key]] <- navy
   rows <- do.call(rbind, lapply(curve_names, function(curve_key) {
     curve <- z[as.character(z$curve) == curve_key, , drop = FALSE]
     curve <- curve[order(curve$biomass_ratio), , drop = FALSE]
     data.frame(
       id = paste(key, curve_key, sep = "::"),
-      label = if (identical(curve_key, "Total component")) "Total component" else if (is.null(labels)) curve_key else unname(labels[[curve_key]] %||% curve_key),
+      label = if (identical(curve_key, total_key)) total_label else if (is.null(labels)) curve_key else unname(labels[[curve_key]] %||% curve_key),
       group = label,
       colour = unname(curve_colours[[curve_key]]),
-      is_total = identical(curve_key, "Total component") || identical(curve_key, "Total"),
+      is_total = identical(curve_key, total_key) || identical(curve_key, "Total"),
       x = round(curve$biomass_ratio, 10),
       y = round(curve$delta_nll, 10),
       value = round(curve$value, 10),
@@ -811,11 +1033,11 @@ viewer_groups <- Filter(Negate(is.null), list(
     "broad", "Broad components", viewer_broad, profile_colours,
     stats::setNames(unname(profile_labels), names(profile_labels))
   ),
-  profile_viewer_group("cpue", "CPUE indices", viewer_detail_group("CPUE index"), detail_group_colours[["CPUE index"]], add_total = TRUE),
-  profile_viewer_group("lf", "Length frequencies", viewer_detail_group("LF"), detail_group_colours[["LF"]], add_total = TRUE),
-  profile_viewer_group("caal", "CAAL by region", viewer_detail_group("CAAL region"), detail_group_colours[["CAAL region"]], add_total = TRUE),
-  profile_viewer_group("tag", "Tag release groups", viewer_detail_group("Tag release group"), detail_group_colours[["Tag release group"]], tag_labels, add_total = TRUE),
-  profile_viewer_group("penalty", "Penalties", viewer_detail_group("Penalty"), detail_group_colours[["Penalty"]], add_total = TRUE)
+  profile_viewer_group("cpue", "CPUE indices", viewer_detail_group("CPUE index"), detail_group_colours[["CPUE index"]], total_label = "CPUE total"),
+  profile_viewer_group("lf", "Length frequencies", viewer_detail_group("LF"), detail_group_colours[["LF"]], total_label = "LF total"),
+  profile_viewer_group("caal", "CAAL by region", viewer_detail_group("CAAL region"), detail_group_colours[["CAAL region"]], total_label = "CAAL total"),
+  profile_viewer_group("tag", "Tag release groups", viewer_detail_group("Tag release group"), detail_group_colours[["Tag release group"]], tag_labels, total_label = "Tag total"),
+  profile_viewer_group("penalty", "Penalties", viewer_detail_group("Penalty"), detail_group_colours[["Penalty"]], total_label = "Penalty total")
 ))
 viewer_payload <- list(
   title = "BET 2026 likelihood-profile viewer",
@@ -834,7 +1056,16 @@ viewer_template <- paste(readLines(viewer_template_file, warn = FALSE), collapse
 if (sum(gregexpr("__VIEWER_DATA__", viewer_template, fixed = TRUE)[[1L]] >= 0L) != 1L) {
   stop("Likelihood-profile viewer template must contain one data marker.", call. = FALSE)
 }
+spc_logo_file <- system.file("app", "www", "spc-logo.svg", package = "mfclshiny")
+if (!nzchar(spc_logo_file) || !file.exists(spc_logo_file)) {
+  stop("The SPC logo asset is unavailable from mfclshiny.", call. = FALSE)
+}
+spc_logo_uri <- paste0("data:image/svg+xml;base64,", jsonlite::base64_enc(spc_logo_file))
+if (sum(gregexpr("__SPC_LOGO__", viewer_template, fixed = TRUE)[[1L]] >= 0L) != 1L) {
+  stop("Likelihood-profile viewer template must contain one SPC logo marker.", call. = FALSE)
+}
 viewer_file <- file.path(viewer_dir, "bet-2026-likelihood-profile-viewer.html")
+viewer_template <- sub("__SPC_LOGO__", spc_logo_uri, viewer_template, fixed = TRUE)
 writeLines(sub("__VIEWER_DATA__", viewer_json, viewer_template, fixed = TRUE), viewer_file, useBytes = TRUE)
 
 # Jitter --------------------------------------------------------------------
@@ -952,7 +1183,11 @@ p_selftest <- (p_s1 | p_s2) / (p_s3 | p_s4) + patchwork::plot_annotation(tag_lev
 save_figure(p_selftest, "self-test-diagnostics", width = 7.1, height = 6.1)
 
 # ASPM comparison -----------------------------------------------------------
-aspm <- report_data$aspm$annual
+# Report the single constant-recruitment ASPM comparator.  The fitted-
+# recruitment exploratory series is intentionally not shown here.
+aspm <- report_data$aspm$annual |>
+  dplyr::filter(model %in% c("Diagnostic", "ASPM, constant recruitment")) |>
+  dplyr::mutate(model = dplyr::if_else(model == "Diagnostic", "Diagnostic", "ASPM"))
 aspm$model <- factor(aspm$model, levels = c("Diagnostic", "ASPM"))
 aspm_long <- list(
   list(column = "Dynamic spawning depletion", y = expression(italic(SB)[italic(t)]/italic(SB)[italic(F)==0~","~italic(t)])),
@@ -1170,13 +1405,15 @@ aspm_terminal <- aspm |>
   )
 fishery_table <- report_data$mappings$fisheries[, c(
   "fishery", "fishery_name", "region", "group", "selectivity_group",
-  "selectivity_form", "selectivity_constraint"
+  "selectivity_form"
 )]
 names(fishery_table) <- c(
   "Fishery", "Name", "Region", "Data group", "Selectivity group",
-  "Selectivity form", "Selectivity constraint"
+  "Selectivity form"
 )
-tag_table <- report_data$mappings$tag_reporting_groups[, c("tag_rep_group", "tag_programs", "fisheries", "release_groups", "release_years", "active")]
+tag_table <- report_data$mappings$tag_reporting_groups |>
+  dplyr::filter(tag_rep_group != 31L) |>
+  dplyr::select(tag_rep_group, tag_programs, fisheries, release_groups, release_years, active)
 names(tag_table) <- c("Group", "Tag programme", "Fisheries", "Release groups", "Release years", "Estimated")
 tag_table$Estimated <- ifelse(tag_table$Estimated, "Yes", "No")
 release_summary <- report_data$mappings$tag_release_groups |>
@@ -1200,7 +1437,7 @@ tables <- list(
   write_table_bundle(selftest_table, "self-test-summary", "Relative recovery error for management quantities across 50 self-test refits.", "Relative recovery error for management quantities across 50 self-test refits."),
   write_table_bundle(aspm_terminal, "aspm-terminal-summary", "Terminal quantities for the diagnostic model and ASPM.", "Terminal quantities for the diagnostic model and ASPM."),
   write_table_bundle(fishery_table, "fishery-grouping", "Fishery definitions and final selectivity settings. All 33 fisheries have independent cubic-spline selectivity; F10 and F33 have a weak non-decreasing penalty of 10,000.", "Fishery definitions and final selectivity settings. All 33 fisheries have independent cubic-spline selectivity; F10 and F33 have a weak non-decreasing penalty of 10,000."),
-  write_table_bundle(tag_table, "tag-reporting-rate-groups", "Tag-reporting-rate groups, release coverage and estimation status.", "Tag-reporting-rate groups, release coverage and estimation status."),
+  write_table_bundle(tag_table, "tag-reporting-rate-groups", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status.", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status."),
   write_table_bundle(release_summary, "tag-release-groups", "Summary of tag-release groups by programme and release region.", "Summary of tag-release groups by programme and release region.")
 )
 names(tables) <- vapply(tables, `[[`, character(1L), "id")
@@ -1234,9 +1471,9 @@ if (!identical(as.integer(latex_status), 0L) || !file.exists(file.path(output_di
 # Captions and report HTML --------------------------------------------------
 viewer_release_url <- "https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/releases/latest/download/bet-2026-likelihood-profile-viewer.html"
 figure_meta <- list(
-  `cpue-fit-observation-intervals` = list(
+  `cpue-fit-residuals` = list(
     section = "Model fit",
-    caption = "Observed and fitted relative CPUE for the five regional index fisheries. Shading gives the central 95% lognormal observation interval implied by the fixed regional log-scale error values (0.35, 0.24, 0.21, 0.24 and 0.23 for Regions 1-5); it does not represent parameter-estimation uncertainty."
+    caption = "Observed and fitted relative CPUE (left panels) with standardised log-scale residuals (right panels) for the five regional index fisheries. Fit shading gives the central 95% observation interval implied by the fixed regional log-scale error values; it is not parameter-estimation uncertainty. Residual shading marks the corresponding ±1.96 observation-error SD range."
   ),
   `diagnostic-population-dynamics` = list(
     section = "Population dynamics",
@@ -1298,25 +1535,24 @@ mfcl_captions <- list(
   `region-map` = list(section = "Overview", caption = "Five-region spatial structure used by the diagnostic model."),
   `total-catch-fits` = list(section = "Model fit", caption = "Observed and fitted total catch through time."),
   `catch-by-fishery-fits` = list(section = "Model fit", caption = "Observed and fitted catch by fishery. Facet labels identify the fisheries and their model regions."),
-  `cpue-fits` = list(section = "Model fit", caption = "Observed and fitted abundance indices by index fishery."),
-  `cpue-residuals` = list(section = "Model fit", caption = "Residuals for the fitted abundance indices by index fishery."),
   `length-frequency` = list(section = "Model fit", caption = "Observed and fitted length compositions by fishery. Shaded bands are 95% predictive intervals for repeated observations conditional on the fitted composition model; parameter uncertainty is not included."),
   `length-frequency-residuals` = list(section = "Model fit", caption = "Length-composition residuals by fishery and length class."),
-  `age-data-fit` = list(section = "Model fit", caption = "Observed and fitted conditional mean age by fishery and year, weighted by the number of aged fish in each length bin."),
-  `age-data-fit-by-region` = list(section = "Model fit", caption = "Observed and fitted conditional age-at-length distributions by region. Expected counts use the fitted conditional age distribution and the observed number of aged fish."),
-  `age-data-growth-by-region` = list(section = "Model fit", caption = "Observed age-length cells by region over the fitted growth curve. Shading is the fitted mean length at age plus or minus 1.96 length-at-age standard deviations and represents fish-level length variability, not Hessian parameter uncertainty."),
-  `age-data-residuals-by-region` = list(section = "Model fit", caption = "Conditional age-at-length residuals by region."),
-  `age-data-coverage` = list(section = "Model fit", caption = "Coverage of conditional age-at-length observations by fishery and year."),
+  `age-data-fit` = list(section = "Model fit", caption = "Observed and fitted conditional mean age by fishery and year, weighted by the number of aged fish in each length bin. Three-column panels use increased height to retain readable fishery labels and time series."),
+  `age-data-fit-by-region` = list(section = "Model fit", caption = "Observed and fitted conditional age-at-length distributions for the five model regions and the pooled All regions panel (last). Expected counts use the fitted conditional age distribution and the observed number of aged fish."),
+  `age-data-growth-by-region` = list(section = "Model fit", caption = "Observed age-length cells for the five model regions and the pooled All regions panel (last), over the fitted growth curve. Shading is the fitted mean length at age plus or minus 1.96 length-at-age standard deviations and represents fish-level length variability, not Hessian parameter uncertainty."),
+  `age-data-residuals-by-region` = list(section = "Model fit", caption = "Conditional age-at-length residuals for the five model regions and the pooled All regions panel (last)."),
+  `age-data-coverage` = list(section = "Model fit", caption = "Coverage of conditional age-at-length observations by fishery and year. The samples and fish-aged arrays use increased height so all panels remain readable."),
   `tag-returns-all` = list(section = "Model fit", caption = "Observed and expected tag returns across tag-release and recapture groups."),
   `tag-returns-by-group` = list(section = "Model fit", caption = "Observed and expected tag returns by tag-release group."),
   `tag-attrition-by-program` = list(section = "Model fit", caption = "Tag attrition through time by tagging programme."),
   `population-biology` = list(section = "Population dynamics", caption = "Growth, maturity, natural mortality and weight-at-age assumptions used in the diagnostic model."),
   `growth-curve` = list(section = "Population dynamics", caption = "Fitted mean length at age. Shading is the mean plus or minus 1.96 length-at-age standard deviations and represents fish-level length variability, not parameter-estimation uncertainty."),
-  `fishery-process` = list(section = "Population dynamics", caption = "Estimated fishery selectivity at age for the diagnostic model."),
-  `fishery-selectivity-length` = list(section = "Population dynamics", caption = "Estimated fishery selectivity at length for the diagnostic model."),
+  `fishery-process` = list(section = "Population dynamics", caption = "Estimated fishery selectivity at age for all 33 fisheries, grouped into the five model-region panels. Colours and the complete fishery key identify each fitted cubic-spline curve."),
+  `fishery-selectivity-length` = list(section = "Population dynamics", caption = "Estimated fishery selectivity at length for all 33 fisheries, grouped into the five model-region panels. Length is the fitted mean length at each age class."),
   `regional-movement` = list(section = "Population dynamics", caption = "Estimated quarterly movement probabilities among the five model regions."),
-  `depletion-by-area` = list(section = "Population dynamics", caption = "Dynamic spawning depletion by model region."),
-  `recruitment-by-area` = list(section = "Population dynamics", caption = "Estimated recruitment by model region."),
+  `depletion-by-area` = list(section = "Population dynamics", caption = "Dynamic spawning depletion by model region and the pooled All regions series (last). The only reference line is the LRP (0.20)."),
+  `recruitment-by-area` = list(section = "Population dynamics", caption = "Estimated recruitment by model region and the pooled All regions series (last); each panel’s y axis begins at zero."),
+  `f-juvenile-adult-by-area` = list(section = "Population dynamics", caption = "Annual juvenile and adult F by model region and the pooled All regions series (last); each panel’s y axis begins at zero."),
   `spawning-potential-with-without-fishing` = list(section = "Population dynamics", caption = "Spawning potential with and without fishing through time."),
   `total-biomass-with-without-fishing` = list(section = "Population dynamics", caption = "Total biomass with and without fishing through time.")
 )
