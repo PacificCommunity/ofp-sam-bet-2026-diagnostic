@@ -297,19 +297,19 @@ p_dynamics <- (interval_plot("depletion") | interval_plot("spawning_potential"))
   ggplot2::theme(plot.tag.position = c(0.01, 0.99))
 save_figure(p_dynamics, "diagnostic-population-dynamics", width = 7.1, height = 6.2)
 
-# Likelihood profile: component changes relative to fitted point -------------
+# Likelihood profiles: each curve is expressed relative to its own minimum --
 profile <- report_data$likelihood_profile$components
 profile$component <- factor(
   profile$component,
   levels = c("Total", "Indices", "LFs", "Age", "Tags", "Penalties")
 )
 profile <- profile[!is.na(profile$component), , drop = FALSE]
-anchor <- do.call(rbind, lapply(split(profile, profile$component), function(z) {
-  z[which.min(abs(z$biomass_ratio - 1)), c("component", "value"), drop = FALSE]
+component_minimum <- do.call(rbind, lapply(split(profile, profile$component), function(z) {
+  z[which.min(z$value), c("component", "value"), drop = FALSE]
 }))
-names(anchor)[names(anchor) == "value"] <- "anchor_value"
-profile <- merge(profile, anchor, by = "component", all.x = TRUE)
-profile$delta_nll <- profile$value - profile$anchor_value
+names(component_minimum)[names(component_minimum) == "value"] <- "minimum_value"
+profile <- merge(profile, component_minimum, by = "component", all.x = TRUE)
+profile$delta_nll <- profile$value - profile$minimum_value
 profile$component <- factor(profile$component, levels = c("Total", "Indices", "LFs", "Age", "Tags", "Penalties"))
 p_profile <- ggplot2::ggplot(profile, ggplot2::aes(x = biomass_ratio, y = delta_nll)) +
   ggplot2::geom_hline(yintercept = 0, colour = "#8A989E", linewidth = 0.35) +
@@ -332,12 +332,12 @@ save_figure(p_profile, "likelihood-profile-components", width = 7.1, height = 5.
 
 # Interactive likelihood-profile viewer ------------------------------------
 detail <- report_data$likelihood_profile$detail
-detail_anchor <- do.call(rbind, lapply(split(detail, interaction(detail$detail_group, detail$detail, drop = TRUE)), function(z) {
-  z[which.min(abs(z$biomass_ratio - 1)), c("detail_group", "detail", "value"), drop = FALSE]
+detail_minimum <- do.call(rbind, lapply(split(detail, interaction(detail$detail_group, detail$detail, drop = TRUE)), function(z) {
+  z[which.min(z$value), c("detail_group", "detail", "value"), drop = FALSE]
 }))
-names(detail_anchor)[names(detail_anchor) == "value"] <- "anchor_value"
-detail <- merge(detail, detail_anchor, by = c("detail_group", "detail"), all.x = TRUE)
-detail$delta_nll <- detail$value - detail$anchor_value
+names(detail_minimum)[names(detail_minimum) == "value"] <- "minimum_value"
+detail <- merge(detail, detail_minimum, by = c("detail_group", "detail"), all.x = TRUE)
+detail$delta_nll <- detail$value - detail$minimum_value
 detail <- detail[is.finite(detail$biomass_ratio) & is.finite(detail$delta_nll), , drop = FALSE]
 
 viewer <- plotly::plot_ly()
@@ -353,7 +353,7 @@ for (component in levels(profile$component)) {
     text = ~paste0(
       "Component: ", component,
       "<br>Biomass ratio: ", sprintf("%.3f", biomass_ratio),
-      "<br>Delta NLL: ", sprintf("%.3f", delta_nll),
+      "<br>Delta NLL (curve minimum = 0): ", sprintf("%.3f", delta_nll),
       "<br>Objective component: ", sprintf("%.3f", value)
     ), hoverinfo = "text"
   )
@@ -374,7 +374,7 @@ for (group in detail_groups) {
         "Group: ", detail_group,
         "<br>Item: ", detail,
         "<br>Biomass ratio: ", sprintf("%.3f", biomass_ratio),
-        "<br>Delta NLL: ", sprintf("%.3f", delta_nll),
+        "<br>Delta NLL (curve minimum = 0): ", sprintf("%.3f", delta_nll),
         "<br>Component value: ", sprintf("%.3f", value)
       ), hoverinfo = "text"
     )
@@ -414,7 +414,7 @@ viewer <- htmlwidgets::prependContent(
     style = "font-family:system-ui,sans-serif;max-width:1200px;margin:18px auto 0;padding:0 16px;color:#17384a;",
     htmltools::tags$h1("BET 2026 likelihood-profile viewer"),
     htmltools::tags$p(
-      "Select a likelihood component or detailed group from the menu. Values are changes from the fitted profile point; hover over a curve for the underlying numeric value."
+      "Select a likelihood component or detailed group from the menu. Each curve is expressed as a change from its own minimum; hover over a curve for the underlying numeric value."
     )
   )
 )
@@ -821,7 +821,7 @@ figure_meta <- list(
   ),
   `likelihood-profile-components` = list(
     section = "Diagnostics",
-    caption = paste0("Likelihood profiles for total average biomass, expressed as changes from the fitted profile point. The dashed vertical line marks the fitted value; the horizontal line in the total panel marks a change of 1.92. Detailed fishery, tag-group and penalty curves with numeric hover values are available in the likelihood-profile viewer."),
+    caption = paste0("Likelihood profiles for total average biomass. Each curve is expressed as a change from its own minimum; the dashed vertical line marks the fitted value and the horizontal line in the total panel marks a change of 1.92. Detailed fishery, tag-group and penalty curves with numeric hover values are available in the likelihood-profile viewer."),
     viewer = viewer_release_url
   ),
   `jitter-diagnostics` = list(
