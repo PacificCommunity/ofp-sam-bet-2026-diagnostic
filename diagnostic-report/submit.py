@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Submit the repository-contained BET 2026 Diagnostic report to Kflow Local."""
+"""Submit the repository-contained BET 2026 Diagnostic report to Kflow."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ import urllib.request
 TASK = "ofp-sam-bet-2026-diagnostic-report"
 REPO = "PacificCommunity/ofp-sam-bet-2026-diagnostic"
 LOCAL_HOST = "kflow-local-kyuhank-nc240124"
+SUVA_HOST = "suva"
 IMAGE = (
     "ghcr.io/pacificcommunity/tuna-flow:v2.5@"
     "sha256:c87f1f6d9d4f62dc447844b58afe35f96af175bf933cb6cffbbbe39a59172360"
@@ -56,7 +57,8 @@ def job_number(job: dict) -> int | None:
         return None
 
 
-def build_payload(branch: str, dpi: int) -> dict:
+def build_payload(branch: str, dpi: int, site: str) -> dict:
+    remote_host = SUVA_HOST if site == "suva" else LOCAL_HOST
     title = "BET 2026 Diagnostic model report"
     description = (
         "Public report for Diagnostic Job 22974 with model fit, diagnostic checks, "
@@ -83,9 +85,9 @@ def build_payload(branch: str, dpi: int) -> dict:
         "repo": REPO,
         "branch": branch,
         "docker_image": IMAGE,
-        "batch_name": "bet-2026-diagnostic-report-local",
+        "batch_name": f"bet-2026-diagnostic-report-{site}",
         "remote_user": "kyuhank",
-        "remote_host": LOCAL_HOST,
+        "remote_host": remote_host,
         "remote_base_dir": "/home/kyuhank/KflowOutput",
         "input_jobs": [],
         "checkout": {
@@ -129,7 +131,7 @@ def build_payload(branch: str, dpi: int) -> dict:
             "species": "BET",
             "assessment_year": "2026",
             "source_model_job": "22974",
-            "execution": "local",
+            "execution": site,
         },
         "metadata": {
             "input_jobs_override": True,
@@ -147,11 +149,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--branch", default="main")
     parser.add_argument("--dpi", type=int, default=400)
+    parser.add_argument("--site", choices=("local", "suva"), default="local")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--api-url", default=os.getenv("KFLOW_API_URL", "http://127.0.0.1:8089"))
     args = parser.parse_args()
 
-    payload = build_payload(args.branch, args.dpi)
+    payload = build_payload(args.branch, args.dpi, args.site)
     if args.dry_run:
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
@@ -169,7 +172,7 @@ def main() -> int:
         "command": "bash diagnostic-report/run.sh",
         "docker_image": IMAGE,
         "remote_user": "kyuhank",
-        "remote_host": LOCAL_HOST,
+        "remote_host": payload["remote_host"],
         "remote_base_dir": "/home/kyuhank/KflowOutput",
         "cpus": 4,
         "memory": "10GB",
@@ -182,7 +185,7 @@ def main() -> int:
             "internal_task": False,
             "task_visibility": "primary",
             "task_role": "diagnostic-model-report",
-            "execution": "local",
+            "execution": args.site,
         },
     }
     try:
@@ -193,7 +196,7 @@ def main() -> int:
 
     response = api.request("POST", f"/api/job/{TASK}", payload)
     job = response.get("job", response)
-    print(f"Submitted Kflow Local report Job #{job_number(job)} ({job.get('status')}).")
+    print(f"Submitted Kflow {args.site.title()} report Job #{job_number(job)} ({job.get('status')}).")
     return 0
 
 
