@@ -393,6 +393,14 @@ detail_curve <- interaction(detail$detail_group, detail$detail, drop = TRUE)
 if (any(abs(vapply(split(detail$delta_nll, detail_curve), min, numeric(1L))) > 1e-10)) {
   stop("Detailed likelihood profiles were not normalized to their own minima.", call. = FALSE)
 }
+# Curves with no change anywhere along the profile cannot identify a biomass
+# scale and obscure the informative data conflicts in the interactive view.
+detail_range <- vapply(split(detail$delta_nll, detail_curve), function(z) max(z) - min(z), numeric(1L))
+informative_detail_curves <- names(detail_range)[detail_range > 1e-10]
+detail <- detail[as.character(detail_curve) %in% informative_detail_curves, , drop = FALSE]
+if (!nrow(detail)) {
+  stop("No informative detailed likelihood-profile curves are available.", call. = FALSE)
+}
 
 viewer <- plotly::plot_ly(height = 650)
 trace_groups <- character()
@@ -489,7 +497,7 @@ viewer <- htmlwidgets::prependContent(
     style = "font-family:system-ui,sans-serif;max-width:1200px;margin:18px auto 0;padding:0 16px;color:#17384a;",
     htmltools::tags$h1("BET 2026 likelihood-profile viewer"),
     htmltools::tags$p(
-      "Select a likelihood component or detailed group from the menu. Each curve is expressed as a change from its own minimum; hover over a curve for the underlying numeric value."
+      "Select a likelihood component or detailed group from the menu. Each curve is expressed as a change from its own minimum; detailed groups omit components that are constant over the full profile. Hover for the underlying numeric value."
     )
   )
 )
