@@ -98,6 +98,9 @@ run_summary <- read_csv(file.path(repo_root, "results", "reference", "run-summar
 annual_uncertainty <- read_csv(file.path(
   repo_root, "results", "reference", "uncertainty", "annual-hessian-time-series.csv"
 ))
+fishing_mortality_uncertainty <- read_csv(file.path(
+  repo_root, "results", "reference", "uncertainty", "annual-fishing-mortality-hessian-time-series.csv"
+))
 quarterly_uncertainty <- read_csv(file.path(
   repo_root, "results", "reference", "uncertainty", "quarterly-hessian-time-series.csv"
 ))
@@ -105,6 +108,8 @@ hessian_info <- readRDS(file.path(repo_root, "results", "reference", "hessian", 
 private_method_prefix <- paste0("^native", "[[:space:]]+MFCL")
 annual_uncertainty$method <- sub(private_method_prefix, "MFCL", annual_uncertainty$method)
 quarterly_uncertainty$method <- sub(private_method_prefix, "MFCL", quarterly_uncertainty$method)
+fishing_mortality_uncertainty$method <- sub(private_method_prefix, "MFCL", fishing_mortality_uncertainty$method)
+annual_uncertainty <- bind_rows_base(list(annual_uncertainty, fishing_mortality_uncertainty))
 hessian_summary_fields <- c(
   "requested", "attempted", "run_ok", "is_pdh", "hessian_ok",
   "n_negative_eigenvalues", "n_total_eigenvalues", "smallest_eigenvalue",

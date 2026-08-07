@@ -13,6 +13,7 @@ import urllib.request
 
 TASK = "ofp-sam-bet-2026-diagnostic-report"
 REPO = "PacificCommunity/ofp-sam-bet-2026-diagnostic"
+TASK_DISPLAY_NAME = "BET 2026 Diagnostic report"
 LOCAL_HOST = "kflow-local-kyuhank-nc240124"
 SUVA_HOST = "suva"
 IMAGE = (
@@ -104,6 +105,11 @@ def build_payload(branch: str, dpi: int, site: str) -> dict:
         "cpus": 2,
         "memory": "8GB",
         "disk": "40GB",
+        "slot_requirements": (
+            'regexp("^suvofp", Machine)'
+            if site == "suva"
+            else f'regexp("^{LOCAL_HOST}$", Machine)'
+        ),
         "env": {
             "JOB_TITLE": title,
             "JOB_DESCRIPTION": description,
@@ -164,7 +170,7 @@ def main() -> int:
         raise RuntimeError("KFLOW_API_TOKEN is required.")
     api = Kflow(args.api_url, token)
     task_payload = {
-        "name": "BET 2026 Diagnostic model report",
+        "name": TASK_DISPLAY_NAME,
         "description": "Public paper-ready Diagnostic model report and likelihood-profile viewer.",
         "repo": REPO,
         "branch": args.branch,
@@ -177,8 +183,10 @@ def main() -> int:
         "cpus": 2,
         "memory": "8GB",
         "disk": "40GB",
+        "slot_requirements": payload["slot_requirements"],
         "output_patterns": ["diagnostic-report-output/**"],
         "artifacts": payload["artifacts"],
+        "env": payload["env"],
         "checkout": payload["checkout"],
         "tags": {"stage": "diagnostic-model-report", "species": "BET", "assessment_year": "2026"},
         "metadata": {
@@ -188,11 +196,11 @@ def main() -> int:
             "execution": args.site,
         },
     }
-    try:
-        api.request("POST", f"/api/report/{TASK}", task_payload)
-    except RuntimeError as error:
-        if "Kflow API 409" not in str(error) and "already exists" not in str(error).lower():
-            raise
+    # Register on every submission so the task-level scheduler constraint is
+    # switched with --site.  A stale task constraint would otherwise combine
+    # a Local-machine requirement with the Suva job requirement, leaving the
+    # Condor job permanently unmatched.
+    api.request("POST", f"/api/report/{TASK}", task_payload)
 
     response = api.request("POST", f"/api/job/{TASK}", payload)
     job = response.get("job", response)

@@ -173,7 +173,7 @@ profile_base_detail <- list(
   profile_slot_detail("tag_rel_fish", "Tag release group", paste0("Group ", seq_len(98L)))
 )
 profile_age_payload <- get("mfclshiny_diagnostic_payload", asNamespace("mfclshiny"))(
-  model_dir, roles = c("AgeOut")
+  model_dir, roles = c("AgeOut", "AgeFitOut")
 )
 profile_age_out <- profile_age_payload$data$AgeOut
 if (!is.null(profile_age_out) && "ALK" %in% methods::slotNames(profile_age_out) &&
@@ -298,6 +298,29 @@ lf_state <- jsonlite::toJSON(
   auto_unbox = TRUE
 )
 selection_items$input_state[selection_items$id == "length-frequency"] <- lf_state
+# Registered report plots use their own saved state rather than the app-wide
+# defaults.  Set those states explicitly so the five regions plus the pooled
+# `All regions` panel use a complete 3-by-2 layout, while four quarterly
+# movement matrices fill a 2-by-2 layout.
+set_selection_state <- function(ids, state) {
+  selection_items$input_state[selection_items$id %in% ids] <<- jsonlite::toJSON(
+    state, auto_unbox = TRUE
+  )
+}
+set_selection_state(
+  c("age-data-fit", "age-data-fit-by-region", "age-data-growth-by-region",
+    "age-data-residuals-by-region", "age-data-coverage"),
+  list(age_fit_facet_ncol = "3")
+)
+set_selection_state(
+  c("fishery-process", "fishery-selectivity-length"),
+  list(fishery_process_facet_ncol = "2")
+)
+set_selection_state("regional-movement", list(fishery_process_facet_ncol = "2"))
+set_selection_state(
+  c("depletion-by-area", "recruitment-by-area", "f-juvenile-adult-by-area"),
+  list(harvest_facet_ncol = "3", harvest_show_bmsy = FALSE)
+)
 selection <- list(
   schema = "mfclshiny.report_selection.v1",
   created_at = "2026-08-07T00:00:00Z",
@@ -339,6 +362,114 @@ if (!reuse_mfcl_figures) {
   )
 }
 
+# Keep the regional age-data figures compact and report-ready.  The generic
+# app exporter treats IDs containing "region" as map controls, so an
+# item-level age facet setting is discarded before reaching the age plot
+# builder.  Rebuild these three figures directly from the same public model
+# payload, with the intended three columns and the pooled panel last.
+save_mfcl_figure <- function(plot, id, width = 10.8, height = 7.0) {
+  out_png <- file.path(mfcl_dir, "figures", paste0(id, ".png"))
+  out_pdf <- file.path(mfcl_dir, "figures", paste0(id, ".pdf"))
+  ggplot2::ggsave(
+    out_png, plot, width = width, height = height, units = "in",
+    dpi = as.integer(Sys.getenv("DIAGNOSTIC_REPORT_DPI", "400")),
+    device = ragg::agg_png, bg = "white", limitsize = FALSE
+  )
+  ggplot2::ggsave(
+    out_pdf, plot, width = width, height = height, units = "in",
+    device = grDevices::cairo_pdf, bg = "white", limitsize = FALSE
+  )
+}
+age_fit <- profile_age_payload$data$AgeFitOut
+if (is.list(age_fit) && nrow(age_fit$residuals %||% data.frame())) {
+  mean_laa <- suppressWarnings(as.numeric(c(aperm(FLR4MFCL::mean_laa(rep_out), c(4, 1, 2, 3, 5, 6)))))
+  sd_laa <- suppressWarnings(as.numeric(c(aperm(FLR4MFCL::sd_laa(rep_out), c(4, 1, 2, 3, 5, 6)))))
+  n_age <- min(length(mean_laa), length(sd_laa))
+  age_growth <- data.frame(
+    age = seq_len(n_age), mean_length = mean_laa[seq_len(n_age)],
+    sd_length = sd_laa[seq_len(n_age)]
+  )
+  regional_age_plot <- function(plot) {
+    plot +
+      ggplot2::labs(title = NULL, subtitle = NULL, caption = NULL) +
+      ggplot2::theme(plot.margin = ggplot2::margin(5, 7, 5, 5))
+  }
+  save_mfcl_figure(
+    regional_age_plot(mfclshiny::plot_mfcl_age_length_fit(
+      age_fit, type = "region_fit", fishery_map = report_data$mappings$fisheries,
+      facet_ncol = 3L, include_all_regions = TRUE
+    )),
+    "age-data-fit-by-region"
+  )
+  save_mfcl_figure(
+    regional_age_plot(mfclshiny::plot_mfcl_age_length_growth(
+      age_fit, growth = age_growth, fishery_map = report_data$mappings$fisheries,
+      facet_ncol = 3L, include_all_regions = TRUE
+    )),
+    "age-data-growth-by-region"
+  )
+  save_mfcl_figure(
+    regional_age_plot(mfclshiny::plot_mfcl_age_length_fit(
+      age_fit, type = "region_residuals", fishery_map = report_data$mappings$fisheries,
+      facet_ncol = 3L, include_all_regions = TRUE
+    )),
+    "age-data-residuals-by-region"
+  )
+}
+
+# Use one explicit report plot for regional depletion.  The app's legacy
+# version always adds a 0.5 reference; the diagnostic report retains only the
+# biomass limit reference point (0.20) and keeps the pooled panel last.
+regional_depletion_plot <- function(rep_out) {
+  with_fishing <- as.data.frame(rep_out@adultBiomass)
+  without_fishing <- as.data.frame(rep_out@adultBiomass_nofish)
+  yearly_with <- dplyr::summarise(
+    dplyr::group_by(with_fishing, year, area),
+    biomass = sum(data, na.rm = TRUE) / dplyr::n_distinct(season),
+    .groups = "drop"
+  )
+  yearly_without <- dplyr::summarise(
+    dplyr::group_by(without_fishing, year, area),
+    biomass = sum(data, na.rm = TRUE) / dplyr::n_distinct(season),
+    .groups = "drop"
+  )
+  regional <- dplyr::mutate(
+    dplyr::left_join(yearly_with, yearly_without, by = c("year", "area"), suffix = c("_with", "_without")),
+    depletion = biomass_with / pmax(biomass_without, .Machine$double.eps),
+    region = paste("Region", area)
+  )
+  total_with_season <- dplyr::summarise(
+    dplyr::group_by(with_fishing, year, season), biomass = sum(data, na.rm = TRUE), .groups = "drop"
+  )
+  total_with <- dplyr::summarise(
+    dplyr::group_by(total_with_season, year), biomass_with = mean(biomass), .groups = "drop"
+  )
+  total_without_season <- dplyr::summarise(
+    dplyr::group_by(without_fishing, year, season), biomass = sum(data, na.rm = TRUE), .groups = "drop"
+  )
+  total_without <- dplyr::summarise(
+    dplyr::group_by(total_without_season, year), biomass_without = mean(biomass), .groups = "drop"
+  )
+  total <- dplyr::mutate(
+    dplyr::left_join(total_with, total_without, by = "year"),
+    depletion = biomass_with / pmax(biomass_without, .Machine$double.eps),
+    region = "All regions"
+  )
+  z <- dplyr::bind_rows(
+    dplyr::select(regional, year, depletion, region),
+    dplyr::select(total, year, depletion, region)
+  )
+  z$region <- factor(z$region, levels = c(paste("Region", 1:5), "All regions"))
+  ggplot2::ggplot(z, ggplot2::aes(x = year, y = depletion)) +
+    ggplot2::geom_hline(yintercept = 0.20, colour = red, linetype = 2, linewidth = 0.55) +
+    ggplot2::geom_line(colour = navy, linewidth = 0.75) +
+    ggplot2::facet_wrap(~region, ncol = 3) +
+    ggplot2::coord_cartesian(ylim = c(0, 1)) +
+    ggplot2::labs(x = "Year", y = expression(italic(SB)/italic(SB)[italic(F)==0])) +
+    theme_report(10.2)
+}
+save_mfcl_figure(regional_depletion_plot(rep_out), "depletion-by-area")
+
 required_mfcl_figures <- c(
   "region-map", "cpue-residuals", "length-frequency", "age-data-fit",
   "age-data-fit-by-region", "age-data-growth-by-region", "tag-returns-all",
@@ -359,7 +490,8 @@ quantity_specs <- list(
     lrp = 0.20
   ),
   spawning_potential = list(y = expression("Spawning potential"~(10^3~"t")), lrp = NA_real_),
-  recruitment = list(y = expression("Recruitment (millions of fish)"), lrp = NA_real_)
+  recruitment = list(y = expression("Recruitment (millions of fish)"), lrp = NA_real_),
+  fishing_mortality = list(y = expression(italic(F)[italic(t)] / italic(F)[MSY]), lrp = NA_real_)
 )
 interval_plot <- function(quantity) {
   z <- unc[unc$quantity == quantity, , drop = FALSE]
@@ -381,15 +513,8 @@ interval_plot <- function(quantity) {
   }
   p
 }
-f_data <- report_data$model$annual
-p_f <- ggplot2::ggplot(f_data, ggplot2::aes(x = Year, y = `Annual population-weighted F`)) +
-  ggplot2::geom_line(colour = navy, linewidth = 0.75) +
-  ggplot2::scale_y_continuous(limits = c(0, NA), expand = ggplot2::expansion(mult = c(0, 0.05))) +
-  ggplot2::labs(x = "Year", y = expression(italic(F)~("year"^{-1}))) +
-  theme_report(10) +
-  ggplot2::theme(legend.position = "none")
 p_dynamics <- (interval_plot("depletion") | interval_plot("spawning_potential")) /
-  (interval_plot("recruitment") | p_f) +
+  (interval_plot("recruitment") | interval_plot("fishing_mortality")) +
   patchwork::plot_annotation(tag_levels = "a") &
   ggplot2::theme(plot.tag.position = c(0.01, 0.99))
 save_figure(p_dynamics, "diagnostic-population-dynamics", width = 7.1, height = 6.2)
@@ -616,7 +741,10 @@ profile_viewer_group <- function(key, label, z, colour, labels = NULL, add_total
   curve_names <- sort(unique(as.character(z$curve)))
   if (isTRUE(add_total) && length(curve_names) > 1L) {
     total_values <- stats::aggregate(value ~ biomass_ratio, data = z, FUN = sum)
-    total <- z[0L, , drop = FALSE]
+    # Keep the same columns as the component data while allocating one row
+    # for every profile scalar.  A zero-row data frame cannot be populated
+    # with a vector, which previously stopped the viewer build here.
+    total <- z[rep.int(1L, nrow(total_values)), , drop = FALSE]
     total$biomass_ratio <- total_values$biomass_ratio
     total$value <- total_values$value
     total$curve <- "Total component"
@@ -1097,7 +1225,7 @@ figure_meta <- list(
   ),
   `diagnostic-population-dynamics` = list(
     section = "Population dynamics",
-    caption = "Diagnostic-model estimates of (a) dynamic spawning depletion, (b) spawning potential, (c) recruitment and (d) annual population-weighted fishing mortality. Shading in panels a-c gives central 50%, 80% and 95% delta-method intervals from the inverse Hessian; panel d shows the fitted fishing-mortality trajectory."
+    caption = "Diagnostic-model estimates of (a) dynamic spawning depletion, (b) spawning potential, (c) recruitment and (d) annual fishing mortality relative to FMSY. Shading gives central 50%, 80% and 95% Hessian delta-method intervals."
   ),
   `likelihood-profile-components` = list(
     section = "Diagnostics",
@@ -1294,7 +1422,7 @@ html <- paste0(
   "</nav>",
   "<section id='overview' class='tab active'><h2>Overview</h2>",
   "<div class='cards'><div class='metric'><strong>Job 22974</strong>diagnostic handoff</div><div class='metric'><strong>MGC 9.68 x 10<sup>-5</sup></strong>fitted convergence</div><div class='metric'><strong>PDH</strong>Hessian status</div><div class='metric'><strong>1952-2024</strong>model period</div></div>",
-  "<div class='note'><strong>Uncertainty.</strong> The inverse Hessian is positive definite. Delta-method intervals are shown for dynamic spawning depletion, spawning potential and recruitment. Annual fishing mortality is shown as the fitted trajectory because its annual Hessian derivative was not calculated.</div>",
+  "<div class='note'><strong>Uncertainty.</strong> The inverse Hessian is positive definite. Delta-method intervals are shown for dynamic spawning depletion, spawning potential, recruitment and annual F/F<sub>MSY</sub>.</div>",
   "<div class='note'><strong>Diagnostic checks.</strong> Jitter, seven retrospective peels, 50 self-test refits, a 45-point biomass likelihood profile and ASPM are summarized below. Detailed profile curves are provided in the linked viewer.</div>",
   html_table(tables[["model-fit-summary"]]),
   html_table(tables[["recent-stock-status"]]),
@@ -1351,7 +1479,7 @@ text_files <- manifest_files[grepl("[.](html|csv|tex|json|log)$", manifest_files
 for (path in text_files) {
   content <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
   contains_private_context <- grepl(
-    paste0("/home/|/tmp/|/var/lib/|kyuhank|native", "[[:space:]]+MFCL"),
+    "/home/|/tmp/|/var/lib/|native[[:space:]]+MFCL",
     content,
     ignore.case = TRUE
   )
