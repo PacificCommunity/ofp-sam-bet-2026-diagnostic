@@ -19,8 +19,7 @@ resources:
   disk: 40GB
 env:
   JOB_TITLE: BET 2026 Diagnostic model report
-  JOB_DESCRIPTION: Public report for Diagnostic Job 22974 with model fit, diagnostic checks, supported Hessian intervals and a self-contained likelihood-profile viewer.
-  MODEL_JOB: "22974"
+  JOB_DESCRIPTION: Public report with model-fit diagnostics, supported Hessian intervals and a self-contained likelihood-profile viewer.
   REPORT_OUTPUT_DIR: diagnostic-report-output
   DIAGNOSTIC_REPORT_DPI: "400"
   FLOW_SPECIES: BET
@@ -57,9 +56,6 @@ artifacts:
 metadata:
   input_jobs_override: true
   source_model_count: 1
-  source_model_job: 22974
-  source_hessian_job: 22020
-  raw_hessian_restore_job: 22196
   expected_final_par_sha256: 21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3
   report_style: paper-ready
   source_model_policy: repository-compact-payload

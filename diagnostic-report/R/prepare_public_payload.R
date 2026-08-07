@@ -7,12 +7,12 @@
 options(stringsAsFactors = FALSE)
 
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 3L) {
+if (length(args) < 4L) {
   stop(
     paste(
-      "Usage: prepare_public_payload.R REPO_ROOT EXTRACTED_JOB_ROOT OUTPUT_RDS",
-      "where EXTRACTED_JOB_ROOT contains job-021747, job-022020,",
-      "job-022028, job-022062, job-022072, job-023026 and job-023102."
+      "Usage: prepare_public_payload.R REPO_ROOT EXTRACTED_ARCHIVE_ROOT",
+      "PRIVATE_SOURCE_MAP OUTPUT_RDS. PRIVATE_SOURCE_MAP is a local,",
+      "git-ignored CSV with columns role and archive_dir."
     ),
     call. = FALSE
   )
@@ -20,7 +20,8 @@ if (length(args) < 3L) {
 
 repo_root <- normalizePath(args[[1L]], winslash = "/", mustWork = TRUE)
 source_root <- normalizePath(args[[2L]], winslash = "/", mustWork = TRUE)
-output_file <- normalizePath(args[[3L]], winslash = "/", mustWork = FALSE)
+private_source_map <- normalizePath(args[[3L]], winslash = "/", mustWork = TRUE)
+output_file <- normalizePath(args[[4L]], winslash = "/", mustWork = FALSE)
 dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE)
 
 required_packages <- c("FLR4MFCL", "mfclshiny")
@@ -63,24 +64,23 @@ sha256 <- function(path) {
 }
 
 model_key <- "S0.90-F2-tau2-fixed"
-job_dir <- function(job) file.path(source_root, sprintf("job-%06d", as.integer(job)))
-model_dir <- function(job) file.path(job_dir(job), "outputs", "models", model_key)
-
-jobs <- c(
-  model_payload = 21747L,
-  hessian = 22020L,
-  retrospective = 22028L,
-  jitter = 22062L,
-  likelihood_profile = 22072L,
-  self_test = 23026L,
-  aspm = 23102L
-)
-missing_jobs <- names(jobs)[!dir.exists(vapply(jobs, job_dir, character(1L)))]
-if (length(missing_jobs)) {
-  stop("Missing extracted job archive(s): ", paste(missing_jobs, collapse = ", "), call. = FALSE)
+required_roles <- c("model_payload", "retrospective", "jitter", "likelihood_profile", "self_test", "aspm")
+private_sources <- utils::read.csv(private_source_map, stringsAsFactors = FALSE)
+if (!all(c("role", "archive_dir") %in% names(private_sources))) {
+  stop("PRIVATE_SOURCE_MAP must contain role and archive_dir columns.", call. = FALSE)
 }
+private_sources <- private_sources[private_sources$role %in% required_roles, c("role", "archive_dir"), drop = FALSE]
+if (anyDuplicated(private_sources$role) || !setequal(private_sources$role, required_roles)) {
+  stop("PRIVATE_SOURCE_MAP must contain one archive_dir for every required role.", call. = FALSE)
+}
+archive_dirs <- setNames(file.path(source_root, private_sources$archive_dir), private_sources$role)
+missing_archives <- names(archive_dirs)[!dir.exists(archive_dirs)]
+if (length(missing_archives)) {
+  stop("Missing extracted archive(s): ", paste(missing_archives, collapse = ", "), call. = FALSE)
+}
+model_dir <- function(role) file.path(archive_dirs[[role]], "outputs", "models", model_key)
 
-model_payload_dir <- file.path(model_dir(jobs[["model_payload"]]))
+model_payload_dir <- model_dir("model_payload")
 payload_file <- file.path(model_payload_dir, "model_payload.rds")
 payload <- get("mfclshiny_diagnostic_payload", asNamespace("mfclshiny"))(
   model_payload_dir,
@@ -89,7 +89,7 @@ payload <- get("mfclshiny_diagnostic_payload", asNamespace("mfclshiny"))(
 model_tables <- get("mfclshiny_diagnostic_model_tables", asNamespace("mfclshiny"))(
   payload,
   model_payload_dir,
-  model_job = "22974",
+  model_job = "diagnostic-reference",
   recent_years = 4L
 )
 
@@ -159,7 +159,7 @@ age_profile_records <- function(age_out, fishery_map) {
 age_records <- age_profile_records(payload$data$AgeOut, fishery_map)
 
 # Retrospective checks -------------------------------------------------------
-retro_root <- file.path(model_dir(jobs[["retrospective"]]), "retro")
+retro_root <- file.path(model_dir("retrospective"), "retro")
 retro_files <- list.files(
   retro_root,
   pattern = "retro_metrics[.]rds$",
@@ -206,7 +206,7 @@ retro_rho <- data.frame(
 )
 
 # Jitter checks --------------------------------------------------------------
-jitter_root <- file.path(model_dir(jobs[["jitter"]]), "jitter")
+jitter_root <- file.path(model_dir("jitter"), "jitter")
 jitter_files <- list.files(jitter_root, pattern = "jitter_result[.]rds$", recursive = TRUE, full.names = TRUE)
 jitter_objects <- lapply(jitter_files, readRDS)
 jitter_runs <- bind_rows_base(lapply(jitter_objects, function(x) {
@@ -234,7 +234,7 @@ jitter_family <- bind_rows_base(lapply(jitter_objects, function(x) {
 jitter_summary <- read_csv(file.path(jitter_root, "check-summary.csv"))
 
 # Self-test checks -----------------------------------------------------------
-selftest_root <- file.path(model_dir(jobs[["self_test"]]), "selftest")
+selftest_root <- file.path(model_dir("self_test"), "selftest")
 selftest_runs <- readRDS(file.path(selftest_root, "selftest_runs.rds"))
 read_recovery_set <- function(name) {
   files <- list.files(
@@ -255,7 +255,7 @@ selftest_parameters <- read_recovery_set("profile_parameter_recovery")
 selftest_summary <- read_csv(file.path(selftest_root, "check-summary.csv"))
 
 # ASPM checks ----------------------------------------------------------------
-aspm_root <- file.path(model_dir(jobs[["aspm"]]), "aspm")
+aspm_root <- file.path(model_dir("aspm"), "aspm")
 aspm_variants <- c(constant = "ASPM")
 aspm_annual <- bind_rows_base(lapply(names(aspm_variants), function(variant) {
   folder <- file.path(aspm_root, variant)
@@ -292,7 +292,7 @@ aspm_info <- bind_rows_base(lapply(names(aspm_variants), function(variant) {
 aspm_summary <- read_csv(file.path(aspm_root, "check-summary.csv"))
 
 # Likelihood profile ---------------------------------------------------------
-profile_root <- file.path(model_dir(jobs[["likelihood_profile"]]), "profile", "total_average_biomass")
+profile_root <- file.path(model_dir("likelihood_profile"), "profile", "total_average_biomass")
 profile_files <- list.files(profile_root, pattern = "profile_payload[.]rds$", recursive = TRUE, full.names = TRUE)
 
 tool_candidates <- c(
@@ -453,8 +453,7 @@ public_payload <- list(
   schema = "bet2026.diagnostic_report.v1",
   data_vintage = "2026-08-07",
   source = list(
-    final_diagnostic_job = 22974L,
-    jobs = jobs,
+    archive_roles = required_roles,
     model_key = model_key,
     final_par_sha256 = fit_summary$final_par_sha256[[1L]],
     model_payload_sha256 = sha256(payload_file),

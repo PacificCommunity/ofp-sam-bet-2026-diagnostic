@@ -1,7 +1,7 @@
 # BET 2026 Diagnostic model report
 
-This directory builds the public report for Diagnostic Job 22974. The report
-uses only repository-contained, compact inputs:
+This directory builds the public diagnostic-model report. The report uses only
+repository-contained, compact inputs:
 
 - `data/diagnostic-report-data.rds` contains the summarized Hessian, jitter,
   retrospective, self-test, ASPM and likelihood-profile results.
@@ -52,7 +52,10 @@ Use `--dry-run` to inspect the submission payload without contacting Kflow.
 
 ## Rebuilding the compact payload
 
-`R/prepare_public_payload.R` recreates the report RDS from the completed check
-archives and applies the public-output audit. This preparation step is not
-part of the report-render job because the public report is intentionally
+`R/prepare_public_payload.R` recreates the report RDS from completed check
+archives and applies the public-output audit. The preparation command requires
+a local, git-ignored source map that associates scientific roles with archived
+run directories. This keeps internal execution references out of the public
+repository while preserving an auditable local rebuild path. Preparation is
+not part of the report-render job because the public report is intentionally
 independent of raw scheduler artifacts.

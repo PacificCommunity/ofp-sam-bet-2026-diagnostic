@@ -62,7 +62,7 @@ def build_payload(branch: str, dpi: int, site: str) -> dict:
     remote_host = SUVA_HOST if site == "suva" else LOCAL_HOST
     title = "BET 2026 Diagnostic model report"
     description = (
-        "Public report for Diagnostic Job 22974 with model fit, diagnostic checks, "
+        "Public report with model fit, diagnostic checks, "
         "supported Hessian intervals and a self-contained likelihood-profile viewer."
     )
     artifacts = [
@@ -113,7 +113,6 @@ def build_payload(branch: str, dpi: int, site: str) -> dict:
         "env": {
             "JOB_TITLE": title,
             "JOB_DESCRIPTION": description,
-            "MODEL_JOB": "22974",
             "REPORT_OUTPUT_DIR": "diagnostic-report-output",
             "DIAGNOSTIC_REPORT_DPI": str(dpi),
             "FLOW_SPECIES": "BET",
@@ -136,14 +135,10 @@ def build_payload(branch: str, dpi: int, site: str) -> dict:
             "stage": "diagnostic-model-report",
             "species": "BET",
             "assessment_year": "2026",
-            "source_model_job": "22974",
             "execution": site,
         },
         "metadata": {
             "input_jobs_override": True,
-            "source_model_job": 22974,
-            "source_hessian_job": 22020,
-            "raw_hessian_restore_job": 22196,
             "source_model_policy": "repository-compact-payload",
             "job_title": title,
             "job_description": description,

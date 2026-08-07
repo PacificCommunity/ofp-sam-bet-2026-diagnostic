@@ -33,7 +33,7 @@ if (!identical(report_data$schema, "bet2026.diagnostic_report.v1")) {
   stop("Unsupported report payload schema: ", report_data$schema %||% "missing", call. = FALSE)
 }
 # Selectivity settings are a checked-in model definition rather than a fitted
-# output.  Read the final Job 21641 mapping at render time so the public table
+# output. Read the final model mapping at render time so the public table
 # cannot inherit an obsolete extraction-era sharing map from an older payload.
 fishery_map_env <- new.env(parent = baseenv())
 sys.source(file.path(repo_root, "model", "fishery_map.R"), envir = fishery_map_env)
@@ -182,6 +182,7 @@ cpue$series <- sub("^[0-9]+[.]", "", cpue$series)
 cpue$panel <- paste0(cpue$series, " | fit")
 residual_cpue <- cpue
 residual_cpue$panel <- paste0(residual_cpue$series, " | residual")
+residual_panels <- unique(residual_cpue[, "panel", drop = FALSE])
 panel_order <- as.vector(rbind(
   paste0(unique(cpue$series), " | fit"),
   paste0(unique(cpue$series), " | residual")
@@ -190,8 +191,8 @@ cpue$panel <- factor(cpue$panel, levels = panel_order)
 residual_cpue$panel <- factor(residual_cpue$panel, levels = panel_order)
 p_cpue_fit_residual <- ggplot2::ggplot() +
   ggplot2::geom_rect(
-    data = residual_cpue,
-    ggplot2::aes(xmin = -Inf, xmax = Inf, ymin = -1.96, ymax = 1.96),
+    data = residual_panels,
+    xmin = -Inf, xmax = Inf, ymin = -1.96, ymax = 1.96,
     inherit.aes = FALSE, fill = "#dceff3", alpha = 0.78
   ) +
   ggplot2::geom_ribbon(
@@ -425,6 +426,13 @@ if (is.list(age_fit) && nrow(age_fit$residuals %||% data.frame())) {
     dplyr::ungroup() |>
     dplyr::mutate(region_label = factor(region_label, levels = age_region_levels))
   age_observed <- age_region_counts[age_region_counts$observed_prop > 0, , drop = FALSE]
+  age_mean_lines <- age_region_counts |>
+    dplyr::group_by(region_label, length) |>
+    dplyr::summarise(
+      fitted_mean_age = sum(age * fitted, na.rm = TRUE) / pmax(sum(fitted, na.rm = TRUE), 1e-8),
+      observed_mean_age = sum(age * observed, na.rm = TRUE) / pmax(sum(observed, na.rm = TRUE), 1e-8),
+      .groups = "drop"
+    )
   p_age_region_fit <- ggplot2::ggplot(
     age_region_counts, ggplot2::aes(length, age, fill = fitted_prop)
   ) +
@@ -434,16 +442,42 @@ if (is.list(age_fit) && nrow(age_fit$residuals %||% data.frame())) {
       ggplot2::aes(length, age, size = observed_prop),
       inherit.aes = FALSE, shape = 21, fill = NA, colour = "#111111", stroke = 0.45
     ) +
+    ggplot2::geom_line(
+      data = age_mean_lines,
+      ggplot2::aes(length, fitted_mean_age, linetype = "Fitted mean age"),
+      inherit.aes = FALSE, colour = navy, linewidth = 0.72
+    ) +
+    ggplot2::geom_line(
+      data = age_mean_lines,
+      ggplot2::aes(length, observed_mean_age, linetype = "Observed mean age"),
+      inherit.aes = FALSE, colour = "#C76B1C", linewidth = 0.68
+    ) +
     ggplot2::facet_wrap(~region_label, ncol = 3) +
     ggplot2::scale_fill_gradientn(
       colours = c("white", "#D8EDF2", "#1F8A8A", "#F2A65A", "#B2182B"),
       values = scales::rescale(c(0, 0.01, 0.1, 0.4, 1)), trans = "sqrt",
       limits = c(0, 1), name = "Fitted\nproportion"
     ) +
-    ggplot2::scale_size_area(max_size = 4.8, limits = c(0, 1), name = "Observed\nproportion") +
+    ggplot2::scale_size_area(
+      max_size = 4.8, limits = c(0, 1), name = "Observed\nproportion",
+      breaks = c(0.25, 0.5, 0.75, 1)
+    ) +
+    ggplot2::scale_linetype_manual(
+      values = c("Fitted mean age" = "solid", "Observed mean age" = "22"), name = NULL
+    ) +
     ggplot2::labs(x = "Length", y = "Age class") +
     theme_report(10.2) +
-    ggplot2::theme(legend.position = "bottom")
+    ggplot2::guides(
+      fill = ggplot2::guide_colourbar(barwidth = grid::unit(5.2, "cm"), barheight = grid::unit(0.35, "cm")),
+      size = ggplot2::guide_legend(nrow = 1, byrow = TRUE),
+      linetype = ggplot2::guide_legend(nrow = 1, byrow = TRUE)
+    ) +
+    ggplot2::theme(
+      legend.position = "bottom", legend.box = "vertical",
+      legend.text = ggplot2::element_text(size = 8.2),
+      legend.title = ggplot2::element_text(size = 8.2),
+      legend.spacing.y = grid::unit(0.04, "cm")
+    )
   age_residual_limit <- max(2, min(6, stats::quantile(
     abs(age_region_counts$pearson_residual), 0.98, na.rm = TRUE
   )))
@@ -1251,6 +1285,16 @@ tex_breakable <- function(x) {
   x <- gsub("/", "/\\allowbreak{}", x, fixed = TRUE)
   gsub(",", ",\\allowbreak{}", x, fixed = TRUE)
 }
+latex_cell <- function(x) {
+  labels <- c(
+    "FMSY" = "$F_{\\mathrm{MSY}}$",
+    "Frecent / FMSY" = "$F_{\\mathrm{recent}}/F_{\\mathrm{MSY}}$",
+    "MSY" = "MSY",
+    "SBMSY" = "$SB_{\\mathrm{MSY}}$"
+  )
+  hit <- unname(labels[as.character(x)])
+  ifelse(is.na(hit), tex_breakable(x), hit)
+}
 format_cell <- function(x) {
   if (is.numeric(x)) {
     out <- ifelse(is.na(x), "", format(x, trim = TRUE, scientific = FALSE, big.mark = ","))
@@ -1286,7 +1330,7 @@ write_table_tex <- function(data, id, caption_latex, label) {
   path <- file.path(table_dir, paste0(id, ".tex"))
   data[] <- lapply(data, format_cell)
   header <- paste(latex_header(names(data)), collapse = " & ")
-  rows <- apply(data, 1L, function(row) paste(tex_breakable(row), collapse = " & "))
+  rows <- apply(data, 1L, function(row) paste(latex_cell(row), collapse = " & "))
   lines <- c(
     "\\begingroup",
     "\\footnotesize",
@@ -1324,9 +1368,9 @@ write_table_bundle <- function(data, id, caption_html, caption_latex, label = id
 fit <- report_data$model$fit_summary[1, ]
 summary_lookup <- stats::setNames(as.character(report_data$model$summary$Value), report_data$model$summary$Item)
 fit_table <- data.frame(
-  Metric = c("Final diagnostic job", "Objective function", "Maximum gradient component", "Hessian", "Active parameters", "Years", "Regions", "Tag release groups"),
+  Metric = c("Model configuration", "Objective function", "Maximum gradient component", "Hessian", "Active parameters", "Years", "Regions", "Tag release groups"),
   Value = c(
-    "22974", formatC(fit$objective, format = "f", digits = 1, big.mark = ","),
+    "Diagnostic reference fit", formatC(fit$objective, format = "f", digits = 1, big.mark = ","),
     format(fit$max_gradient, scientific = TRUE, digits = 3), "Positive definite",
     summary_lookup[["Active parameters"]], summary_lookup[["Years"]],
     summary_lookup[["Regions"]], summary_lookup[["Tag release groups"]]
@@ -1390,7 +1434,15 @@ selftest_table <- st_management |>
     `97.5th percentile (%)` = 100 * quantile_safe(rel_delta, 0.975),
     .groups = "drop"
   ) |>
-  dplyr::mutate(dplyr::across(where(is.numeric), ~sprintf("%.2f", .x)))
+  dplyr::mutate(
+    metric = dplyr::recode(metric,
+      fmsy = "FMSY",
+      frecent_fmsy = "Frecent / FMSY",
+      msy = "MSY",
+      sbmsy = "SBMSY"
+    ),
+    dplyr::across(where(is.numeric), ~sprintf("%.2f", .x))
+  )
 names(selftest_table)[1L] <- "Quantity"
 aspm_terminal <- aspm |>
   dplyr::group_by(model) |>
@@ -1437,7 +1489,7 @@ tables <- list(
   write_table_bundle(selftest_table, "self-test-summary", "Relative recovery error for management quantities across 50 self-test refits.", "Relative recovery error for management quantities across 50 self-test refits."),
   write_table_bundle(aspm_terminal, "aspm-terminal-summary", "Terminal quantities for the diagnostic model and ASPM.", "Terminal quantities for the diagnostic model and ASPM."),
   write_table_bundle(fishery_table, "fishery-grouping", "Fishery definitions and final selectivity settings. All 33 fisheries have independent cubic-spline selectivity; F10 and F33 have a weak non-decreasing penalty of 10,000.", "Fishery definitions and final selectivity settings. All 33 fisheries have independent cubic-spline selectivity; F10 and F33 have a weak non-decreasing penalty of 10,000."),
-  write_table_bundle(tag_table, "tag-reporting-rate-groups", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status.", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status."),
+  write_table_bundle(tag_table, "tag-reporting-rate-groups", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status. Pooled denotes a common reporting-rate parameter across the listed tag programmes.", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status. Pooled denotes a common reporting-rate parameter across the listed tag programmes."),
   write_table_bundle(release_summary, "tag-release-groups", "Summary of tag-release groups by programme and release region.", "Summary of tag-release groups by programme and release region.")
 )
 names(tables) <- vapply(tables, `[[`, character(1L), "id")
@@ -1538,7 +1590,7 @@ mfcl_captions <- list(
   `length-frequency` = list(section = "Model fit", caption = "Observed and fitted length compositions by fishery. Shaded bands are 95% predictive intervals for repeated observations conditional on the fitted composition model; parameter uncertainty is not included."),
   `length-frequency-residuals` = list(section = "Model fit", caption = "Length-composition residuals by fishery and length class."),
   `age-data-fit` = list(section = "Model fit", caption = "Observed and fitted conditional mean age by fishery and year, weighted by the number of aged fish in each length bin. Three-column panels use increased height to retain readable fishery labels and time series."),
-  `age-data-fit-by-region` = list(section = "Model fit", caption = "Observed and fitted conditional age-at-length distributions for the five model regions and the pooled All regions panel (last). Expected counts use the fitted conditional age distribution and the observed number of aged fish."),
+  `age-data-fit-by-region` = list(section = "Model fit", caption = "Observed and fitted conditional age-at-length distributions for the five model regions and the pooled All regions panel (last). Cells and point sizes show fitted and observed proportions; solid and dashed lines show their corresponding mean ages at length."),
   `age-data-growth-by-region` = list(section = "Model fit", caption = "Observed age-length cells for the five model regions and the pooled All regions panel (last), over the fitted growth curve. Shading is the fitted mean length at age plus or minus 1.96 length-at-age standard deviations and represents fish-level length variability, not Hessian parameter uncertainty."),
   `age-data-residuals-by-region` = list(section = "Model fit", caption = "Conditional age-at-length residuals for the five model regions and the pooled All regions panel (last)."),
   `age-data-coverage` = list(section = "Model fit", caption = "Coverage of conditional age-at-length observations by fishery and year. The samples and fish-aged arrays use increased height so all panels remain readable."),
@@ -1672,7 +1724,7 @@ html <- paste0(
   "<button class='active' data-tab='overview'>Overview</button><button data-tab='fit'>Model fit</button><button data-tab='diagnostics'>Diagnostics</button><button data-tab='dynamics'>Population dynamics</button><button data-tab='assets'>Figures and tables</button>",
   "</nav>",
   "<section id='overview' class='tab active'><h2>Overview</h2>",
-  "<div class='cards'><div class='metric'><strong>Job 22974</strong>diagnostic handoff</div><div class='metric'><strong>MGC 9.68 x 10<sup>-5</sup></strong>fitted convergence</div><div class='metric'><strong>PDH</strong>Hessian status</div><div class='metric'><strong>1952-2024</strong>model period</div></div>",
+  "<div class='cards'><div class='metric'><strong>Diagnostic reference fit</strong>model configuration</div><div class='metric'><strong>MGC 9.68 x 10<sup>-5</sup></strong>fitted convergence</div><div class='metric'><strong>PDH</strong>Hessian status</div><div class='metric'><strong>1952-2024</strong>model period</div></div>",
   "<div class='note'><strong>Uncertainty.</strong> The inverse Hessian is positive definite. Delta-method intervals are shown for dynamic spawning depletion, spawning potential, recruitment and annual F/F<sub>MSY</sub>.</div>",
   "<div class='note'><strong>Diagnostic checks.</strong> Jitter, seven retrospective peels, 50 self-test refits, a 45-point biomass likelihood profile and ASPM are summarized below. Detailed profile curves are provided in the linked viewer.</div>",
   html_table(tables[["model-fit-summary"]]),

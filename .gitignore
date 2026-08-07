@@ -8,6 +8,7 @@ final-run/
 final-run-*/
 diagnostic-report-output/
 diagnostic-report/.R-library/
+diagnostic-report/.private/
 .kflow-app-data/
 XXX
 argv
