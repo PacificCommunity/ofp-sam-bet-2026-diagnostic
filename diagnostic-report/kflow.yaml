@@ -14,8 +14,8 @@ checkout:
     - model/fishery_map.R
     - model/tag_rep_map.R
 resources:
-  cpus: 4
-  memory: 10GB
+  cpus: 2
+  memory: 8GB
   disk: 40GB
 env:
   JOB_TITLE: BET 2026 Diagnostic model report
