@@ -394,25 +394,40 @@ if (is.list(age_fit) && nrow(age_fit$residuals %||% data.frame())) {
       ggplot2::labs(title = NULL, subtitle = NULL, caption = NULL) +
       ggplot2::theme(plot.margin = ggplot2::margin(5, 7, 5, 5))
   }
+  # `include_all_regions` was added after the pinned report-runtime release.
+  # The older exporter already includes the pooled panel by default, whereas
+  # newer versions need it requested explicitly.  Detect the supported API so
+  # the public report renders with either runtime.
+  age_fit_plot <- function(type) {
+    args <- list(
+      age_fit, type = type, fishery_map = report_data$mappings$fisheries,
+      facet_ncol = 3L
+    )
+    if ("include_all_regions" %in% names(formals(mfclshiny::plot_mfcl_age_length_fit))) {
+      args$include_all_regions <- TRUE
+    }
+    do.call(mfclshiny::plot_mfcl_age_length_fit, args)
+  }
+  age_growth_plot <- function() {
+    args <- list(
+      age_fit, growth = age_growth, fishery_map = report_data$mappings$fisheries,
+      facet_ncol = 3L
+    )
+    if ("include_all_regions" %in% names(formals(mfclshiny::plot_mfcl_age_length_growth))) {
+      args$include_all_regions <- TRUE
+    }
+    do.call(mfclshiny::plot_mfcl_age_length_growth, args)
+  }
   save_mfcl_figure(
-    regional_age_plot(mfclshiny::plot_mfcl_age_length_fit(
-      age_fit, type = "region_fit", fishery_map = report_data$mappings$fisheries,
-      facet_ncol = 3L, include_all_regions = TRUE
-    )),
+    regional_age_plot(age_fit_plot("region_fit")),
     "age-data-fit-by-region"
   )
   save_mfcl_figure(
-    regional_age_plot(mfclshiny::plot_mfcl_age_length_growth(
-      age_fit, growth = age_growth, fishery_map = report_data$mappings$fisheries,
-      facet_ncol = 3L, include_all_regions = TRUE
-    )),
+    regional_age_plot(age_growth_plot()),
     "age-data-growth-by-region"
   )
   save_mfcl_figure(
-    regional_age_plot(mfclshiny::plot_mfcl_age_length_fit(
-      age_fit, type = "region_residuals", fishery_map = report_data$mappings$fisheries,
-      facet_ncol = 3L, include_all_regions = TRUE
-    )),
+    regional_age_plot(age_fit_plot("region_residuals")),
     "age-data-residuals-by-region"
   )
 }
