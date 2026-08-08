@@ -12,8 +12,9 @@ if (marker_count("__VIEWER_DATA__") != 1L || marker_count("__SPC_LOGO__") != 1L 
   stop("The viewer must retain exactly one data and one marker for each logo.", call. = FALSE)
 }
 for (required in c(
-  "Select all", "Clear all", "parentComponent", "detail-panel", "each curve minimum = 0",
-  "Tag panels are organised by programme", "Download plotted CSV",
+  "Select all", "Clear all", "parentComponent", "parentGroup", "detail-panel",
+  "detail-actions", "each curve minimum = 0",
+  "Tag opens programme totals", "Download plotted CSV",
   "Kyuhan Kim", "kyuhank@spc.int"
 )) {
   if (!grepl(required, template, fixed = TRUE)) {
@@ -70,6 +71,23 @@ payload <- list(
         # This offset is intentional: the child must still plot from its own zero.
         curve_rows("index-a", "Index A", c(100, 101, 105), FALSE, "#ca6b26")
       )
+    ),
+    list(
+      key = "tag-programmes", label = "Tag programmes", kind = "detail",
+      parent_component = "Tag", panel = "Tag programme totals",
+      curves = c(
+        curve_rows("total", "Tag total", c(8, 0, 6), TRUE, "#073c5b"),
+        curve_rows("program-a", "Program A total", c(5, 1, 4), FALSE, "#168a72")
+      )
+    ),
+    list(
+      key = "tag-program-a", label = "Program A release groups", kind = "detail",
+      parent_group = "tag-programmes", parent_curve = "Program A total",
+      panel = "Tag release groups — Program A",
+      curves = c(
+        curve_rows("total", "Tag total — Program A", c(5, 0, 4), TRUE, "#073c5b"),
+        curve_rows("release-a", "Release A", c(4, 2, 3), FALSE, "#2874b9")
+      )
     )
   )
 )
@@ -82,8 +100,14 @@ probe <- paste0(
   "var parent=[].slice.call(document.querySelectorAll('.detail-total')).some(function(x){return x.textContent.indexOf('CPUE total')===0});",
   "var path=[].slice.call(document.querySelectorAll('path')).filter(function(x){return x.getAttribute('stroke')==='#ca6b26'})[0];",
   "var ownMinimum=path&&/,415\\.00(?: |$)/.test(path.getAttribute('d'));",
+  "var tagToggle=[].slice.call(document.querySelectorAll('.detail-toggle')).filter(function(x){return x.textContent.indexOf('Tag programme totals')===0})[0];tagToggle.click();",
+  "var tagOpenToggle=[].slice.call(document.querySelectorAll('.detail-toggle')).filter(function(x){return x.textContent.indexOf('Tag programme totals')===0})[0];",
+  "var tagPanel=tagOpenToggle.closest('.detail-panel');tagPanel.querySelector('.detail-actions button').click();",
+  "var nestedToggle=[].slice.call(document.querySelectorAll('.detail-toggle')).filter(function(x){return x.textContent.indexOf('Tag release groups')===0})[0];",
+  "var nested=Boolean(nestedToggle);if(nestedToggle)nestedToggle.click();",
+  "var localActions=document.querySelectorAll('.detail-actions').length;",
   "var result=document.createElement('p');result.id='viewer-smoke-result';",
-  "result.textContent='SMOKE '+overview+' parent='+parent+' ownMinimum='+ownMinimum+' panels='+document.querySelectorAll('.detail-grid .chart-card').length;",
+  "result.textContent='SMOKE '+overview+' parent='+parent+' ownMinimum='+ownMinimum+' nested='+nested+' actions='+localActions+' panels='+document.querySelectorAll('.detail-grid .chart-card').length;",
   "document.body.appendChild(result);",
   "})();</script>"
 )
@@ -107,9 +131,18 @@ browser_output <- system2(
   ),
   stdout = TRUE, stderr = TRUE
 )
-result <- grep("viewer-smoke-result", browser_output, value = TRUE)
-expected <- "SMOKE 6 selected|6 broad · 0 detail panels parent=true ownMinimum=true panels=1"
+browser_document <- paste(browser_output, collapse = "\n")
+result_match <- regexec(
+  "<p id=\"viewer-smoke-result\">([^<]+)</p>", browser_document, perl = TRUE
+)
+result <- regmatches(browser_document, result_match)[[1L]]
+if (length(result) >= 2L) result <- result[[2L]] else result <- character()
+expected <- "SMOKE 6 selected|6 broad · 0 detail panels parent=true ownMinimum=true nested=true actions=3 panels=3"
 if (!length(result) || !grepl(expected, result, fixed = TRUE)) {
-  stop("Likelihood-profile browser smoke test failed.", call. = FALSE)
+  stop(
+    "Likelihood-profile browser smoke test failed: ",
+    paste(result, collapse = " "),
+    call. = FALSE
+  )
 }
-cat("Validated hierarchical broad/detail selection, detail-panel totals, own-minimum ΔNLL and public-safe viewer template.\n")
+cat("Validated nested broad/detail selection, per-level actions, detail-panel totals, own-minimum ΔNLL and public-safe viewer template.\n")

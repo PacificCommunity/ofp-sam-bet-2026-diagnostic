@@ -341,23 +341,41 @@ slot_detail <- function(likelihood, slot_name, component, labels = NULL) {
     stringsAsFactors = FALSE
   )
 }
-age_region_detail <- function(likelihood, records, expected_age) {
+age_profile_detail <- function(likelihood, records, fishery_map, expected_age) {
   if (is.null(likelihood) || !("age_length" %in% methods::slotNames(likelihood))) return(data.frame())
   values <- suppressWarnings(as.numeric(methods::slot(likelihood, "age_length")))
   if (length(values) != nrow(records) || any(!is.finite(values))) {
     stop("Age-at-length likelihood values do not align with the observed-record map.", call. = FALSE)
   }
-  totals <- vapply(seq_len(5L), function(region) sum(values[records$region == region]), numeric(1L))
+  region_totals <- vapply(
+    seq_len(5L), function(region) sum(values[records$region == region]), numeric(1L)
+  )
   tolerance <- 1e-6 * max(1, abs(expected_age))
-  if (!is.finite(expected_age) || abs(sum(totals) - expected_age) > tolerance) {
+  if (!is.finite(expected_age) || abs(sum(region_totals) - expected_age) > tolerance) {
     stop("Regional age-at-length likelihood does not close to the broad CAAL component.", call. = FALSE)
   }
-  data.frame(
-    detail_group = "CAAL region",
-    detail = paste("Region", seq_len(5L)),
-    value = totals,
-    stringsAsFactors = FALSE
+  fishery_ids <- sort(unique(records$fishery))
+  fishery_totals <- vapply(
+    fishery_ids, function(fishery) sum(values[records$fishery == fishery]), numeric(1L)
   )
+  if (abs(sum(fishery_totals) - expected_age) > tolerance) {
+    stop("Fishery age-at-length likelihood does not close to the broad CAAL component.", call. = FALSE)
+  }
+  fishery_names <- fishery_map$fishery_name[match(fishery_ids, fishery_map$fishery)]
+  bind_rows_base(list(
+    data.frame(
+      detail_group = "CAAL region",
+      detail = paste("Region", seq_len(5L)),
+      value = region_totals,
+      stringsAsFactors = FALSE
+    ),
+    data.frame(
+      detail_group = "CAAL fishery",
+      detail = sprintf("F%02d | %s", fishery_ids, fishery_names),
+      value = fishery_totals,
+      stringsAsFactors = FALSE
+    )
+  ))
 }
 
 profile_points <- list()
@@ -417,7 +435,11 @@ for (i in seq_along(profile_files)) {
     slot_detail(likelihood, "total_length_fish", "LF", fishery_map$fishery_name),
     slot_detail(likelihood, "total_weight_fish", "Weight frequency", fishery_map$fishery_name),
     slot_detail(likelihood, "tag_rel_fish", "Tag release group", paste0("Group ", seq_len(98L))),
-    if (!is.null(broad) && "Age" %in% names(broad)) age_region_detail(likelihood, age_records, as.numeric(broad[["Age"]])) else data.frame()
+    if (!is.null(broad) && "Age" %in% names(broad)) {
+      age_profile_detail(
+        likelihood, age_records, fishery_map, as.numeric(broad[["Age"]])
+      )
+    } else data.frame()
   ))
   if (is.data.frame(component_rows) && nrow(component_rows)) {
     data_components <- c("Tag", "Length frequency", "Weight frequency", "Age", "CPUE", "Catch")

@@ -107,7 +107,8 @@ detail_span <- vapply(split(detail$delta_nll, detail_key), function(x) max(x) - 
 detail <- detail[as.character(detail_key) %in% names(detail_span)[detail_span > 1e-10], , drop = FALSE]
 
 profile_viewer_group <- function(key, label, z, colour, labels = NULL, total_label = NULL,
-                                 parent_component = NULL, panel = NULL, kind = "detail") {
+                                 parent_component = NULL, parent_group = NULL,
+                                 parent_curve = NULL, panel = NULL, kind = "detail") {
   if (is.null(z) || !nrow(z)) return(NULL)
   z <- z[order(as.character(z$curve), z$biomass_ratio), , drop = FALSE]
   curve_names <- sort(unique(as.character(z$curve)))
@@ -141,7 +142,8 @@ profile_viewer_group <- function(key, label, z, colour, labels = NULL, total_lab
   }))
   list(
     key = key, label = label, kind = kind,
-    parent_component = parent_component, panel = panel %||% label,
+    parent_component = parent_component, parent_group = parent_group,
+    parent_curve = parent_curve, panel = panel %||% label,
     curves = rows
   )
 }
@@ -176,16 +178,27 @@ if (length(lf_parts)) append_group(profile_viewer_group(
   total_label = "LF total", parent_component = "LF", panel = "LF data"
 ))
 
-caal <- detail_group("CAAL region")
-if (!is.null(caal)) {
-  for (region_name in sort(unique(as.character(caal$curve)))) {
-    key <- gsub("[^a-z0-9]+", "-", tolower(region_name))
-    append_group(profile_viewer_group(
-      paste0("caal-", key), region_name,
-      caal[as.character(caal$curve) == region_name, , drop = FALSE], "#6A5AA7",
-      total_label = paste("CAAL total —", region_name),
-      parent_component = "CAAL", panel = region_name
-    ))
+caal_regions <- detail_group("CAAL region")
+caal_fisheries <- detail_group("CAAL fishery")
+if (!is.null(caal_regions)) {
+  append_group(profile_viewer_group(
+    "caal-regions", "CAAL regions", caal_regions, "#6A5AA7",
+    total_label = "CAAL total", parent_component = "CAAL",
+    panel = "CAAL regions"
+  ))
+  if (!is.null(caal_fisheries)) {
+    caal_fishery_id <- suppressWarnings(as.integer(sub("^F([0-9]+).*$", "\\1", caal_fisheries$curve)))
+    caal_fisheries$region <- fisheries$region[match(caal_fishery_id, fisheries$fishery)]
+    for (region in sort(unique(caal_fisheries$region[is.finite(caal_fisheries$region)]))) {
+      region_name <- paste("Region", region)
+      append_group(profile_viewer_group(
+        paste0("caal-region-", region), paste(region_name, "fisheries"),
+        caal_fisheries[caal_fisheries$region == region, , drop = FALSE], "#6A5AA7",
+        total_label = paste("CAAL total —", region_name),
+        parent_group = "caal-regions", parent_curve = region_name,
+        panel = paste(region_name, "CAAL fisheries")
+      ))
+    }
   }
 }
 
@@ -200,13 +213,27 @@ if (!is.null(tag)) {
   programme_lookup <- stats::setNames(as.character(tag_map$tag_program), paste("Group", tag_map$release_group))
   tag$programme <- unname(programme_lookup[as.character(tag$curve)])
   tag$programme[is.na(tag$programme) | !nzchar(tag$programme)] <- "Other"
+  tag_programmes <- stats::aggregate(
+    value ~ biomass_ratio + programme, data = tag, FUN = sum
+  )
+  tag_programmes$curve <- tag_programmes$programme
+  tag_programmes <- normalise_curves(tag_programmes, "programme")
+  programme_labels <- stats::setNames(
+    paste(sort(unique(tag$programme)), "total"), sort(unique(tag$programme))
+  )
+  append_group(profile_viewer_group(
+    "tag-programmes", "Tag programmes", tag_programmes, "#009E73",
+    labels = programme_labels, total_label = "Tag total",
+    parent_component = "Tag", panel = "Tag programme totals"
+  ))
   for (programme in sort(unique(tag$programme))) {
     key <- gsub("[^a-z0-9]+", "-", tolower(programme))
     append_group(profile_viewer_group(
       paste0("tag-", key), paste("Tag programme:", programme),
       tag[tag$programme == programme, , drop = FALSE], "#009E73", tag_labels,
       total_label = paste("Tag total —", programme),
-      parent_component = "Tag", panel = paste("Tag programme:", programme)
+      parent_group = "tag-programmes", parent_curve = paste(programme, "total"),
+      panel = paste("Tag release groups —", programme)
     ))
   }
 }

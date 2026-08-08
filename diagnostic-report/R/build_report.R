@@ -1027,7 +1027,8 @@ for (group in names(detail_group_labels)) {
 
 profile_viewer_group <- function(
   key, label, z, colour, labels = NULL, total_label = NULL,
-  parent_component = NULL, panel = NULL, kind = "detail"
+  parent_component = NULL, parent_group = NULL, parent_curve = NULL,
+  panel = NULL, kind = "detail"
 ) {
   if (is.null(z) || !nrow(z)) return(NULL)
   z <- z[order(as.character(z$curve), z$biomass_ratio), , drop = FALSE]
@@ -1072,6 +1073,8 @@ profile_viewer_group <- function(
     label = label,
     kind = kind,
     parent_component = parent_component,
+    parent_group = parent_group,
+    parent_curve = parent_curve,
     panel = panel %||% label,
     curves = rows
   )
@@ -1129,17 +1132,30 @@ append_viewer_group(profile_viewer_group(
   total_label = "LF total", parent_component = "LF", panel = "LF data"
 ))
 
-caal_detail <- viewer_detail_group("CAAL region")
-if (!is.null(caal_detail) && nrow(caal_detail)) {
-  caal_panels <- split(caal_detail, as.character(caal_detail$curve))
-  caal_names <- sort(names(caal_panels))
-  for (caal_name in caal_names) {
-    caal_key <- gsub("[^a-z0-9]+", "-", tolower(caal_name))
-    append_viewer_group(profile_viewer_group(
-      paste0("caal-", caal_key), caal_name, caal_panels[[caal_name]],
-      detail_group_colours[["CAAL region"]], total_label = paste("CAAL total —", caal_name),
-      parent_component = "CAAL", panel = caal_name
-    ))
+caal_regions <- viewer_detail_group("CAAL region")
+caal_fisheries <- viewer_detail_group("CAAL fishery")
+if (!is.null(caal_regions) && nrow(caal_regions)) {
+  append_viewer_group(profile_viewer_group(
+    "caal-regions", "CAAL regions", caal_regions,
+    detail_group_colours[["CAAL region"]], total_label = "CAAL total",
+    parent_component = "CAAL", panel = "CAAL regions"
+  ))
+  if (!is.null(caal_fisheries) && nrow(caal_fisheries)) {
+    caal_fishery_id <- suppressWarnings(as.integer(sub("^F([0-9]+).*$", "\\1", caal_fisheries$curve)))
+    caal_fisheries$region <- profile_fishery_map$region[
+      match(caal_fishery_id, profile_fishery_map$fishery)
+    ]
+    for (region in sort(unique(caal_fisheries$region[is.finite(caal_fisheries$region)]))) {
+      region_name <- paste("Region", region)
+      append_viewer_group(profile_viewer_group(
+        paste0("caal-region-", region), paste(region_name, "fisheries"),
+        caal_fisheries[caal_fisheries$region == region, , drop = FALSE],
+        detail_group_colours[["CAAL region"]],
+        total_label = paste("CAAL total —", region_name),
+        parent_group = "caal-regions", parent_curve = region_name,
+        panel = paste(region_name, "CAAL fisheries")
+      ))
+    }
   }
 }
 
@@ -1148,6 +1164,32 @@ if (!is.null(tag_detail) && nrow(tag_detail)) {
   program_lookup <- stats::setNames(as.character(tag_map$tag_program), paste("Group", tag_map$release_group))
   tag_detail$programme <- unname(program_lookup[as.character(tag_detail$curve)])
   tag_detail$programme[is.na(tag_detail$programme) | !nzchar(tag_detail$programme)] <- "Other"
+  tag_programmes <- stats::aggregate(
+    value ~ biomass_ratio + programme, data = tag_detail, FUN = sum
+  )
+  tag_programmes$curve <- tag_programmes$programme
+  tag_programme_minimum <- stats::aggregate(
+    value ~ programme, data = tag_programmes, FUN = min
+  )
+  names(tag_programme_minimum)[names(tag_programme_minimum) == "value"] <-
+    "minimum_value"
+  tag_programmes <- merge(
+    tag_programmes, tag_programme_minimum,
+    by = "programme", all.x = TRUE, sort = FALSE
+  )
+  tag_programmes$delta_nll <- pmax(
+    0, tag_programmes$value - tag_programmes$minimum_value
+  )
+  programme_names <- sort(unique(tag_detail$programme))
+  programme_labels <- stats::setNames(
+    paste(programme_names, "total"), programme_names
+  )
+  append_viewer_group(profile_viewer_group(
+    "tag-programmes", "Tag programmes", tag_programmes,
+    detail_group_colours[["Tag release group"]], labels = programme_labels,
+    total_label = "Tag total", parent_component = "Tag",
+    panel = "Tag programme totals"
+  ))
   tag_panels <- split(tag_detail, tag_detail$programme)
   programme_names <- sort(names(tag_panels))
   for (programme_name in programme_names) {
@@ -1156,7 +1198,9 @@ if (!is.null(tag_detail) && nrow(tag_detail)) {
       paste0("tag-", programme_key), paste("Tag programme:", programme_name), tag_panels[[programme_name]],
       detail_group_colours[["Tag release group"]], tag_labels,
       total_label = paste("Tag total —", programme_name),
-      parent_component = "Tag", panel = paste("Tag programme:", programme_name)
+      parent_group = "tag-programmes",
+      parent_curve = paste(programme_name, "total"),
+      panel = paste("Tag release groups —", programme_name)
     ))
   }
 }
@@ -1556,11 +1600,11 @@ aspm_terminal <- aspm |>
   )
 fishery_table <- report_data$mappings$fisheries[, c(
   "fishery", "fishery_name", "region", "group", "selectivity_group",
-  "selectivity_form"
+  "selectivity_form", "selectivity_nodes"
 )]
 names(fishery_table) <- c(
   "Fishery", "Name", "Region", "Data group", "Selectivity group",
-  "Selectivity form"
+  "Selectivity form", "Number of nodes"
 )
 tag_table <- report_data$mappings$tag_reporting_groups |>
   dplyr::filter(tag_rep_group != 31L) |>

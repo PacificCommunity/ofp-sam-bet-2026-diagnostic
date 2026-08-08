@@ -37,7 +37,10 @@ jobs:
           pdflatex --version | head -n 1
 
       - name: Validate viewer template
-        run: Rscript diagnostic-report/tests/test-likelihood-profile-viewer.R
+        run: |
+          sha256sum -c diagnostic-report/data/SHA256SUMS
+          Rscript diagnostic-report/tests/test-public-payload.R
+          Rscript diagnostic-report/tests/test-likelihood-profile-viewer.R
 
       - name: Render public Diagnostic report
         run: bash diagnostic-report/run.sh
@@ -51,7 +54,10 @@ jobs:
           test "$(find diagnostic-report-output -path '*/figures/*.png' -type f | wc -l)" -ge 20
           grep -q 'data:image/png;base64,' diagnostic-report-output/bet-2026-diagnostic-report.html
           grep -q 'pacificcommunity.github.io/ofp-sam-bet-2026-diagnostic/bet-2026-likelihood-profile-viewer.html' diagnostic-report-output/bet-2026-diagnostic-report.html
-          ! grep -Eq "src='(figures|mfclshiny)/" diagnostic-report-output/bet-2026-diagnostic-report.html
+          grep -q 'Number of nodes' diagnostic-report-output/bet-2026-diagnostic-report.html
+          grep -q 'CAAL regions' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
+          grep -q 'Tag programme totals' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
+          ! grep -Eq "src=['\"](figures|mfclshiny)/" diagnostic-report-output/bet-2026-diagnostic-report.html
           ! grep -q 'releases/latest/download/bet-2026-likelihood-profile-viewer.html' diagnostic-report-output/bet-2026-diagnostic-report.html
 
       - name: Prepare GitHub Pages root

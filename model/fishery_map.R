@@ -129,6 +129,9 @@ fishery_map$selectivity_name <- selectivity_names[fishery_map$selectivity_group]
 fishery_map$selectivity_group <- seq_len(nrow(fishery_map))
 fishery_map$selectivity_name <- sub("^[0-9]+[.]", "", fishery_map$fishery_name)
 fishery_map$selectivity_form <- "Cubic spline"
+# Fish flag 61 is the cubic-spline node count. The final configuration uses
+# seven nodes for F25 and F26 and the five-node default for all other fisheries.
+fishery_map$selectivity_nodes <- c(rep(5L, 24L), 7L, 7L, rep(5L, 7L))
 fishery_map$selectivity_constraint <- "None"
 fishery_map$selectivity_constraint[fishery_map$fishery %in% c(10L, 33L)] <-
   "Weak non-decreasing penalty (10,000)"
