@@ -130,7 +130,7 @@ file.copy(map_asset, file.path(model_dir, basename(map_asset)), overwrite = TRUE
 # intervals, not Hessian intervals for the fitted index trajectory.
 diagnostic_payload <- get("mfclshiny_diagnostic_payload", asNamespace("mfclshiny"))(
   model_dir,
-  roles = c("ParOut", "RepOut")
+  roles = c("ParOut", "RepOut", "TagTempOut", "TagOut")
 )
 rep_out <- diagnostic_payload$data$RepOut
 if (is.null(rep_out)) stop("The repository model payload does not contain RepOut.", call. = FALSE)
@@ -363,6 +363,252 @@ save_mfcl_figure <- function(plot, id, width = 10.8, height = 7.0) {
     device = grDevices::cairo_pdf, bg = "white", limitsize = FALSE
   )
 }
+
+# Spatial structure with an in-map fishery key.  Fishery IDs match the full
+# definition table, while the compact gear groupings keep all 33 fisheries
+# readable without adding a detached legend.
+region_fishery_map_plot <- function(vertices_file) {
+  vertices <- utils::read.csv(vertices_file, stringsAsFactors = FALSE)
+  vertices$region <- suppressWarnings(as.integer(vertices$region))
+  vertices$region_factor <- factor(vertices$region, levels = 1:5)
+  world <- ggplot2::map_data("world2")
+  cards <- data.frame(
+    region = 1:5,
+    lon = c(166, 124, 162, 197, 175),
+    lat = c(29, 5, 0, 0, -25),
+    label = c(
+      "REGION 1\nLongline F01–03\nPurse seine F12 · Pole-and-line F13\nIndex F29",
+      "REGION 2\nLongline F04–05 · Handline F14–15\nPole-and-line F16 · Purse seine F17–20\nDomestic F21–23 · Index F30",
+      "REGION 3\nLongline F06–07, F09\nPole-and-line F24 · Purse seine F25, F27\nIndex F31",
+      "REGION 4\nLongline F08 · Purse seine F26, F28\nIndex F32",
+      "REGION 5\nLongline F10–11 · Index F33"
+    ),
+    stringsAsFactors = FALSE
+  )
+  ggplot2::ggplot() +
+    ggplot2::geom_polygon(
+      data = world,
+      ggplot2::aes(long, lat, group = group),
+      fill = "#E9DFC6", colour = "#C2BBA8", linewidth = 0.18
+    ) +
+    ggplot2::geom_polygon(
+      data = vertices,
+      ggplot2::aes(lon, lat, group = region_factor, fill = region_factor),
+      alpha = 0.18, colour = "#102B38", linewidth = 0.95, linejoin = "mitre"
+    ) +
+    ggplot2::scale_fill_manual(
+      values = c("#B8DCE4", "#D3E8E3", "#DCE7ED", "#C8DFE7", "#D8E5EB"),
+      guide = "none"
+    ) +
+    ggplot2::geom_label(
+      data = cards,
+      ggplot2::aes(lon, lat, label = label),
+      colour = "#123747", fill = "white", alpha = 0.90,
+      linewidth = 0.32, label.padding = grid::unit(3.2, "pt"),
+      label.r = grid::unit(3.5, "pt"), lineheight = 1.05,
+      size = 3.05, fontface = "plain"
+    ) +
+    ggplot2::coord_quickmap(xlim = c(100, 215), ylim = c(-45, 55), expand = FALSE) +
+    ggplot2::scale_x_continuous(
+      breaks = c(110, 120, 140, 160, 180, 200, 210),
+      labels = c("110°E", "120°E", "140°E", "160°E", "180°", "160°W", "150°W")
+    ) +
+    ggplot2::scale_y_continuous(
+      breaks = c(-40, -20, 0, 20, 40, 50),
+      labels = c("40°S", "20°S", "0°", "20°N", "40°N", "50°N")
+    ) +
+    ggplot2::labs(x = NULL, y = NULL) +
+    ggplot2::theme_minimal(base_size = 11.5, base_family = "serif") +
+    ggplot2::theme(
+      panel.background = ggplot2::element_rect(fill = "#F5FBFE", colour = "#9AA9B2", linewidth = 0.35),
+      panel.grid.major = ggplot2::element_line(colour = "#D6E4EB", linewidth = 0.32),
+      panel.grid.minor = ggplot2::element_blank(),
+      axis.text = ggplot2::element_text(colour = "#334155", size = 9.5),
+      plot.margin = ggplot2::margin(6, 8, 6, 8)
+    )
+}
+message("Rendering curated figure: region-map")
+save_mfcl_figure(region_fishery_map_plot(map_asset), "region-map", width = 10.8, height = 8.15)
+message("Rendered curated figure: region-map")
+
+# Tag attrition ------------------------------------------------------------
+# The detailed temporary tag report applies the estimated reporting rate to
+# every recapture.  MFCL's official time-at-liberty diagnostic instead turns
+# that correction off during a release group's Newton-Raphson mixing period
+# when tag flag 2 is one (get_rep_rate_correction() in tag3.cpp).  Recreate
+# that model-side rule before forming programme totals, then reconcile the
+# resulting all-programme series against the diagnostic block in the .rep.
+tag_temp <- diagnostic_payload$data$TagTempOut
+tag_out <- diagnostic_payload$data$TagOut
+if (is.null(tag_temp) || !nrow(tag_temp) || is.null(tag_out)) {
+  stop("The repository model payload does not contain the detailed tag outputs.", call. = FALSE)
+}
+seasons_per_year <- suppressWarnings(as.integer(par_out@dimensions["seasons"]))
+if (!identical(seasons_per_year, 4L)) {
+  stop("Tag attrition is labelled in quarters, but the fitted model does not have four seasons per year.", call. = FALSE)
+}
+tag_releases_raw <- FLR4MFCL::releases(tag_out)
+tag_releases <- stats::aggregate(
+  lendist ~ rel.group + region + year + month + program,
+  data = tag_releases_raw, FUN = sum, na.rm = TRUE
+)
+release_counts <- table(tag_releases$rel.group)
+if (any(release_counts != 1L)) {
+  stop("Each tag release group must have one release time, region and programme.", call. = FALSE)
+}
+tag_releases$release_time <- tag_releases$year + (tag_releases$month - 1) / 12 + 1 / 24
+tag_rows <- merge(
+  tag_temp,
+  tag_releases[, c("rel.group", "program", "release_time")],
+  by = "rel.group", all.x = TRUE, sort = FALSE
+)
+if (anyNA(tag_rows$program) || anyNA(tag_rows$release_time)) {
+  stop("One or more tag recaptures could not be matched to a release group.", call. = FALSE)
+}
+tag_rows$recapture_time <- tag_rows$recap.year + (tag_rows$recap.month - 1) / 12 + 1 / 24
+tag_rows$period_at_liberty <- round(
+  (tag_rows$recapture_time - tag_rows$release_time) * seasons_per_year
+)
+if (any(tag_rows$period_at_liberty < 0)) {
+  stop("Negative tag time at liberty was found after joining releases and recaptures.", call. = FALSE)
+}
+
+read_numeric_parameter_block <- function(file, start_label, end_label) {
+  lines <- readLines(file, warn = FALSE)
+  start <- grep(paste0("^# ", start_label, "$"), lines)
+  end <- grep(paste0("^# ", end_label, "$"), lines)
+  if (length(start) != 1L || !length(end) || min(end[end > start]) <= start + 1L) {
+    stop("Could not locate parameter block: ", start_label, call. = FALSE)
+  }
+  end <- min(end[end > start])
+  as.matrix(utils::read.table(text = lines[(start + 1L):(end - 1L)]))
+}
+tag_flags <- read_numeric_parameter_block(
+  file.path(model_dir, "final.par"), "tag flags", "tagmort"
+)
+if (nrow(tag_flags) < max(tag_rows$rel.group) || ncol(tag_flags) < 2L) {
+  stop("The fitted tag flags do not cover all release groups.", call. = FALSE)
+}
+reporting_rates <- par_out@tag_fish_rep_rate
+rate_index <- cbind(
+  suppressWarnings(as.integer(tag_rows$rel.group)),
+  suppressWarnings(as.integer(tag_rows$recap.fishery))
+)
+if (any(!is.finite(rate_index)) || any(rate_index[, 1L] < 1L) ||
+    any(rate_index[, 1L] > nrow(reporting_rates)) ||
+    any(rate_index[, 2L] < 1L) || any(rate_index[, 2L] > ncol(reporting_rates))) {
+  stop("A tag reporting-rate matrix index is outside the fitted model dimensions.", call. = FALSE)
+}
+tag_rows$reporting_rate <- reporting_rates[rate_index]
+mixing_period <- tag_flags[tag_rows$rel.group, 1L]
+disable_reporting_rate <- tag_flags[tag_rows$rel.group, 2L] == 1
+premixing <- tag_rows$period_at_liberty < mixing_period & disable_reporting_rate
+if (any(premixing & tag_rows$reporting_rate <= 0 & abs(tag_rows$recap.pred) > 1e-10)) {
+  stop("A non-zero premixing prediction has a non-positive reporting rate.", call. = FALSE)
+}
+tag_rows$predicted_corrected <- tag_rows$recap.pred
+correctable <- premixing & tag_rows$reporting_rate > 0
+tag_rows$predicted_corrected[correctable] <-
+  tag_rows$recap.pred[correctable] / tag_rows$reporting_rate[correctable]
+
+tag_programme <- stats::aggregate(
+  cbind(observed = recap.obs, predicted = predicted_corrected) ~
+    program + period_at_liberty,
+  data = tag_rows, FUN = sum, na.rm = TRUE
+)
+tag_programme$quarter <- tag_programme$period_at_liberty + 1L
+programme_order <- c("RTTP", "PTTP", "JPTP")
+if (!setequal(unique(tag_programme$program), programme_order)) {
+  stop("Expected RTTP, PTTP and JPTP tag programmes in the fitted model.", call. = FALSE)
+}
+tag_grid <- expand.grid(
+  program = programme_order,
+  quarter = seq.int(1L, max(tag_programme$quarter)),
+  stringsAsFactors = FALSE
+)
+tag_programme <- merge(
+  tag_grid,
+  tag_programme[, c("program", "quarter", "observed", "predicted")],
+  by = c("program", "quarter"), all.x = TRUE, sort = FALSE
+)
+tag_programme$observed[is.na(tag_programme$observed)] <- 0
+tag_programme$predicted[is.na(tag_programme$predicted)] <- 0
+
+rep_lines <- readLines(file.path(model_dir, "plot-11.par.rep"), warn = FALSE)
+rep_start <- grep("^# Observed vs predicted tag returns by time at liberty$", rep_lines)
+if (length(rep_start) != 1L) stop("MFCL time-at-liberty diagnostic block is missing.", call. = FALSE)
+rep_end <- which(seq_along(rep_lines) > rep_start & grepl("^#", rep_lines))[1L]
+tag_rep_total <- utils::read.table(
+  text = rep_lines[(rep_start + 1L):(rep_end - 1L)],
+  col.names = c("observed_rep", "predicted_rep")
+)
+tag_rep_total$quarter <- seq_len(nrow(tag_rep_total))
+tag_detail_total <- stats::aggregate(
+  cbind(observed = observed, predicted = predicted) ~ quarter,
+  data = tag_programme, FUN = sum, na.rm = TRUE
+)
+tag_attrition_audit <- merge(tag_rep_total, tag_detail_total, by = "quarter", all = TRUE)
+tag_attrition_audit$observed_difference <-
+  tag_attrition_audit$observed - tag_attrition_audit$observed_rep
+tag_attrition_audit$predicted_difference <-
+  tag_attrition_audit$predicted - tag_attrition_audit$predicted_rep
+# The .rep prints observed values to an integer and predictions to one decimal.
+if (anyNA(tag_attrition_audit) ||
+    max(abs(tag_attrition_audit$observed_difference)) > 0.01 ||
+    max(abs(tag_attrition_audit$predicted_difference)) > 0.51) {
+  stop("Programme-level tag attrition does not reconcile with the MFCL diagnostic aggregate.", call. = FALSE)
+}
+utils::write.csv(
+  tag_attrition_audit,
+  file.path(table_dir, "tag-attrition-validation.csv"),
+  row.names = FALSE, na = ""
+)
+
+tag_programme$panel <- tag_programme$program
+tag_total_plot <- data.frame(
+  program = "All recaptures",
+  quarter = tag_rep_total$quarter,
+  observed = tag_rep_total$observed_rep,
+  predicted = tag_rep_total$predicted_rep,
+  panel = "All recaptures",
+  stringsAsFactors = FALSE
+)
+tag_attrition_plot_data <- dplyr::bind_rows(tag_programme, tag_total_plot)
+tag_attrition_plot_data$panel <- factor(
+  tag_attrition_plot_data$panel,
+  levels = c(programme_order, "All recaptures")
+)
+p_tag_attrition <- ggplot2::ggplot(
+  tag_attrition_plot_data, ggplot2::aes(x = quarter)
+) +
+  ggplot2::geom_line(
+    ggplot2::aes(y = predicted), colour = "#C53A2F", linewidth = 0.82,
+    lineend = "round", na.rm = TRUE
+  ) +
+  ggplot2::geom_point(
+    ggplot2::aes(y = observed), colour = "#27343A", fill = "white",
+    shape = 21, stroke = 0.55, size = 1.75, na.rm = TRUE
+  ) +
+  ggplot2::facet_wrap(~panel, ncol = 2, scales = "free_y") +
+  ggplot2::scale_x_continuous(
+    breaks = unique(c(1L, seq.int(5L, max(tag_attrition_plot_data$quarter), by = 5L))),
+    expand = ggplot2::expansion(mult = c(0.02, 0.025))
+  ) +
+  ggplot2::scale_y_continuous(
+    limits = c(0, NA), labels = scales::label_number(big.mark = ","),
+    expand = ggplot2::expansion(mult = c(0, 0.07))
+  ) +
+  ggplot2::labs(x = "Time at liberty (quarters)", y = "Tag recaptures") +
+  theme_report(10.4) +
+  ggplot2::theme(
+    legend.position = "none",
+    strip.text = ggplot2::element_text(size = 10.2, face = "bold"),
+    panel.spacing = grid::unit(0.55, "lines")
+  )
+save_mfcl_figure(
+  p_tag_attrition, "tag-attrition-by-program", width = 10.8, height = 7.9
+)
+
 age_fit <- profile_age_payload$data$AgeFitOut
 if (is.list(age_fit) && nrow(age_fit$residuals %||% data.frame())) {
   mean_laa <- suppressWarnings(as.numeric(c(aperm(FLR4MFCL::mean_laa(rep_out), c(4, 1, 2, 3, 5, 6)))))
@@ -532,8 +778,15 @@ if (is.list(age_fit) && nrow(age_fit$residuals %||% data.frame())) {
 # version always adds a 0.5 reference; the diagnostic report retains only the
 # biomass limit reference point (0.20) and keeps the pooled panel last.
 regional_depletion_plot <- function(rep_out) {
-  with_fishing <- as.data.frame(rep_out@adultBiomass)
-  without_fishing <- as.data.frame(rep_out@adultBiomass_nofish)
+  # Avoid FLQuant's release-dependent data-frame coercion for the singleton
+  # unit/iter dimensions; the explicit array grid retains the same values and
+  # named dimensions in a stable form.
+  with_fishing <- flatten_flquant(rep_out@adultBiomass, "data")
+  without_fishing <- flatten_flquant(rep_out@adultBiomass_nofish, "data")
+  for (field in c("year", "season", "area")) {
+    with_fishing[[field]] <- suppressWarnings(as.integer(with_fishing[[field]]))
+    without_fishing[[field]] <- suppressWarnings(as.integer(without_fishing[[field]]))
+  }
   yearly_with <- dplyr::summarise(
     dplyr::group_by(with_fishing, year, area),
     biomass = sum(data, na.rm = TRUE) / dplyr::n_distinct(season),
@@ -579,7 +832,9 @@ regional_depletion_plot <- function(rep_out) {
     ggplot2::labs(x = "Year", y = expression(italic(SB)/italic(SB)[italic(F)==0])) +
     theme_report(10.2)
 }
+message("Rendering curated figure: depletion-by-area")
 save_mfcl_figure(regional_depletion_plot(rep_out), "depletion-by-area")
+message("Rendered curated figure: depletion-by-area")
 
 # The general application export places one selectivity curve in each of 33
 # small facets.  For a paper-ready report, retain every fitted curve but group
@@ -587,10 +842,13 @@ save_mfcl_figure(regional_depletion_plot(rep_out), "depletion-by-area")
 # while keeping one complete, non-overlapping fishery key below the panels.
 selectivity_plot <- function(x = c("age", "length")) {
   x <- match.arg(x)
-  selectivity <- as.data.frame(FLR4MFCL::sel(rep_out), drop = TRUE)
+  # FLQuant's data-frame coercion is sensitive to singleton-dimension names in
+  # some FLR releases. Flatten the fitted array explicitly for reproducible
+  # local and GitHub Actions rendering.
+  selectivity <- flatten_flquant(FLR4MFCL::sel(rep_out), "selectivity")
   selectivity$fishery <- suppressWarnings(as.integer(as.character(selectivity$unit)))
   selectivity$age <- suppressWarnings(as.numeric(selectivity$age))
-  selectivity$selectivity <- suppressWarnings(as.numeric(selectivity$data))
+  selectivity$selectivity <- suppressWarnings(as.numeric(selectivity$selectivity))
   selectivity <- dplyr::inner_join(
     selectivity,
     report_data$mappings$fisheries[, c("fishery", "fishery_name", "region")],
@@ -640,19 +898,27 @@ selectivity_plot <- function(x = c("age", "length")) {
       strip.text = ggplot2::element_text(size = 9.5, face = "bold")
     )
 }
+message("Rendering curated figure: fishery-process")
+selectivity_age_plot <- selectivity_plot("age")
 save_mfcl_figure(
-  selectivity_plot("age"), "fishery-process", width = 10.8, height = 10.6
+  selectivity_age_plot, "fishery-process", width = 10.8, height = 10.6
 )
+message("Rendered curated figure: fishery-process")
+message("Rendering curated figure: fishery-selectivity-length")
+selectivity_length_plot <- selectivity_plot("length")
 save_mfcl_figure(
-  selectivity_plot("length"), "fishery-selectivity-length", width = 10.8, height = 10.6
+  selectivity_length_plot, "fishery-selectivity-length", width = 10.8, height = 10.6
 )
+message("Rendered curated figure: fishery-selectivity-length")
 
 # Keep the spatial state time series on a common A4-ready panel arrangement:
 # five model regions followed by the stock-wide total.  These use the fitted
 # model outputs directly and deliberately begin their y axes at zero.
 area_levels <- c(paste("Region", 1:5), "All regions")
 regional_recruitment_plot <- function(rep_out) {
-  rec <- as.data.frame(rep_out@rec_region)
+  rec <- flatten_flquant(rep_out@rec_region, "data")
+  rec$year <- suppressWarnings(as.integer(rec$year))
+  rec$area <- suppressWarnings(as.integer(rec$area))
   regional <- rec |>
     dplyr::group_by(year, area) |>
     dplyr::summarise(recruitment = sum(data, na.rm = TRUE) / 1e6, .groups = "drop") |>
@@ -673,16 +939,22 @@ regional_recruitment_plot <- function(rep_out) {
     ggplot2::labs(x = "Year", y = "Recruitment (millions of fish)") +
     theme_report(10.2)
 }
+message("Rendering curated figure: recruitment-by-area")
 save_mfcl_figure(
   regional_recruitment_plot(rep_out), "recruitment-by-area", width = 10.8, height = 7.65
 )
+message("Rendered curated figure: recruitment-by-area")
 
 regional_f_plot <- function(rep_out, par_out) {
-  fm <- as.data.frame(rep_out@fm)
-  popn <- as.data.frame(rep_out@popN)
+  fm <- flatten_flquant(rep_out@fm, "data")
+  popn <- flatten_flquant(rep_out@popN, "data")
+  for (field in c("age", "year", "season", "area")) {
+    fm[[field]] <- suppressWarnings(as.integer(fm[[field]]))
+    popn[[field]] <- suppressWarnings(as.integer(popn[[field]]))
+  }
   names(fm)[names(fm) == "data"] <- "fishing_mortality"
   names(popn)[names(popn) == "data"] <- "population"
-  maturity <- as.data.frame(par_out@mat)
+  maturity <- flatten_flquant(par_out@mat, "data")
   maturity <- maturity[order(
     suppressWarnings(as.numeric(maturity$age)),
     suppressWarnings(as.numeric(as.character(maturity$season)))
@@ -766,9 +1038,11 @@ regional_f_plot <- function(rep_out, par_out) {
     theme_report(10.2) +
     ggplot2::theme(legend.position = "bottom")
 }
+message("Rendering curated figure: f-juvenile-adult-by-area")
 save_mfcl_figure(
   regional_f_plot(rep_out, par_out), "f-juvenile-adult-by-area", width = 10.8, height = 7.65
 )
+message("Rendered curated figure: f-juvenile-adult-by-area")
 
 required_mfcl_figures <- c(
   "region-map", "length-frequency", "age-data-fit",
@@ -822,6 +1096,28 @@ p_dynamics <- (interval_plot("depletion") | interval_plot("spawning_potential"))
 save_figure(p_dynamics, "diagnostic-population-dynamics", width = 7.1, height = 6.2)
 
 # Likelihood profiles: each curve is expressed relative to its own minimum --
+profile_axis <- unique(report_data$likelihood_profile$points[, c(
+  "biomass_ratio", "total_average_biomass_1000_t"
+)])
+profile_axis <- profile_axis[
+  is.finite(profile_axis$biomass_ratio) &
+    is.finite(profile_axis$total_average_biomass_1000_t),
+  , drop = FALSE
+]
+if (!nrow(profile_axis) || anyDuplicated(round(profile_axis$biomass_ratio, 10))) {
+  stop("The absolute biomass-profile axis is missing or ambiguous.", call. = FALSE)
+}
+attach_profile_axis <- function(z) {
+  index <- match(
+    round(z$biomass_ratio, 10), round(profile_axis$biomass_ratio, 10)
+  )
+  if (anyNA(index)) {
+    stop("A likelihood-profile point has no absolute total-average-biomass value.", call. = FALSE)
+  }
+  z$total_average_biomass_1000_t <-
+    profile_axis$total_average_biomass_1000_t[index]
+  z
+}
 profile <- report_data$likelihood_profile$components
 expected_profile_components <- c("Total", "Indices", "LFs", "Age", "Tags", "Penalties")
 if (!all(expected_profile_components %in% unique(profile$component))) {
@@ -852,6 +1148,7 @@ profile_total_anchor <- data.frame(
 # curves retain the smooth, conditional likelihood values from the profile run.
 profile <- profile[!(profile$component == "Total" & abs(profile$biomass_ratio - 1) <= 1e-10), , drop = FALSE]
 profile <- rbind(profile, profile_total_anchor)
+profile <- attach_profile_axis(profile)
 profile$component <- factor(
   profile$component,
   levels = expected_profile_components
@@ -904,15 +1201,46 @@ profile_labels <- c(
   "Tags" = "Tag",
   "Penalties" = "Penalty"
 )
-p_profile <- ggplot2::ggplot(profile, ggplot2::aes(x = biomass_ratio, y = delta_nll)) +
-  ggplot2::geom_hline(yintercept = 0, colour = "#8A989E", linewidth = 0.35) +
-  ggplot2::geom_vline(xintercept = 1, colour = red, linetype = 2, linewidth = 0.55) +
-  ggplot2::geom_hline(yintercept = 1.92, colour = orange, linetype = 3, linewidth = 0.55) +
-  ggplot2::geom_line(ggplot2::aes(colour = component), linewidth = 0.88, lineend = "round") +
+profile$panel <- factor(
+  ifelse(profile$component == "Total", "Overall objective", "Likelihood components"),
+  levels = c("Overall objective", "Likelihood components")
+)
+profile_minima <- do.call(rbind, lapply(split(profile, profile$component), function(z) {
+  z[which.min(z$delta_nll), , drop = FALSE]
+}))
+profile_reference_panels <- data.frame(
+  panel = levels(profile$panel), xmin = -Inf, xmax = Inf, ymin = 0, ymax = 1.92
+)
+p_profile <- ggplot2::ggplot(
+  profile,
+  ggplot2::aes(x = total_average_biomass_1000_t, y = delta_nll)
+) +
+  ggplot2::geom_rect(
+    data = profile_reference_panels,
+    ggplot2::aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+    inherit.aes = FALSE, fill = "#EAF3F5", colour = NA
+  ) +
+  ggplot2::geom_hline(yintercept = 0, colour = "#7C8D94", linewidth = 0.35) +
+  ggplot2::geom_hline(
+    yintercept = 1.92, colour = orange, linetype = "33", linewidth = 0.58
+  ) +
+  ggplot2::geom_line(
+    ggplot2::aes(colour = component, linewidth = component), lineend = "round"
+  ) +
+  ggplot2::geom_point(
+    data = profile_minima,
+    ggplot2::aes(colour = component), size = 1.7, stroke = 0.2
+  ) +
+  ggplot2::facet_grid(panel ~ ., scales = "free_y") +
   ggplot2::scale_colour_manual(values = profile_colours, labels = profile_labels, drop = FALSE) +
+  ggplot2::scale_linewidth_manual(
+    values = c("Total" = 1.18, "Indices" = 0.82, "LFs" = 0.82,
+               "Age" = 0.82, "Tags" = 0.82, "Penalties" = 0.82),
+    guide = "none", drop = FALSE
+  ) +
   ggplot2::scale_y_continuous(limits = c(0, NA), expand = ggplot2::expansion(mult = c(0, 0.06))) +
   ggplot2::labs(
-    x = "Total average biomass / fitted value",
+    x = expression("Total average biomass"~(10^3~"t")),
     y = expression(Delta~"negative log likelihood"),
     colour = NULL
   ) +
@@ -920,9 +1248,11 @@ p_profile <- ggplot2::ggplot(profile, ggplot2::aes(x = biomass_ratio, y = delta_
   ggplot2::theme(
     legend.position = "bottom",
     legend.box = "horizontal",
-    legend.text = ggplot2::element_text(size = 8)
+    legend.text = ggplot2::element_text(size = 8),
+    strip.text.y = ggplot2::element_text(angle = 0),
+    panel.spacing.y = grid::unit(0.52, "lines")
   )
-save_figure(p_profile, "likelihood-profile-components", width = 7.1, height = 4.8)
+save_figure(p_profile, "likelihood-profile-components", width = 7.1, height = 6.3)
 
 # Interactive likelihood-profile viewer ------------------------------------
 detail <- report_data$likelihood_profile$detail
@@ -937,6 +1267,7 @@ fishery_detail <- detail$detail_group %in% c("CPUE index", "LF", "Weight frequen
 fishery_id <- suppressWarnings(as.integer(sub("^([0-9]+).*", "\\1", as.character(detail$detail))))
 fishery_label <- profile_fishery_map$fishery_name[match(fishery_id, profile_fishery_map$fishery)]
 detail$detail[fishery_detail & !is.na(fishery_label)] <- fishery_label[fishery_detail & !is.na(fishery_label)]
+detail <- attach_profile_axis(detail)
 detail_minimum <- do.call(rbind, lapply(split(detail, interaction(detail$detail_group, detail$detail, drop = TRUE)), function(z) {
   z[which.min(z$value), c("detail_group", "detail", "value"), drop = FALSE]
 }))
@@ -957,9 +1288,10 @@ if (!nrow(detail)) {
   stop("No informative detailed likelihood-profile curves are available.", call. = FALSE)
 }
 
-# The report retains the same component detail as the viewer. Every curve is
-# shifted to its own minimum, so it describes conflict with the tested biomass
-# scale rather than its absolute likelihood magnitude.
+# Static detail uses a clearly separated component-total curve above a heatmap
+# of the child contributions. This retains every data set without producing an
+# unreadable overlay of dozens of lines. The interactive viewer remains the
+# place for user-selected curve overlays.
 detail_group_labels <- c(
   "CPUE index" = "CPUE indices",
   "LF" = "Length frequencies",
@@ -975,36 +1307,103 @@ detail_group_colours <- c(
   "Penalty" = "#6B7280"
 )
 profile_detail_plot <- function(group) {
-  z <- detail[detail$detail_group == group, , drop = FALSE]
+  if (identical(group, "LF")) {
+    z_length <- detail[detail$detail_group == "LF", , drop = FALSE]
+    z_weight <- detail[detail$detail_group == "Weight frequency", , drop = FALSE]
+    if (nrow(z_length)) z_length$detail <- paste("Length", z_length$detail, sep = " | ")
+    if (nrow(z_weight)) z_weight$detail <- paste("Weight", z_weight$detail, sep = " | ")
+    z <- rbind(z_length, z_weight)
+  } else {
+    z <- detail[detail$detail_group == group, , drop = FALSE]
+  }
   if (!nrow(z)) stop("No informative likelihood-profile curves for ", group, call. = FALSE)
+
+  if (identical(group, "Tag release group")) {
+    programme_lookup <- stats::setNames(
+      as.character(report_data$mappings$tag_release_groups$tag_program),
+      paste("Group", report_data$mappings$tag_release_groups$release_group)
+    )
+    z$programme <- unname(programme_lookup[as.character(z$detail)])
+    if (anyNA(z$programme) || any(!nzchar(z$programme))) {
+      stop("A tag profile release group has no tagging-programme mapping.", call. = FALSE)
+    }
+    z <- stats::aggregate(
+      value ~ biomass_ratio + total_average_biomass_1000_t + programme,
+      data = z, FUN = sum, na.rm = TRUE
+    )
+    z$detail <- z$programme
+    z$detail_group <- group
+    minima <- stats::aggregate(value ~ detail, data = z, FUN = min)
+    names(minima)[names(minima) == "value"] <- "minimum_value"
+    z <- merge(z, minima, by = "detail", all.x = TRUE, sort = FALSE)
+    z$delta_nll <- pmax(0, z$value - z$minimum_value)
+  }
+
   z <- z[order(z$detail, z$biomass_ratio), , drop = FALSE]
-  p <- ggplot2::ggplot(z, ggplot2::aes(x = biomass_ratio, y = delta_nll, group = detail)) +
-    ggplot2::geom_hline(yintercept = 0, colour = "#8A989E", linewidth = 0.35) +
-    ggplot2::geom_vline(xintercept = 1, colour = red, linetype = 2, linewidth = 0.55) +
+  total <- stats::aggregate(
+    value ~ biomass_ratio + total_average_biomass_1000_t,
+    data = z, FUN = sum, na.rm = TRUE
+  )
+  total$delta_nll <- pmax(0, total$value - min(total$value))
+
+  p_total <- ggplot2::ggplot(
+    total,
+    ggplot2::aes(x = total_average_biomass_1000_t, y = delta_nll)
+  ) +
+    ggplot2::annotate(
+      "rect", xmin = -Inf, xmax = Inf, ymin = 0, ymax = 1.92,
+      fill = "#EEF5F6", colour = NA
+    ) +
+    ggplot2::geom_hline(yintercept = 0, colour = "#7C8D94", linewidth = 0.35) +
+    ggplot2::geom_hline(
+      yintercept = 1.92, colour = orange, linetype = "33", linewidth = 0.52
+    ) +
+    ggplot2::geom_line(colour = navy, linewidth = 1.2, lineend = "round") +
+    ggplot2::geom_point(
+      data = total[which.min(total$delta_nll), , drop = FALSE],
+      colour = navy, fill = "white", shape = 21, size = 2.1, stroke = 0.7
+    ) +
     ggplot2::scale_y_continuous(limits = c(0, NA), expand = ggplot2::expansion(mult = c(0, 0.06))) +
     ggplot2::labs(
-      x = "Total average biomass / fitted value",
-      y = expression(Delta~"negative log likelihood")
+      x = NULL,
+      y = expression(Delta~"NLL"),
+      title = paste0(detail_group_labels[[group]], " total")
     ) +
-    theme_report(9.5)
-  if (group %in% c("CPUE index", "CAAL region")) {
-    values <- stats::setNames(
-      scales::hue_pal(l = 55, c = 90)(length(unique(z$detail))),
-      sort(unique(z$detail))
+    theme_report(9.5) +
+    ggplot2::theme(
+      plot.title = ggplot2::element_text(size = 10.2, face = "bold"),
+      plot.margin = ggplot2::margin(5, 7, 0, 5)
     )
-    p <- p +
-      ggplot2::geom_line(ggplot2::aes(colour = detail), linewidth = 0.76, lineend = "round") +
-      ggplot2::scale_colour_manual(values = values, name = NULL) +
-      ggplot2::theme(legend.position = "bottom", legend.text = ggplot2::element_text(size = 7.6))
-  } else {
-    p <- p +
-      ggplot2::geom_line(
-        colour = unname(detail_group_colours[[group]]), alpha = 0.44,
-        linewidth = 0.56, lineend = "round"
-      ) +
-      ggplot2::theme(legend.position = "none")
-  }
-  p
+
+  detail_order <- names(sort(tapply(z$delta_nll, z$detail, max, na.rm = TRUE)))
+  z$detail <- factor(z$detail, levels = detail_order)
+  fill_max <- max(1.92, as.numeric(stats::quantile(z$delta_nll, 0.95, na.rm = TRUE)))
+  p_children <- ggplot2::ggplot(
+    z,
+    ggplot2::aes(x = total_average_biomass_1000_t, y = detail, fill = delta_nll)
+  ) +
+    ggplot2::geom_tile(colour = "white", linewidth = 0.22) +
+    ggplot2::scale_fill_gradientn(
+      colours = c("#F7FBFC", "#B9E0E4", "#55A7B4", "#0B5267"),
+      limits = c(0, fill_max), oob = scales::squish,
+      name = expression(Delta~"NLL")
+    ) +
+    ggplot2::labs(
+      x = expression("Total average biomass"~(10^3~"t")),
+      y = NULL,
+      title = "Data-set contributions"
+    ) +
+    theme_report(8.7) +
+    ggplot2::theme(
+      panel.grid = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_text(size = if (nlevels(z$detail) > 20) 6.5 else 7.6),
+      legend.position = "bottom",
+      legend.key.width = grid::unit(28, "pt"),
+      plot.title = ggplot2::element_text(size = 10.2, face = "bold"),
+      plot.margin = ggplot2::margin(0, 7, 5, 5)
+    )
+
+  p_total / p_children + patchwork::plot_layout(heights = c(1, max(1.15, nlevels(z$detail) / 8)))
 }
 for (group in names(detail_group_labels)) {
   if (any(detail$detail_group == group)) {
@@ -1020,17 +1419,21 @@ for (group in names(detail_group_labels)) {
       profile_detail_plot(group),
       paste0("likelihood-profile-", suffix, "-detail"),
       width = 7.1,
-      height = if (group %in% c("LF", "Tag release group")) 5.2 else 4.25
+      height = max(4.8, 3.4 + 0.16 * length(unique(
+        if (group == "LF") detail$detail[detail$detail_group %in% c("LF", "Weight frequency")]
+        else if (group == "Tag release group") report_data$mappings$tag_release_groups$tag_program
+        else detail$detail[detail$detail_group == group]
+      )))
     )
   }
 }
 
 profile_viewer_group <- function(
   key, label, z, colour, labels = NULL, total_label = NULL,
-  parent_component = NULL, parent_group = NULL, parent_curve = NULL,
-  panel = NULL, kind = "detail"
+  parent_component = NULL, panel = NULL, kind = "detail"
 ) {
   if (is.null(z) || !nrow(z)) return(NULL)
+  z <- attach_profile_axis(z)
   z <- z[order(as.character(z$curve), z$biomass_ratio), , drop = FALSE]
   curve_names <- sort(unique(as.character(z$curve)))
   total_key <- "__component_total__"
@@ -1041,6 +1444,7 @@ profile_viewer_group <- function(
     total_values <- stats::aggregate(value ~ biomass_ratio, data = z, FUN = sum)
     total <- z[rep.int(1L, nrow(total_values)), , drop = FALSE]
     total$biomass_ratio <- total_values$biomass_ratio
+    total <- attach_profile_axis(total)
     total$value <- total_values$value
     total$curve <- total_key
     total$delta_nll <- total$value - min(total$value)
@@ -1062,7 +1466,7 @@ profile_viewer_group <- function(
       group = label,
       colour = unname(curve_colours[[curve_key]]),
       is_total = identical(curve_key, total_key) || identical(curve_key, "Total"),
-      x = round(curve$biomass_ratio, 10),
+      x = round(curve$total_average_biomass_1000_t, 10),
       y = round(curve$delta_nll, 10),
       value = round(curve$value, 10),
       stringsAsFactors = FALSE
@@ -1073,8 +1477,6 @@ profile_viewer_group <- function(
     label = label,
     kind = kind,
     parent_component = parent_component,
-    parent_group = parent_group,
-    parent_curve = parent_curve,
     panel = panel %||% label,
     curves = rows
   )
@@ -1133,30 +1535,12 @@ append_viewer_group(profile_viewer_group(
 ))
 
 caal_regions <- viewer_detail_group("CAAL region")
-caal_fisheries <- viewer_detail_group("CAAL fishery")
 if (!is.null(caal_regions) && nrow(caal_regions)) {
   append_viewer_group(profile_viewer_group(
     "caal-regions", "CAAL regions", caal_regions,
     detail_group_colours[["CAAL region"]], total_label = "CAAL total",
     parent_component = "CAAL", panel = "CAAL regions"
   ))
-  if (!is.null(caal_fisheries) && nrow(caal_fisheries)) {
-    caal_fishery_id <- suppressWarnings(as.integer(sub("^F([0-9]+).*$", "\\1", caal_fisheries$curve)))
-    caal_fisheries$region <- profile_fishery_map$region[
-      match(caal_fishery_id, profile_fishery_map$fishery)
-    ]
-    for (region in sort(unique(caal_fisheries$region[is.finite(caal_fisheries$region)]))) {
-      region_name <- paste("Region", region)
-      append_viewer_group(profile_viewer_group(
-        paste0("caal-region-", region), paste(region_name, "fisheries"),
-        caal_fisheries[caal_fisheries$region == region, , drop = FALSE],
-        detail_group_colours[["CAAL region"]],
-        total_label = paste("CAAL total —", region_name),
-        parent_group = "caal-regions", parent_curve = region_name,
-        panel = paste(region_name, "CAAL fisheries")
-      ))
-    }
-  }
 }
 
 tag_detail <- viewer_detail_group("Tag release group")
@@ -1190,19 +1574,6 @@ if (!is.null(tag_detail) && nrow(tag_detail)) {
     total_label = "Tag total", parent_component = "Tag",
     panel = "Tag programme totals"
   ))
-  tag_panels <- split(tag_detail, tag_detail$programme)
-  programme_names <- sort(names(tag_panels))
-  for (programme_name in programme_names) {
-    programme_key <- gsub("[^a-z0-9]+", "-", tolower(programme_name))
-    append_viewer_group(profile_viewer_group(
-      paste0("tag-", programme_key), paste("Tag programme:", programme_name), tag_panels[[programme_name]],
-      detail_group_colours[["Tag release group"]], tag_labels,
-      total_label = paste("Tag total —", programme_name),
-      parent_group = "tag-programmes",
-      parent_curve = paste(programme_name, "total"),
-      panel = paste("Tag release groups —", programme_name)
-    ))
-  }
 }
 
 append_viewer_group(profile_viewer_group(
@@ -1213,7 +1584,7 @@ append_viewer_group(profile_viewer_group(
 viewer_groups <- Filter(Negate(is.null), viewer_groups)
 viewer_payload <- list(
   title = "BET 2026 likelihood-profile viewer",
-  subtitle = "Diagnostic-model biomass profiles: broad components with expandable data-set detail",
+  subtitle = "Diagnostic-model total-average-biomass profiles: broad components with one level of data-set detail",
   developer = list(name = "Kyuhan Kim", email = "kyuhank@spc.int"),
   groups = viewer_groups
 )
@@ -1243,7 +1614,13 @@ mfclshiny_logo_uri <- embedded_logo_uri(system.file("app", "www", "mfclshiny-log
 viewer_file <- file.path(viewer_dir, "bet-2026-likelihood-profile-viewer.html")
 viewer_template <- sub("__SPC_LOGO__", spc_logo_uri, viewer_template, fixed = TRUE)
 viewer_template <- sub("__MFCLSHINY_LOGO__", mfclshiny_logo_uri, viewer_template, fixed = TRUE)
-writeLines(sub("__VIEWER_DATA__", viewer_json, viewer_template, fixed = TRUE), viewer_file, useBytes = TRUE)
+viewer_document <- sub("__VIEWER_DATA__", viewer_json, viewer_template, fixed = TRUE)
+writeLines(viewer_document, viewer_file, useBytes = TRUE)
+writeLines(
+  viewer_document,
+  file.path(output_dir, "bet-2026-likelihood-profile-viewer.html"),
+  useBytes = TRUE
+)
 
 # Jitter --------------------------------------------------------------------
 jr <- report_data$jitter$runs
@@ -1609,7 +1986,18 @@ names(fishery_table) <- c(
 tag_table <- report_data$mappings$tag_reporting_groups |>
   dplyr::filter(tag_rep_group != 31L) |>
   dplyr::select(tag_rep_group, tag_programs, fisheries, release_groups, release_years, active)
-names(tag_table) <- c("Group", "Tag programme", "Fisheries", "Release groups", "Release years", "Estimated")
+tag_table$pooled_matrix_row <- grepl("pooled", tag_table$tag_programs, fixed = TRUE)
+tag_table$tag_programs <- gsub("/pooled", "", tag_table$tag_programs, fixed = TRUE)
+tag_table$tag_programs <- gsub("/", ", ", tag_table$tag_programs, fixed = TRUE)
+tag_table <- tag_table[, c(
+  "tag_rep_group", "tag_programs", "pooled_matrix_row", "fisheries",
+  "release_groups", "release_years", "active"
+)]
+names(tag_table) <- c(
+  "Group", "Tag programmes", "Pooled matrix row", "Fisheries",
+  "Release groups", "Release years", "Estimated"
+)
+tag_table$`Pooled matrix row` <- ifelse(tag_table$`Pooled matrix row`, "Yes", "No")
 tag_table$Estimated <- ifelse(tag_table$Estimated, "Yes", "No")
 release_summary <- report_data$mappings$tag_release_groups |>
   dplyr::group_by(tag_program, release_region) |>
@@ -1632,7 +2020,7 @@ tables <- list(
   write_table_bundle(selftest_table, "self-test-summary", "Relative recovery error for management quantities across 50 self-test refits.", "Relative recovery error for management quantities across 50 self-test refits."),
   write_table_bundle(aspm_terminal, "aspm-terminal-summary", "Terminal quantities for the diagnostic model and ASPM.", "Terminal quantities for the diagnostic model and ASPM."),
   write_table_bundle(fishery_table, "fishery-grouping", "Fishery definitions and final selectivity settings. All 33 fisheries have independent cubic-spline selectivity; F10 and F33 have a weak non-decreasing penalty of 10,000.", "Fishery definitions and final selectivity settings. All 33 fisheries have independent cubic-spline selectivity; F10 and F33 have a weak non-decreasing penalty of 10,000."),
-  write_table_bundle(tag_table, "tag-reporting-rate-groups", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status. Pooled denotes a common reporting-rate parameter across the listed tag programmes.", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status. Pooled denotes a common reporting-rate parameter across the listed tag programmes."),
+  write_table_bundle(tag_table, "tag-reporting-rate-groups", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status. Pooled matrix row indicates that the same group number is also assigned to the extra pooled row in MFCL's reporting-rate matrices; pooled is not a tagging programme.", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status. Pooled matrix row indicates that the same group number is also assigned to the extra pooled row in MFCL's reporting-rate matrices; pooled is not a tagging programme."),
   write_table_bundle(release_summary, "tag-release-groups", "Summary of tag-release groups by programme and release region.", "Summary of tag-release groups by programme and release region.")
 )
 names(tables) <- vapply(tables, `[[`, character(1L), "id")
@@ -1676,32 +2064,32 @@ figure_meta <- list(
   ),
   `likelihood-profile-components` = list(
     section = "Diagnostics",
-    caption = paste0("Likelihood profiles for total average biomass. Each curve is expressed as a change from its own minimum; the dashed vertical line marks the fitted value and the horizontal line marks a change of 1.92. Component-specific profiles are shown next; the interactive viewer provides curve identities and numeric values."),
+    caption = paste0("Likelihood profiles on the absolute total-average-biomass scale. Each curve is expressed as a change from its own minimum; the horizontal line marks a change of 1.92. The interactive viewer provides component-specific curve selection and numeric values."),
     viewer = viewer_release_url
   ),
   `likelihood-profile-cpue-detail` = list(
     section = "Diagnostics",
-    caption = "Detailed CPUE likelihood profiles by index fishery. Each line is expressed as a change from its own minimum; the dashed vertical line marks the fitted value.",
+    caption = "CPUE likelihood profile. The upper panel shows the CPUE total; the heatmap separates the five index contributions, each expressed as a change from its own minimum.",
     viewer = viewer_release_url
   ),
   `likelihood-profile-lf-detail` = list(
     section = "Diagnostics",
-    caption = "Detailed LF likelihood profiles by fishery. Each thin line is an informative fishery-specific curve expressed as a change from its own minimum; the dashed vertical line marks the fitted value.",
+    caption = "Length- and weight-frequency likelihood profile. The upper panel shows the LF total; the heatmap separates fishery contributions without overlapping dozens of curves.",
     viewer = viewer_release_url
   ),
   `likelihood-profile-caal-region-detail` = list(
     section = "Diagnostics",
-    caption = "Detailed CAAL likelihood profiles aggregated by model region. Each regional curve is expressed as a change from its own minimum; the regional contributions close to the broad CAAL component at every profile point.",
+    caption = "Conditional age-at-length likelihood profile. The upper panel shows the CAAL total; the heatmap separates contributions from the five model regions.",
     viewer = viewer_release_url
   ),
   `likelihood-profile-tag-detail` = list(
     section = "Diagnostics",
-    caption = "Detailed tag likelihood profiles by release group. Each thin line is an informative release-group curve expressed as a change from its own minimum; the dashed vertical line marks the fitted value.",
+    caption = "Tag likelihood profile. The upper panel shows the tag total; the heatmap separates RTTP, PTTP and JPTP programme contributions.",
     viewer = viewer_release_url
   ),
   `likelihood-profile-penalty-detail` = list(
     section = "Diagnostics",
-    caption = "Detailed penalty likelihood profiles. Each thin line is an informative penalty component expressed as a change from its own minimum; the dashed vertical line marks the fitted value.",
+    caption = "Penalty likelihood profile. The upper panel shows the penalty total; the heatmap separates individual penalty components.",
     viewer = viewer_release_url
   ),
   `jitter-diagnostics` = list(
@@ -1727,7 +2115,14 @@ figure_meta <- list(
 )
 
 mfcl_captions <- list(
-  `region-map` = list(section = "Overview", caption = "Five-region spatial structure used by the diagnostic model."),
+  `region-map` = list(
+    section = "Overview",
+    caption = paste(
+      "Five-region spatial structure used by the diagnostic model.",
+      "Labels identify the fitted fisheries in each region by gear and fishery ID;",
+      "the IDs correspond to the fishery-definition table."
+    )
+  ),
   `total-catch-fits` = list(section = "Model fit", caption = "Observed and fitted total catch through time."),
   `catch-by-fishery-fits` = list(section = "Model fit", caption = "Observed and fitted catch by fishery. Facet labels identify the fisheries and their model regions."),
   `length-frequency` = list(section = "Model fit", caption = "Observed and fitted length compositions by fishery. Shaded bands are 95% predictive intervals for repeated observations conditional on the fitted composition model; parameter uncertainty is not included."),
@@ -1739,7 +2134,7 @@ mfcl_captions <- list(
   `age-data-coverage` = list(section = "Model fit", caption = "Coverage of conditional age-at-length observations by fishery and year. The samples and fish-aged arrays use increased height so all panels remain readable."),
   `tag-returns-all` = list(section = "Model fit", caption = "Observed and expected tag returns across tag-release and recapture groups."),
   `tag-returns-by-group` = list(section = "Model fit", caption = "Observed and expected tag returns by tag-release group."),
-  `tag-attrition-by-program` = list(section = "Model fit", caption = "Tag attrition through time by tagging programme."),
+  `tag-attrition-by-program` = list(section = "Model fit", caption = "Observed (black points) and model-predicted (red line) tag recaptures by time at liberty in quarters for RTTP, PTTP, JPTP and all recaptures. Programme predictions apply MFCL's premixing reporting-rate rule and reconcile to the official all-recapture diagnostic within its printed precision."),
   `population-biology` = list(section = "Population dynamics", caption = "Growth, maturity, natural mortality and weight-at-age assumptions used in the diagnostic model."),
   `growth-curve` = list(section = "Population dynamics", caption = "Fitted mean length at age. Shading is the mean plus or minus 1.96 length-at-age standard deviations and represents fish-level length variability, not parameter-estimation uncertainty."),
   `fishery-process` = list(section = "Population dynamics", caption = "Estimated fishery selectivity at age for all 33 fisheries, grouped into the five model-region panels. Colours and the complete fishery key identify each fitted cubic-spline curve."),

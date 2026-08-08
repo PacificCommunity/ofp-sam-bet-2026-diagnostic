@@ -57,6 +57,29 @@ profile_labels <- c(
 )
 expected_components <- names(profile_colours)
 
+profile_axis <- unique(report_data$likelihood_profile$points[, c(
+  "biomass_ratio", "total_average_biomass_1000_t"
+)])
+profile_axis <- profile_axis[
+  is.finite(profile_axis$biomass_ratio) &
+    is.finite(profile_axis$total_average_biomass_1000_t),
+  , drop = FALSE
+]
+if (!nrow(profile_axis) || anyDuplicated(round(profile_axis$biomass_ratio, 10))) {
+  stop("The absolute biomass-profile axis is missing or ambiguous.", call. = FALSE)
+}
+attach_profile_axis <- function(z) {
+  index <- match(
+    round(z$biomass_ratio, 10), round(profile_axis$biomass_ratio, 10)
+  )
+  if (anyNA(index)) {
+    stop("A likelihood-profile point has no absolute total-average-biomass value.", call. = FALSE)
+  }
+  z$total_average_biomass_1000_t <-
+    profile_axis$total_average_biomass_1000_t[index]
+  z
+}
+
 normalise_curves <- function(z, group_columns) {
   key <- interaction(z[, group_columns, drop = FALSE], drop = TRUE, lex.order = TRUE)
   minima <- do.call(rbind, lapply(split(z, key), function(curve) {
@@ -87,6 +110,7 @@ profile <- rbind(profile, data.frame(
   scalar = 100, biomass_ratio = 1, component = "Total",
   value = as.numeric(objective_values[["Total objective"]]), stringsAsFactors = FALSE
 ))
+profile <- attach_profile_axis(profile)
 profile$component <- factor(as.character(profile$component), levels = expected_components)
 profile <- profile[!is.na(profile$component), , drop = FALSE]
 profile <- normalise_curves(profile, "component")
@@ -101,15 +125,17 @@ fishery_detail <- detail$detail_group %in% c("CPUE index", "LF", "Weight frequen
 fishery_id <- suppressWarnings(as.integer(sub("^([0-9]+).*", "\\1", as.character(detail$detail))))
 fishery_label <- fisheries$fishery_name[match(fishery_id, fisheries$fishery)]
 detail$detail[fishery_detail & !is.na(fishery_label)] <- fishery_label[fishery_detail & !is.na(fishery_label)]
+detail <- attach_profile_axis(detail)
 detail <- normalise_curves(detail, c("detail_group", "detail"))
 detail_key <- interaction(detail$detail_group, detail$detail, drop = TRUE)
 detail_span <- vapply(split(detail$delta_nll, detail_key), function(x) max(x) - min(x), numeric(1L))
 detail <- detail[as.character(detail_key) %in% names(detail_span)[detail_span > 1e-10], , drop = FALSE]
 
 profile_viewer_group <- function(key, label, z, colour, labels = NULL, total_label = NULL,
-                                 parent_component = NULL, parent_group = NULL,
-                                 parent_curve = NULL, panel = NULL, kind = "detail") {
+                                 parent_component = NULL, panel = NULL,
+                                 kind = "detail") {
   if (is.null(z) || !nrow(z)) return(NULL)
+  z <- attach_profile_axis(z)
   z <- z[order(as.character(z$curve), z$biomass_ratio), , drop = FALSE]
   curve_names <- sort(unique(as.character(z$curve)))
   total_key <- "__component_total__"
@@ -117,6 +143,7 @@ profile_viewer_group <- function(key, label, z, colour, labels = NULL, total_lab
     total_values <- stats::aggregate(value ~ biomass_ratio, data = z, FUN = sum)
     total <- z[rep.int(1L, nrow(total_values)), , drop = FALSE]
     total$biomass_ratio <- total_values$biomass_ratio
+    total <- attach_profile_axis(total)
     total$value <- total_values$value
     total$curve <- total_key
     total$delta_nll <- total$value - min(total$value)
@@ -135,15 +162,14 @@ profile_viewer_group <- function(key, label, z, colour, labels = NULL, total_lab
       group = label,
       colour = unname(curve_colours[[curve_key]]),
       is_total = identical(curve_key, total_key) || identical(curve_key, "Total"),
-      x = round(curve$biomass_ratio, 10),
+      x = round(curve$total_average_biomass_1000_t, 10),
       y = round(curve$delta_nll, 10),
       stringsAsFactors = FALSE
     )
   }))
   list(
     key = key, label = label, kind = kind,
-    parent_component = parent_component, parent_group = parent_group,
-    parent_curve = parent_curve, panel = panel %||% label,
+    parent_component = parent_component, panel = panel %||% label,
     curves = rows
   )
 }
@@ -179,27 +205,12 @@ if (length(lf_parts)) append_group(profile_viewer_group(
 ))
 
 caal_regions <- detail_group("CAAL region")
-caal_fisheries <- detail_group("CAAL fishery")
 if (!is.null(caal_regions)) {
   append_group(profile_viewer_group(
     "caal-regions", "CAAL regions", caal_regions, "#6A5AA7",
     total_label = "CAAL total", parent_component = "CAAL",
     panel = "CAAL regions"
   ))
-  if (!is.null(caal_fisheries)) {
-    caal_fishery_id <- suppressWarnings(as.integer(sub("^F([0-9]+).*$", "\\1", caal_fisheries$curve)))
-    caal_fisheries$region <- fisheries$region[match(caal_fishery_id, fisheries$fishery)]
-    for (region in sort(unique(caal_fisheries$region[is.finite(caal_fisheries$region)]))) {
-      region_name <- paste("Region", region)
-      append_group(profile_viewer_group(
-        paste0("caal-region-", region), paste(region_name, "fisheries"),
-        caal_fisheries[caal_fisheries$region == region, , drop = FALSE], "#6A5AA7",
-        total_label = paste("CAAL total —", region_name),
-        parent_group = "caal-regions", parent_curve = region_name,
-        panel = paste(region_name, "CAAL fisheries")
-      ))
-    }
-  }
 }
 
 tag_map <- report_data$mappings$tag_release_groups
@@ -226,16 +237,6 @@ if (!is.null(tag)) {
     labels = programme_labels, total_label = "Tag total",
     parent_component = "Tag", panel = "Tag programme totals"
   ))
-  for (programme in sort(unique(tag$programme))) {
-    key <- gsub("[^a-z0-9]+", "-", tolower(programme))
-    append_group(profile_viewer_group(
-      paste0("tag-", key), paste("Tag programme:", programme),
-      tag[tag$programme == programme, , drop = FALSE], "#009E73", tag_labels,
-      total_label = paste("Tag total —", programme),
-      parent_group = "tag-programmes", parent_curve = paste(programme, "total"),
-      panel = paste("Tag release groups —", programme)
-    ))
-  }
 }
 append_group(profile_viewer_group(
   "penalty", "Penalty components", detail_group("Penalty"), "#6B7280",
@@ -245,7 +246,7 @@ groups <- Filter(Negate(is.null), groups)
 
 viewer_payload <- list(
   title = "BET 2026 likelihood-profile viewer",
-  subtitle = "Diagnostic-model biomass profiles: broad components with expandable data-set detail",
+  subtitle = "Diagnostic-model total-average-biomass profiles: broad components with one level of data-set detail",
   developer = list(name = "Kyuhan Kim", email = "kyuhank@spc.int"),
   groups = groups
 )

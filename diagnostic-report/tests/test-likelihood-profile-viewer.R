@@ -12,16 +12,21 @@ if (marker_count("__VIEWER_DATA__") != 1L || marker_count("__SPC_LOGO__") != 1L 
   stop("The viewer must retain exactly one data and one marker for each logo.", call. = FALSE)
 }
 for (required in c(
-  "Select all", "Clear all", "parentComponent", "parentGroup", "detail-panel",
+  "Select all", "Clear all", "parentComponent", "detail-panel",
   "detail-actions", "each curve minimum = 0",
-  "Tag opens programme totals", "Download plotted CSV",
+  "Tag shows programme totals", "Total average biomass (10³ t)",
+  "Download plotted CSV",
   "Kyuhan Kim", "kyuhank@spc.int"
 )) {
   if (!grepl(required, template, fixed = TRUE)) {
     stop("Viewer is missing required element: ", required, call. = FALSE)
   }
 }
-for (forbidden in c("data-tier=", "fitted = 1", "Diagnostic fitted baseline", "base-dot", "fit-line")) {
+for (forbidden in c(
+  "data-tier=", "fitted = 1", "Diagnostic fitted baseline", "base-dot",
+  "fit-line", "Relative total average biomass", "relative_value",
+  "Total average biomass / fitted value"
+)) {
   if (grepl(forbidden, template, fixed = TRUE)) {
     stop("Viewer retains obsolete fitted-baseline UI: ", forbidden, call. = FALSE)
   }
@@ -44,7 +49,7 @@ if (!requireNamespace("jsonlite", quietly = TRUE)) {
 curve_rows <- function(id, label, values, is_total = FALSE, colour = NULL) {
   lapply(seq_along(values), function(index) {
     list(
-      id = id, label = label, x = c(0.9, 1, 1.1)[[index]], y = values[[index]],
+      id = id, label = label, x = c(850, 960, 1100)[[index]], y = values[[index]],
       is_total = is_total, colour = colour
     )
   })
@@ -79,15 +84,6 @@ payload <- list(
         curve_rows("total", "Tag total", c(8, 0, 6), TRUE, "#073c5b"),
         curve_rows("program-a", "Program A total", c(5, 1, 4), FALSE, "#168a72")
       )
-    ),
-    list(
-      key = "tag-program-a", label = "Program A release groups", kind = "detail",
-      parent_group = "tag-programmes", parent_curve = "Program A total",
-      panel = "Tag release groups — Program A",
-      curves = c(
-        curve_rows("total", "Tag total — Program A", c(5, 0, 4), TRUE, "#073c5b"),
-        curve_rows("release-a", "Release A", c(4, 2, 3), FALSE, "#2874b9")
-      )
     )
   )
 )
@@ -103,11 +99,13 @@ probe <- paste0(
   "var tagToggle=[].slice.call(document.querySelectorAll('.detail-toggle')).filter(function(x){return x.textContent.indexOf('Tag programme totals')===0})[0];tagToggle.click();",
   "var tagOpenToggle=[].slice.call(document.querySelectorAll('.detail-toggle')).filter(function(x){return x.textContent.indexOf('Tag programme totals')===0})[0];",
   "var tagPanel=tagOpenToggle.closest('.detail-panel');tagPanel.querySelector('.detail-actions button').click();",
-  "var nestedToggle=[].slice.call(document.querySelectorAll('.detail-toggle')).filter(function(x){return x.textContent.indexOf('Tag release groups')===0})[0];",
-  "var nested=Boolean(nestedToggle);if(nestedToggle)nestedToggle.click();",
+  "tagPanel.querySelectorAll('.detail-actions button')[1].click();",
+  "var nested=document.querySelectorAll('.nested-details .detail-toggle').length;",
+  "var totalLines=document.querySelectorAll('.detail-grid .curve-line.total').length;",
+  "var absoluteAxis=[].slice.call(document.querySelectorAll('.axis-label')).some(function(x){return x.textContent==='Total average biomass (10³ t)'});",
   "var localActions=document.querySelectorAll('.detail-actions').length;",
   "var result=document.createElement('p');result.id='viewer-smoke-result';",
-  "result.textContent='SMOKE '+overview+' parent='+parent+' ownMinimum='+ownMinimum+' nested='+nested+' actions='+localActions+' panels='+document.querySelectorAll('.detail-grid .chart-card').length;",
+  "result.textContent='SMOKE '+overview+' parent='+parent+' ownMinimum='+ownMinimum+' nested='+nested+' totals='+totalLines+' absoluteAxis='+absoluteAxis+' actions='+localActions+' panels='+document.querySelectorAll('.detail-grid .chart-card').length;",
   "document.body.appendChild(result);",
   "})();</script>"
 )
@@ -137,7 +135,7 @@ result_match <- regexec(
 )
 result <- regmatches(browser_document, result_match)[[1L]]
 if (length(result) >= 2L) result <- result[[2L]] else result <- character()
-expected <- "SMOKE 6 selected|6 broad · 0 detail panels parent=true ownMinimum=true nested=true actions=3 panels=3"
+expected <- "SMOKE 6 selected|6 broad · 0 detail panels parent=true ownMinimum=true nested=0 totals=2 absoluteAxis=true actions=2 panels=2"
 if (!length(result) || !grepl(expected, result, fixed = TRUE)) {
   stop(
     "Likelihood-profile browser smoke test failed: ",
@@ -145,4 +143,4 @@ if (!length(result) || !grepl(expected, result, fixed = TRUE)) {
     call. = FALSE
   )
 }
-cat("Validated nested broad/detail selection, per-level actions, detail-panel totals, own-minimum ΔNLL and public-safe viewer template.\n")
+cat("Validated one-level broad/detail selection, persistent detail totals, absolute biomass axis, own-minimum ΔNLL and public-safe viewer template.\n")
