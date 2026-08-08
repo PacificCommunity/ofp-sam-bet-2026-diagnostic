@@ -1813,7 +1813,8 @@ latex_cell <- function(x) {
     "SBMSY" = "$SB_{\\mathrm{MSY}}$"
   )
   hit <- unname(labels[as.character(x)])
-  ifelse(is.na(hit), tex_breakable(x), hit)
+  out <- ifelse(is.na(hit), tex_breakable(x), hit)
+  gsub("κ", "\\ensuremath{\\kappa}", out, fixed = TRUE)
 }
 format_cell <- function(x) {
   if (is.numeric(x)) {
@@ -1921,6 +1922,55 @@ hessian_table <- data.frame(
   ),
   stringsAsFactors = FALSE
 )
+# These summaries were reconciled to the final diagnostic fit's MFCL
+# indepvar.rpt bound markers and inverse-Hessian correlation matrix.  Keep the
+# report-facing names scientific and readable; the internal MFCL names are not
+# useful to report readers.
+parameter_bounds_table <- data.frame(
+  `Parameter type` = c(
+    "Movement diffusion coefficient",
+    "Regional recruitment-distribution deviation",
+    "Fishery selectivity spline coefficient",
+    "Tag reporting rate"
+  ),
+  `Bound location(s)` = c(
+    "Lower bound (0); 29 season–movement-path coefficients",
+    "Lower bound (-3); Region 2 in 1980 Q1, 1982 Q1–Q2, 1984 Q1 and Q4, and 1985 Q1",
+    "Lower bound (-20); spline node 5 for fishery 16 (PL.ALL.2) and fishery 24 (PL.ALL.WEST.3)",
+    "Upper bound (0.99); reporting-rate group 23 (JPTP, fisheries 12–13)"
+  ),
+  Number = c(29L, 6L, 2L, 1L),
+  check.names = FALSE
+)
+parameter_correlations_table <- data.frame(
+  `Parameter 1` = c(
+    "Mean length of oldest age class",
+    "Mean length of youngest age class",
+    "Mean length of youngest age class",
+    "Mean length of oldest age class",
+    "von Bertalanffy growth-rate parameter (κ)",
+    "Mean length of youngest age class",
+    "Regional recruitment-distribution deviation, Region 1 (2024 Q3)",
+    "Regional recruitment-distribution deviation, Region 1 (2024 Q1)",
+    "Regional recruitment-distribution deviation, Region 4 (1965 Q4)"
+  ),
+  `Parameter 2` = c(
+    "von Bertalanffy growth-rate parameter (κ)",
+    "von Bertalanffy growth-rate parameter (κ)",
+    "Mean length of oldest age class",
+    "Age-dependency parameter for the standard deviation of length at age",
+    "Age-dependency parameter for the standard deviation of length at age",
+    "Age-dependency parameter for the standard deviation of length at age",
+    "Regional recruitment-distribution deviation, Region 5 (2024 Q3)",
+    "Regional recruitment-distribution deviation, Region 5 (2024 Q1)",
+    "Regional recruitment-distribution deviation, Region 5 (1965 Q4)"
+  ),
+  Correlation = sprintf("%.4f", c(
+    -0.9997084, -0.9976058, 0.9964759, -0.9868316, 0.9867696,
+    -0.9855763, -0.9773024, -0.9610562, -0.9603289
+  )),
+  check.names = FALSE
+)
 check_table <- data.frame(
   Diagnostic = c("Jitter", "Retrospective", "Self-test", "Likelihood profile", "ASPM"),
   Planned = c(30, 7, 50, 45, 1),
@@ -2014,6 +2064,8 @@ tables <- list(
   write_table_bundle(objective_table, "objective-components", "Negative-log-likelihood components at the fitted solution.", "Negative-log-likelihood components at the fitted solution."),
   write_table_bundle(recent_table, "recent-stock-status", "Latest annual and recent four-year diagnostic-model quantities.", "Latest annual and recent four-year diagnostic-model quantities."),
   write_table_bundle(hessian_table, "hessian-summary", "Hessian and curvature summary for the fitted model.", "Hessian and curvature summary for the fitted model."),
+  write_table_bundle(parameter_bounds_table, "parameter-bounds", "Estimated parameters that MFCL flagged as on or close to a bound in the diagnostic model. Parameter names are descriptive rather than MFCL internal variable names.", "Estimated parameters that MFCL flagged as on or close to a bound in the diagnostic model. Parameter names are descriptive rather than MFCL internal variable names."),
+  write_table_bundle(parameter_correlations_table, "parameter-correlations", "Strongest estimated-parameter correlations in the diagnostic model (|r| > 0.95), calculated from the inverse Hessian.", "Strongest estimated-parameter correlations in the diagnostic model ($|r| > 0.95$), calculated from the inverse Hessian."),
   write_table_bundle(check_table, "diagnostic-check-summary", "Completion and principal result of each diagnostic check.", "Completion and principal result of each diagnostic check."),
   write_table_bundle(rho_table, "retrospective-summary", "Mohn's rho from seven terminal-year retrospective peels.", "Mohn's $\\rho$ from seven terminal-year retrospective peels."),
   write_table_bundle(jitter_table, "jitter-summary", "Jitter convergence and objective-function summary.", "Jitter convergence and objective-function summary."),
@@ -2288,6 +2340,9 @@ html <- paste0(
   html_table(tables[["diagnostic-check-summary"]]),
   paste(vapply(diagnostic_ids, figure_block, character(1L)), collapse = ""),
   html_table(tables[["hessian-summary"]]),
+  "<div class='note'><strong>Parameter diagnostics.</strong> MFCL flagged 38 parameters as on or close to bounds. The inverse-Hessian correlation matrix contained 22 pairs with |r| &gt; 0.90, involving 29 unique parameters; the nine pairs with |r| &gt; 0.95 are listed below.</div>",
+  html_table(tables[["parameter-bounds"]]),
+  html_table(tables[["parameter-correlations"]]),
   html_table(tables[["jitter-summary"]]),
   html_table(tables[["retrospective-summary"]]),
   html_table(tables[["self-test-summary"]]),

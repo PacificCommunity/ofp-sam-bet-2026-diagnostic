@@ -1,0 +1,5 @@
+"Parameter type","Bound location(s)","Number"
+"Movement diffusion coefficient","Lower bound (0); 29 season–movement-path coefficients",29
+"Regional recruitment-distribution deviation","Lower bound (-3); Region 2 in 1980 Q1, 1982 Q1–Q2, 1984 Q1 and Q4, and 1985 Q1",6
+"Fishery selectivity spline coefficient","Lower bound (-20); spline node 5 for fishery 16 (PL.ALL.2) and fishery 24 (PL.ALL.WEST.3)",2
+"Tag reporting rate","Upper bound (0.99); reporting-rate group 23 (JPTP, fisheries 12–13)",1

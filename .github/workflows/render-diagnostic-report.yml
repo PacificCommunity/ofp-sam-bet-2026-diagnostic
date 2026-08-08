@@ -52,6 +52,8 @@ jobs:
           test -s diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
           test -s diagnostic-report-output/report-manifest.csv
           test -s diagnostic-report-output/tables/tag-attrition-validation.csv
+          test -s diagnostic-report-output/tables/parameter-bounds.csv
+          test -s diagnostic-report-output/tables/parameter-correlations.csv
           test "$(find diagnostic-report-output -path '*/figures/*.png' -type f | wc -l)" -ge 20
           grep -q 'data:image/png;base64,' diagnostic-report-output/bet-2026-diagnostic-report.html
           grep -q 'pacificcommunity.github.io/ofp-sam-bet-2026-diagnostic/bet-2026-likelihood-profile-viewer.html' diagnostic-report-output/bet-2026-diagnostic-report.html
@@ -59,6 +61,8 @@ jobs:
           grep -q 'CAAL regions' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
           grep -q 'Tag programme totals' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
           grep -q 'Total average biomass (10³ t)' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
+          grep -q 'von Bertalanffy growth-rate parameter (κ)' diagnostic-report-output/bet-2026-diagnostic-report.html
+          grep -q 'MFCL flagged 38 parameters' diagnostic-report-output/bet-2026-diagnostic-report.html
           ! grep -q 'Relative total average biomass' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
           ! grep -q 'Total average biomass / fitted value' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
           ! grep -Eq "src=['\"](figures|mfclshiny)/" diagnostic-report-output/bet-2026-diagnostic-report.html
