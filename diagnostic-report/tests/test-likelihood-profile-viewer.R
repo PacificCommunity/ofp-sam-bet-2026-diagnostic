@@ -18,6 +18,7 @@ for (required in c(
   "LF and CAAL first show region totals", "Tag first shows programme totals",
   "Chart added below",
   "Total average biomass (10³ t)",
+  "typeof value==='object'",
   "Download plotted CSV",
   "Kyuhan Kim", "kyuhank@spc.int"
 )) {
