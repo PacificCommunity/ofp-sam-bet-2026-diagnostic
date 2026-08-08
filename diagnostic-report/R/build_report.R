@@ -380,13 +380,13 @@ region_fishery_map_plot <- function(vertices_file) {
   world <- ggplot2::map_data("world2")
   cards <- data.frame(
     region = 1:5,
-    lon = c(166, 124, 162, 197, 175),
+    lon = c(166, 125, 162, 197.5, 175),
     lat = c(29, 5, 0, 0, -25),
     label = c(
       "REGION 1\nLongline F01–03\nPurse seine F12 · Pole-and-line F13\nIndex F29",
-      "REGION 2\nLongline F04–05 · Handline F14–15\nPole-and-line F16 · Purse seine F17–20\nDomestic F21–23 · Index F30",
+      "REGION 2\nLongline F04–05 · Handline F14–15\nPole-and-line F16\nPurse seine F17–20\nDomestic F21–23 · Index F30",
       "REGION 3\nLongline F06–07, F09\nPole-and-line F24 · Purse seine F25, F27\nIndex F31",
-      "REGION 4\nLongline F08 · Purse seine F26, F28\nIndex F32",
+      "REGION 4\nLongline F08\nPurse seine F26, F28\nIndex F32",
       "REGION 5\nLongline F10–11 · Index F33"
     ),
     stringsAsFactors = FALSE
