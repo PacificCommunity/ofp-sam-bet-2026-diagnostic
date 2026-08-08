@@ -1,5 +1,6 @@
 .Rhistory
 .RData
+CHAT_HANDOFF_*.md
 __pycache__/
 outputs/
 work/
