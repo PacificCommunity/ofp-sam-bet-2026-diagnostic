@@ -59,12 +59,19 @@ jobs:
           grep -q 'pacificcommunity.github.io/ofp-sam-bet-2026-diagnostic/bet-2026-likelihood-profile-viewer.html' diagnostic-report-output/bet-2026-diagnostic-report.html
           grep -q 'Number of nodes' diagnostic-report-output/bet-2026-diagnostic-report.html
           grep -q 'CAAL regions' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
+          grep -q 'Region 1 CAAL fisheries' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
+          grep -q 'LF region totals' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
+          grep -q 'Region 1 LF fisheries' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
           grep -q 'Tag programme totals' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
+          grep -q 'RTTP release groups' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
+          grep -q 'Chart added below the broad-component chart' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
           grep -q 'Total average biomass (10³ t)' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
           grep -q 'von Bertalanffy growth-rate parameter (κ)' diagnostic-report-output/bet-2026-diagnostic-report.html
           grep -q 'MFCL flagged 38 parameters' diagnostic-report-output/bet-2026-diagnostic-report.html
           ! grep -q 'Relative total average biomass' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
           ! grep -q 'Total average biomass / fitted value' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
+          ! grep -q 'Weight frequency' diagnostic-report-output/bet-2026-diagnostic-report.html
+          ! grep -q 'Weight frequency' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
           ! grep -Eq "src=['\"](figures|mfclshiny)/" diagnostic-report-output/bet-2026-diagnostic-report.html
           ! grep -q 'releases/latest/download/bet-2026-likelihood-profile-viewer.html' diagnostic-report-output/bet-2026-diagnostic-report.html
 

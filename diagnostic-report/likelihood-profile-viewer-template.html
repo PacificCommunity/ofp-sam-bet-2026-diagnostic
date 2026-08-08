@@ -10,6 +10,7 @@
 .brand-logos{align-items:center;background:rgba(255,255,255,.84);border:1px solid rgba(207,224,232,.9);border-radius:8px;box-shadow:0 8px 20px rgba(19,53,70,.06);display:flex;flex:none;gap:9px;padding:7px 9px}.spc-logo{height:39px;width:95px}.mfcl-logo{height:39px;object-fit:contain;width:39px}
 .detail-actions{display:grid;gap:5px;grid-template-columns:1fr 1fr;padding:3px 4px 5px}.detail-actions button{background:#fff;border:1px solid #c7dce4;border-radius:5px;color:#356273;font-size:10px;font-weight:850;padding:5px}.detail-actions button:hover{background:#eaf4f7}
 .curve-line{opacity:.76;stroke-width:1.9}.curve-line.total{filter:drop-shadow(0 1px 1px rgba(7,60,91,.22));opacity:1;stroke-width:4.6}.detail-total{background:#eaf3f6;border-radius:5px;color:#173f52;font-weight:900;margin:2px;padding:6px 7px}.chart-card{box-shadow:0 5px 14px rgba(28,65,82,.055)}
+.detail-curve-block{border-radius:6px}.nested-details{border-left:2px solid #a9cdd8;margin:2px 3px 7px 18px;padding:2px 0 2px 7px}.nested-details .detail-panel{background:#fff}.detail-placement{background:#e8f6f2;border:1px solid #bfe1d6;border-radius:5px;color:#236654;font-size:10px;font-weight:850;line-height:1.35;margin:3px 4px 5px;padding:6px 7px}.detail-toggle[aria-pressed="true"]{background:#e7f3f6;color:#174f63}.chart-card.just-added{animation:panel-arrival 1.8s ease-out;border-color:#18a083;box-shadow:0 0 0 4px rgba(24,160,131,.18),0 12px 28px rgba(20,52,68,.12)}@keyframes panel-arrival{0%{transform:translateY(8px);box-shadow:0 0 0 7px rgba(24,160,131,.28)}100%{transform:translateY(0);box-shadow:0 5px 14px rgba(28,65,82,.055)}}.toast{background:#123f51;border:1px solid rgba(255,255,255,.28);border-radius:8px;bottom:20px;box-shadow:0 10px 28px rgba(9,43,58,.26);color:#fff;font-size:12px;font-weight:800;left:50%;max-width:min(440px,calc(100vw - 28px));padding:10px 13px;position:fixed;text-align:center;transform:translateX(-50%);z-index:40}.toast[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -27,7 +28,7 @@
       <label class="field-label" for="find">Find a component or data set</label><input class="find" id="find" type="search" placeholder="Search component, region or programme" autocomplete="off">
       <div class="actions"><button type="button" id="all-on">Select all</button><button type="button" id="all-off">Clear all</button></div>
       <div class="curve-list" id="curve-list"></div>
-      <p class="help"><b>How to use this viewer.</b> Select a broad component and open its single detail panel. CPUE shows indices, LF shows fisheries, CAAL shows regions, Tag shows programme totals, and Penalty shows its components. The dark, heavy total curve is always retained in every open detail panel. Each curve is shown as ΔNLL from its own minimum.</p>
+      <p class="help"><b>How to use this viewer.</b> Select a broad component and open its detail panel. CPUE shows indices. LF and CAAL first show region totals, and each region opens to its fishery curves. Tag first shows programme totals, and each programme opens to its release groups. Newly opened charts are highlighted and brought into view below the broad-component chart. The dark, heavy total curve is always retained in every open detail panel. Each curve is shown as ΔNLL from its own minimum.</p>
     </aside>
     <section class="panel viewer" aria-label="Likelihood profile chart">
       <div class="viewer-top"><div><h2 id="viewer-title">Broad-component comparison</h2><p id="viewer-note">Selected broad components are overlaid; each curve is normalised to its own minimum.</p></div><div class="toolbar"><span class="status" id="plot-status">Preparing curves</span><button type="button" id="download">Download plotted CSV</button></div></div>
@@ -37,12 +38,13 @@
   </div>
 </main>
 <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+<div class="toast" id="live-message" role="status" aria-live="polite" hidden></div>
 <script id="viewer-data" type="application/json">__VIEWER_DATA__</script>
 <script>
 (()=>{'use strict';
 const palette=['#17617f','#ca6b26','#7755a5','#168a72','#b83d55','#2874b9','#9a6b12','#5e708b','#c05d92','#3d8f9f','#9466c5','#567c38'];
 const $=id=>document.getElementById(id),svgNS='http://www.w3.org/2000/svg';
-const el={title:$('page-title'),subtitle:$('page-subtitle'),find:$('find'),list:$('curve-list'),count:$('selected-count'),grid:$('chart-grid'),status:$('plot-status'),notes:$('notes'),tip:$('tooltip'),download:$('download'),viewerTitle:$('viewer-title'),viewerNote:$('viewer-note')};
+const el={title:$('page-title'),subtitle:$('page-subtitle'),find:$('find'),list:$('curve-list'),count:$('selected-count'),grid:$('chart-grid'),status:$('plot-status'),notes:$('notes'),tip:$('tooltip'),live:$('live-message'),download:$('download'),viewerTitle:$('viewer-title'),viewerNote:$('viewer-note')};
 const text=(value,fallback='')=>value==null?fallback:String(value);
 const number=value=>{const parsed=typeof value==='number'?value:Number(value);return Number.isFinite(parsed)?parsed:null};
 const escCsv=value=>{const string=text(value);return /[",\n]/.test(string)?'"'+string.replace(/"/g,'""')+'"':string};
@@ -56,21 +58,25 @@ function normaliseGroup(group,index){
   for(const row of rows){const label=text(row.label||row.curve_label||row.parameter_label||row.parameter||row.name||row.id,'Unnamed profile'),key=text(row.id||row.curve_id||label);if(!buckets.has(key))buckets.set(key,{label,rows:[],source:row});buckets.get(key).rows.push(row)}
   return [...buckets.entries()].map(([key,bucket],curveIndex)=>{
     const source=Object.assign({},group,bucket.source,{points:bucket.rows}),explicitTotal=bucket.source.is_total!==undefined?bucket.source.is_total:bucket.source.total,isTotal=explicitTotal===undefined||explicitTotal===null?/\btotal\b/i.test(bucket.label):Boolean(explicitTotal),suppliedColour=text(bucket.source.colour||bucket.source.color),kind=text(group.kind||'detail').toLowerCase();
-    return {id:groupId+'::'+key,label:bucket.label,groupId,groupLabel:text(group.label||bucket.source.group||group.id||'Profiles'),kind:kind==='broad'?'broad':'detail',parentComponent:text(group.parent_component||group.parentComponent||''),panel:text(group.panel||group.label||'Details'),points:pointsFor(source),isTotal,groupOrder:index,color:isTotal?'#073c5b':(suppliedColour||palette[(index*3+curveIndex)%palette.length])}
+    return {id:groupId+'::'+key,sourceId:key,label:bucket.label,groupId,groupLabel:text(group.label||bucket.source.group||group.id||'Profiles'),kind:kind==='broad'?'broad':'detail',parentComponent:text(group.parent_component||group.parentComponent||''),parentGroup:text(group.parent_group||group.parentGroup||''),parentProfile:text(group.parent_profile||group.parentProfile||''),panel:text(group.panel||group.label||'Details'),points:pointsFor(source),isTotal,groupOrder:index,color:isTotal?'#073c5b':(suppliedColour||palette[(index*3+curveIndex)%palette.length])}
   })
 }
 function profilesFrom(data){const groups=asArray(data.groups);return groups.length?groups.flatMap((group,index)=>normaliseGroup(group,index)):normaliseGroup({id:'profiles',label:'Profiles',kind:'broad',curves:asArray(data.profiles||data.curves||data.records||data.data)},0)}
 const profiles=profilesFrom(raw).filter(profile=>profile.points.length).sort((a,b)=>a.groupOrder-b.groupOrder||Number(b.isTotal)-Number(a.isTotal)||a.label.localeCompare(b.label));
 const broadProfiles=profiles.filter(profile=>profile.kind==='broad'),detailProfiles=profiles.filter(profile=>profile.kind==='detail');
-const detailGroups=[...new Map(detailProfiles.map(profile=>[profile.groupId,{id:profile.groupId,label:profile.groupLabel,parent:profile.parentComponent,panel:profile.panel,profiles:detailProfiles.filter(candidate=>candidate.groupId===profile.groupId)}])).values()];
-const state={query:'',selected:new Set(),activePanels:new Set()};
+const detailGroups=[...new Map(detailProfiles.map(profile=>[profile.groupId,{id:profile.groupId,label:profile.groupLabel,parent:profile.parentComponent,parentGroup:profile.parentGroup,parentProfile:profile.parentProfile,panel:profile.panel,profiles:detailProfiles.filter(candidate=>candidate.groupId===profile.groupId)}])).values()];
+const state={query:'',selected:new Set(),activePanels:new Set()};let pendingRevealGroup='',pendingRevealLabel='',toastTimer=null;
 broadProfiles.forEach(profile=>state.selected.add(profile.id));
 const norm=value=>text(value).toLowerCase();
 function matches(profile){const query=norm(state.query);return !query||norm(profile.label+' '+profile.groupLabel+' '+profile.parentComponent+' '+profile.panel).includes(query)}
-function detailGroupsFor(component){return detailGroups.filter(group=>group.parent===component&&group.profiles.some(matches))}
+function rootDetailGroupsFor(component){return detailGroups.filter(group=>!group.parentGroup&&group.parent===component)}
+function nestedGroupsFor(profile){return detailGroups.filter(group=>group.parentGroup===profile.groupId&&group.parentProfile===profile.sourceId)}
+function profileTreeMatches(profile){return matches(profile)||nestedGroupsFor(profile).some(groupTreeMatches)}
+function groupTreeMatches(group){const query=norm(state.query);return !query||norm(group.label+' '+group.panel).includes(query)||group.profiles.some(profileTreeMatches)}
+function detailGroupsFor(component){return rootDetailGroupsFor(component).filter(groupTreeMatches)}
 function totalFor(group){return group.profiles.find(profile=>profile.isTotal)}
 function childrenFor(group){return group.profiles.filter(profile=>!profile.isTotal)}
-function deactivateGroup(group){state.activePanels.delete(group.id);group.profiles.forEach(profile=>state.selected.delete(profile.id))}
+function deactivateGroup(group){state.activePanels.delete(group.id);group.profiles.forEach(profile=>{state.selected.delete(profile.id);nestedGroupsFor(profile).forEach(deactivateGroup)})}
 function clearGroupChildren(group){childrenFor(group).forEach(profile=>state.selected.delete(profile.id))}
 function node(tag,props={},children=[]){const element=document.createElement(tag);for(const [key,value] of Object.entries(props)){if(key==='class')element.className=value;else if(key==='text')element.textContent=value;else element.setAttribute(key,value)}for(const child of children)element.append(child);return element}
 function curveControl(profile,subtitle=''){
@@ -79,19 +85,22 @@ function curveControl(profile,subtitle=''){
   return node('label',{class:'curve',title:profile.label},[input,node('i',{class:'swatch',style:'background:'+profile.color}),node('span',{class:'curve-name'},[document.createTextNode(profile.label),subtitle?node('small',{class:'curve-sub',text:subtitle}):document.createTextNode('')])])
 }
 function renderDetailGroup(group){
-  const active=state.activePanels.has(group.id),total=totalFor(group),children=childrenFor(group),toggle=node('button',{class:'detail-toggle',type:'button','aria-pressed':String(active)},[node('span',{text:group.panel}),node('small',{text:active?'Hide details':'Show details'})]);
-  toggle.addEventListener('click',()=>{if(active)deactivateGroup(group);else{state.activePanels.add(group.id);if(total)state.selected.add(total.id)}renderAll()});
+  const active=state.activePanels.has(group.id),total=totalFor(group),children=childrenFor(group),toggle=node('button',{class:'detail-toggle',type:'button','aria-pressed':String(active)},[node('span',{text:group.panel}),node('small',{text:active?'Shown below ↓ · Hide':'Show below'})]);
+  toggle.addEventListener('click',()=>{if(active)deactivateGroup(group);else{state.activePanels.add(group.id);if(total)state.selected.add(total.id);pendingRevealGroup=group.id;pendingRevealLabel=group.panel}renderAll()});
   const panel=node('div',{class:'detail-panel'},[toggle]);
   if(active){
     const body=node('div',{class:'detail-body'});
+    body.append(node('div',{class:'detail-placement',text:'Chart added below the broad-component chart ↓'}));
     if(total)body.append(node('div',{class:'detail-total',text:total.label+' is shown in this panel.'}));
     const selectAll=node('button',{type:'button',text:'Select all'}),clearAll=node('button',{type:'button',text:'Clear all'});
     selectAll.addEventListener('click',()=>{children.forEach(profile=>state.selected.add(profile.id));renderAll()});
     clearAll.addEventListener('click',()=>{clearGroupChildren(group);renderAll()});
     body.append(node('div',{class:'detail-actions'},[selectAll,clearAll]));
-    const visible=children.filter(matches);
+    const visible=children.filter(profileTreeMatches);
     for(const profile of visible){
-      body.append(curveControl(profile,'Detailed curve'));
+      const block=node('div',{class:'detail-curve-block'},[curveControl(profile,'Detailed curve')]),nested=nestedGroupsFor(profile).filter(groupTreeMatches);
+      if(nested.length){const nestedDetails=node('div',{class:'nested-details'});nested.forEach(child=>nestedDetails.append(renderDetailGroup(child)));block.append(nestedDetails)}
+      body.append(block);
     }
     if(!visible.length)body.append(node('p',{class:'no-curves',text:'No detail curves match this filter.'}));
     panel.append(body)
@@ -106,7 +115,7 @@ function renderList(){
   }
   el.list.append(node('div',{class:'list-heading',text:'Broad components'}));
   const visible=[];
-  for(const profile of broadProfiles.filter(matches)){
+  for(const profile of broadProfiles.filter(profileTreeMatches)){
     visible.push(profile);
     const input=node('input',{type:'checkbox',value:profile.id});
     input.checked=state.selected.has(profile.id);
@@ -134,7 +143,7 @@ function renderList(){
       const groups=detailGroupsFor(profile.label);
       if(groups.length){
         const details=node('div',{class:'details'},[
-          node('p',{class:'detail-intro',text:'Open details and choose individual curves. The component total remains visible.'})
+          node('p',{class:'detail-intro',text:'Open details and choose individual curves. LF and CAAL regions, and Tag programmes, contain another detail level. Each panel total remains visible.'})
         ]);
         groups.forEach(group=>details.append(renderDetailGroup(group)));
         el.list.append(details);
@@ -164,11 +173,12 @@ function chart(chosen){
   out.addEventListener('mouseleave',()=>el.tip.style.opacity='0');return out
 }
 function legendFor(chosen){const legend=node('div',{class:'legend'});chosen.forEach(profile=>legend.append(node('span',{class:'legend-item'},[node('i',{class:'legend-line',style:'background:'+profile.color}),node('span',{text:profile.label})])));return legend}
-function card(title,note,chosen){return node('article',{class:'chart-card'},[node('div',{class:'chart-head'},[node('strong',{text:title}),node('span',{text:note}),legendFor(chosen)]),chart(chosen)])}
+function card(title,note,chosen,groupId=''){return node('article',{class:'chart-card','data-group-id':groupId},[node('div',{class:'chart-head'},[node('strong',{text:title}),node('span',{text:note}),legendFor(chosen)]),chart(chosen)])}
 function selectedBroad(){return broadProfiles.filter(profile=>state.selected.has(profile.id))}
 function selectedPanel(group){if(!state.activePanels.has(group.id))return[];const total=totalFor(group);return group.profiles.filter(profile=>profile.isTotal||(profile.id!==total?.id&&state.selected.has(profile.id)))}
-function renderCharts(){el.grid.replaceChildren();const broad=selectedBroad(),active=detailGroups.filter(group=>state.activePanels.has(group.id)),detail=active.flatMap(selectedPanel),allSelected=[...broad,...detail],detailGrid=node('div',{class:'detail-grid'});el.count.textContent=allSelected.length+' selected';el.status.textContent=broad.length+' broad · '+active.length+' detail panel'+(active.length===1?'':'s');el.viewerTitle.textContent='Broad-component comparison';el.viewerNote.textContent='Select a broad component to reveal its data-set panels below; every curve is normalised to its own minimum.';if(broad.length)el.grid.append(card('Broad components','Selected broad components are overlaid for direct comparison.',broad));else el.grid.append(node('div',{class:'empty',text:'Choose one or more broad components from the list.'}));active.forEach(group=>{const chosen=selectedPanel(group);if(chosen.length)detailGrid.append(card(group.panel,'The panel total is always shown; use the controls to add or remove detailed curves.',chosen))});if(active.length)el.grid.append(detailGrid)}
-function renderAll(){renderList();renderCharts()}
+function renderCharts(){el.grid.replaceChildren();const broad=selectedBroad(),active=detailGroups.filter(group=>state.activePanels.has(group.id)),detail=active.flatMap(selectedPanel),allSelected=[...broad,...detail],detailGrid=node('div',{class:'detail-grid'});el.count.textContent=allSelected.length+' selected';el.status.textContent=broad.length+' broad · '+active.length+' detail panel'+(active.length===1?'':'s');el.viewerTitle.textContent='Broad-component comparison';el.viewerNote.textContent='Open a detail control to add its chart below; every curve is normalised to its own minimum.';if(broad.length)el.grid.append(card('Broad components','Selected broad components are overlaid for direct comparison.',broad,'broad'));else el.grid.append(node('div',{class:'empty',text:'Choose one or more broad components from the list.'}));active.forEach(group=>{const chosen=selectedPanel(group);if(chosen.length)detailGrid.append(card(group.panel,'The panel total is always shown; use the controls to add or remove detailed curves.',chosen,group.id))});if(active.length)el.grid.append(detailGrid)}
+function revealPending(){if(!pendingRevealGroup)return;const groupId=pendingRevealGroup,label=pendingRevealLabel;pendingRevealGroup='';pendingRevealLabel='';requestAnimationFrame(()=>{const target=[...el.grid.querySelectorAll('[data-group-id]')].find(item=>item.getAttribute('data-group-id')===groupId);if(!target)return;target.classList.add('just-added');target.scrollIntoView({behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});el.live.textContent=label+' was added below the broad-component chart.';el.live.hidden=false;if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.live.hidden=true},3200)})}
+function renderAll(){renderList();renderCharts();revealPending()}
 el.find.addEventListener('input',()=>{state.query=el.find.value.trim();renderAll()});
 $('all-on').addEventListener('click',()=>{broadProfiles.forEach(profile=>state.selected.add(profile.id));detailGroups.forEach(group=>{state.activePanels.add(group.id);group.profiles.forEach(profile=>state.selected.add(profile.id))});renderAll()});
 $('all-off').addEventListener('click',()=>{state.selected.clear();state.activePanels.clear();renderAll()});
