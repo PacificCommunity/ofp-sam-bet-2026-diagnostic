@@ -319,7 +319,10 @@ logo_uri <- embedded_svg_uri(
 mfclshiny_logo_uri <- embedded_svg_uri(
   system.file("app", "www", "mfclshiny-logo.svg", package = "mfclshiny"), "The mfclshiny"
 )
-viewer_json <- jsonlite::toJSON(viewer_payload, auto_unbox = TRUE, dataframe = "rows", digits = 10, na = "null")
+viewer_json <- jsonlite::toJSON(
+  viewer_payload, auto_unbox = TRUE, dataframe = "rows", digits = 10,
+  na = "null", null = "null"
+)
 viewer_json <- gsub("</", "<\\/", viewer_json, fixed = TRUE)
 viewer_html <- sub("__SPC_LOGO__", logo_uri, template, fixed = TRUE)
 viewer_html <- sub("__MFCLSHINY_LOGO__", mfclshiny_logo_uri, viewer_html, fixed = TRUE)

@@ -45,7 +45,9 @@
 const palette=['#17617f','#ca6b26','#7755a5','#168a72','#b83d55','#2874b9','#9a6b12','#5e708b','#c05d92','#3d8f9f','#9466c5','#567c38'];
 const $=id=>document.getElementById(id),svgNS='http://www.w3.org/2000/svg';
 const el={title:$('page-title'),subtitle:$('page-subtitle'),find:$('find'),list:$('curve-list'),count:$('selected-count'),grid:$('chart-grid'),status:$('plot-status'),notes:$('notes'),tip:$('tooltip'),live:$('live-message'),download:$('download'),viewerTitle:$('viewer-title'),viewerNote:$('viewer-note')};
-const text=(value,fallback='')=>value==null?fallback:String(value);
+// jsonlite represents a NULL list member as an empty object unless explicitly
+// told otherwise. Empty objects are missing scalar metadata, not real IDs.
+const text=(value,fallback='')=>value==null||typeof value==='object'?fallback:String(value);
 const number=value=>{const parsed=typeof value==='number'?value:Number(value);return Number.isFinite(parsed)?parsed:null};
 const escCsv=value=>{const string=text(value);return /[",\n]/.test(string)?'"'+string.replace(/"/g,'""')+'"':string};
 const asArray=value=>Array.isArray(value)?value:(value&&typeof value==='object'?Object.entries(value).map(([id,item])=>Object.assign({id},item&&typeof item==='object'&&!Array.isArray(item)?item:{value:item})):[]);

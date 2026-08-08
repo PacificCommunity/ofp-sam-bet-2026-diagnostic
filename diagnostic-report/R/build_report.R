@@ -409,10 +409,10 @@ region_fishery_map_plot <- function(vertices_file) {
     ggplot2::geom_label(
       data = cards,
       ggplot2::aes(lon, lat, label = label),
-      colour = "#123747", fill = "white", alpha = 0.90,
-      linewidth = 0.32, label.padding = grid::unit(3.2, "pt"),
+      colour = "#092D3D", fill = "white", alpha = 0.97,
+      linewidth = 0.45, label.padding = grid::unit(3.8, "pt"),
       label.r = grid::unit(3.5, "pt"), lineheight = 1.05,
-      size = 3.05, fontface = "plain"
+      size = 3.30, fontface = "bold"
     ) +
     ggplot2::coord_quickmap(xlim = c(100, 215), ylim = c(-45, 55), expand = FALSE) +
     ggplot2::scale_x_continuous(
@@ -1719,7 +1719,7 @@ viewer_payload <- list(
 )
 viewer_json <- jsonlite::toJSON(
   viewer_payload, auto_unbox = TRUE, dataframe = "rows", digits = 10,
-  na = "null", pretty = FALSE
+  na = "null", null = "null", pretty = FALSE
 )
 viewer_json <- gsub("</", "<\\/", viewer_json, fixed = TRUE)
 viewer_template_file <- file.path(repo_root, "diagnostic-report", "likelihood-profile-viewer-template.html")

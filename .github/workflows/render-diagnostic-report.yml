@@ -66,6 +66,13 @@ jobs:
           grep -q 'RTTP release groups' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
           grep -q 'Chart added below the broad-component chart' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
           grep -q 'Total average biomass (10³ t)' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html
+          chrome_profile=$(mktemp -d)
+          viewer_dom=$(mktemp)
+          google-chrome --headless=new --no-sandbox --disable-gpu \
+            --user-data-dir="$chrome_profile" --dump-dom \
+            "file://$PWD/diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html" \
+            > "$viewer_dom" 2>/dev/null
+          test "$(grep -o 'class="detail-toggle"' "$viewer_dom" | wc -l)" -ge 5
           grep -q 'von Bertalanffy growth-rate parameter (κ)' diagnostic-report-output/bet-2026-diagnostic-report.html
           grep -q 'MFCL flagged 38 parameters' diagnostic-report-output/bet-2026-diagnostic-report.html
           ! grep -q 'Relative total average biomass' diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html

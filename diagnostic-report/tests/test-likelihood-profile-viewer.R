@@ -74,6 +74,9 @@ payload <- list(
     list(
       key = "cpue", label = "CPUE indices", kind = "detail",
       parent_component = "CPUE", panel = "CPUE indices",
+      # Keep these explicit NULLs: jsonlite's default encoding is {}, which
+      # previously hid every root detail group in the real generated viewer.
+      parent_group = NULL, parent_profile = NULL,
       curves = c(
         curve_rows("total", "CPUE total", c(12, 0, 8), TRUE, "#073c5b"),
         # This offset is intentional: the child must still plot from its own zero.
