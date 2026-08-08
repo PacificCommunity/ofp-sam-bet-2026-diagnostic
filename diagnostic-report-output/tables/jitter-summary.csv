@@ -1,0 +1,6 @@
+"Metric","Value"
+"Jitter starts","30"
+"Completed fits","26"
+"MGC <= 1e-4","25"
+"Lower objective than diagnostic","10"
+"Lowest objective","89,469.7"

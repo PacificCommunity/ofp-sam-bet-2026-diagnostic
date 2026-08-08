@@ -307,7 +307,24 @@ jsonlite::write_json(selection, selection_file, dataframe = "rows", auto_unbox =
 
 reuse_mfcl_figures <- identical(tolower(Sys.getenv("DIAGNOSTIC_REUSE_MFCL_FIGURES", "false")), "true")
 if (!reuse_mfcl_figures) {
-  mfclshiny::build_app_report_figures(
+  # Some Shiny plot reactives draw while the report bundle is being prepared,
+  # before their final PNG/PDF device is opened.  Keep a writable placeholder
+  # device active so a headless render never falls back to ./Rplots.pdf.
+  with_report_device <- function(code) {
+    device_file <- tempfile("diagnostic-report-device-", fileext = ".pdf")
+    grDevices::pdf(device_file)
+    device_id <- grDevices::dev.cur()
+    on.exit({
+      devices <- grDevices::dev.list()
+      if (!is.null(devices) && device_id %in% unname(devices)) {
+        try(grDevices::dev.off(device_id), silent = TRUE)
+      }
+      unlink(device_file)
+    }, add = TRUE)
+    force(code)
+  }
+
+  with_report_device(mfclshiny::build_app_report_figures(
     model_dir = model_dir,
     output_dir = mfcl_dir,
     title = "BET 2026 Diagnostic model figures",
@@ -325,7 +342,7 @@ if (!reuse_mfcl_figures) {
     species_code = "BET",
     species_label = "bigeye tuna",
     assessment_year = "2026"
-  )
+  ))
 }
 
 # Keep the regional age-data figures compact and report-ready.  The generic
@@ -1008,12 +1025,18 @@ for (group in names(detail_group_labels)) {
   }
 }
 
-profile_viewer_group <- function(key, label, z, colour, labels = NULL, total_label = NULL) {
+profile_viewer_group <- function(
+  key, label, z, colour, labels = NULL, total_label = NULL,
+  parent_component = NULL, panel = NULL, kind = "detail"
+) {
   if (is.null(z) || !nrow(z)) return(NULL)
   z <- z[order(as.character(z$curve), z$biomass_ratio), , drop = FALSE]
   curve_names <- sort(unique(as.character(z$curve)))
   total_key <- "__component_total__"
-  if (!is.null(total_label) && length(curve_names) > 1L) {
+  # Every expanded detail panel carries its own component total.  This keeps
+  # the aggregate visible while individual data-set conflicts are toggled on
+  # and off in the viewer, including panels containing a single curve.
+  if (!is.null(total_label)) {
     total_values <- stats::aggregate(value ~ biomass_ratio, data = z, FUN = sum)
     total <- z[rep.int(1L, nrow(total_values)), , drop = FALSE]
     total$biomass_ratio <- total_values$biomass_ratio
@@ -1044,7 +1067,14 @@ profile_viewer_group <- function(key, label, z, colour, labels = NULL, total_lab
       stringsAsFactors = FALSE
     )
   }))
-  list(key = key, label = label, curves = rows)
+  list(
+    key = key,
+    label = label,
+    kind = kind,
+    parent_component = parent_component,
+    panel = panel %||% label,
+    curves = rows
+  )
 }
 tag_map <- report_data$mappings$tag_release_groups
 tag_labels <- stats::setNames(
@@ -1062,20 +1092,84 @@ viewer_detail_group <- function(group) {
   if (is.null(z) || !nrow(z)) return(NULL)
   transform(z, curve = detail)
 }
-viewer_groups <- Filter(Negate(is.null), list(
+
+# The viewer uses a single, progressively disclosed control hierarchy.  Broad
+# components appear first; selecting CAAL or Tag reveals region/programme
+# panels, each with a component total and selectable constituent curves.
+viewer_groups <- list(
   profile_viewer_group(
     "broad", "Broad components", viewer_broad, profile_colours,
-    stats::setNames(unname(profile_labels), names(profile_labels))
-  ),
-  profile_viewer_group("cpue", "CPUE indices", viewer_detail_group("CPUE index"), detail_group_colours[["CPUE index"]], total_label = "CPUE total"),
-  profile_viewer_group("lf", "Length frequencies", viewer_detail_group("LF"), detail_group_colours[["LF"]], total_label = "LF total"),
-  profile_viewer_group("caal", "CAAL by region", viewer_detail_group("CAAL region"), detail_group_colours[["CAAL region"]], total_label = "CAAL total"),
-  profile_viewer_group("tag", "Tag release groups", viewer_detail_group("Tag release group"), detail_group_colours[["Tag release group"]], tag_labels, total_label = "Tag total"),
-  profile_viewer_group("penalty", "Penalties", viewer_detail_group("Penalty"), detail_group_colours[["Penalty"]], total_label = "Penalty total")
+    stats::setNames(unname(profile_labels), names(profile_labels)),
+    kind = "broad"
+  )
+)
+
+append_viewer_group <- function(group) {
+  if (!is.null(group)) viewer_groups[[length(viewer_groups) + 1L]] <<- group
+}
+
+append_viewer_group(profile_viewer_group(
+  "cpue", "CPUE indices", viewer_detail_group("CPUE index"),
+  detail_group_colours[["CPUE index"]], total_label = "CPUE total",
+  parent_component = "CPUE", panel = "CPUE indices"
 ))
+
+lf_sets <- list()
+lf_length <- viewer_detail_group("LF")
+lf_weight <- viewer_detail_group("Weight frequency")
+if (!is.null(lf_length) && nrow(lf_length)) {
+  lf_sets[[length(lf_sets) + 1L]] <- transform(lf_length, curve = paste("Length", curve, sep = " | "))
+}
+if (!is.null(lf_weight) && nrow(lf_weight)) {
+  lf_sets[[length(lf_sets) + 1L]] <- transform(lf_weight, curve = paste("Weight", curve, sep = " | "))
+}
+lf_detail <- if (length(lf_sets)) do.call(rbind, lf_sets) else NULL
+append_viewer_group(profile_viewer_group(
+  "lf", "LF data", lf_detail, detail_group_colours[["LF"]],
+  total_label = "LF total", parent_component = "LF", panel = "LF data"
+))
+
+caal_detail <- viewer_detail_group("CAAL region")
+if (!is.null(caal_detail) && nrow(caal_detail)) {
+  caal_panels <- split(caal_detail, as.character(caal_detail$curve))
+  caal_names <- sort(names(caal_panels))
+  for (caal_name in caal_names) {
+    caal_key <- gsub("[^a-z0-9]+", "-", tolower(caal_name))
+    append_viewer_group(profile_viewer_group(
+      paste0("caal-", caal_key), caal_name, caal_panels[[caal_name]],
+      detail_group_colours[["CAAL region"]], total_label = paste("CAAL total —", caal_name),
+      parent_component = "CAAL", panel = caal_name
+    ))
+  }
+}
+
+tag_detail <- viewer_detail_group("Tag release group")
+if (!is.null(tag_detail) && nrow(tag_detail)) {
+  program_lookup <- stats::setNames(as.character(tag_map$tag_program), paste("Group", tag_map$release_group))
+  tag_detail$programme <- unname(program_lookup[as.character(tag_detail$curve)])
+  tag_detail$programme[is.na(tag_detail$programme) | !nzchar(tag_detail$programme)] <- "Other"
+  tag_panels <- split(tag_detail, tag_detail$programme)
+  programme_names <- sort(names(tag_panels))
+  for (programme_name in programme_names) {
+    programme_key <- gsub("[^a-z0-9]+", "-", tolower(programme_name))
+    append_viewer_group(profile_viewer_group(
+      paste0("tag-", programme_key), paste("Tag programme:", programme_name), tag_panels[[programme_name]],
+      detail_group_colours[["Tag release group"]], tag_labels,
+      total_label = paste("Tag total —", programme_name),
+      parent_component = "Tag", panel = paste("Tag programme:", programme_name)
+    ))
+  }
+}
+
+append_viewer_group(profile_viewer_group(
+  "penalty", "Penalty components", viewer_detail_group("Penalty"),
+  detail_group_colours[["Penalty"]], total_label = "Penalty total",
+  parent_component = "Penalty", panel = "Penalty components"
+))
+viewer_groups <- Filter(Negate(is.null), viewer_groups)
 viewer_payload <- list(
   title = "BET 2026 likelihood-profile viewer",
-  subtitle = "Diagnostic model biomass profiles",
+  subtitle = "Diagnostic-model biomass profiles: broad components with expandable data-set detail",
   developer = list(name = "Kyuhan Kim", email = "kyuhank@spc.int"),
   groups = viewer_groups
 )
@@ -1090,16 +1184,21 @@ viewer_template <- paste(readLines(viewer_template_file, warn = FALSE), collapse
 if (sum(gregexpr("__VIEWER_DATA__", viewer_template, fixed = TRUE)[[1L]] >= 0L) != 1L) {
   stop("Likelihood-profile viewer template must contain one data marker.", call. = FALSE)
 }
-spc_logo_file <- system.file("app", "www", "spc-logo.svg", package = "mfclshiny")
-if (!nzchar(spc_logo_file) || !file.exists(spc_logo_file)) {
-  stop("The SPC logo asset is unavailable from mfclshiny.", call. = FALSE)
+embedded_logo_uri <- function(file, label) {
+  if (!nzchar(file) || !file.exists(file)) stop(label, " logo asset is unavailable from mfclshiny.", call. = FALSE)
+  svg <- paste(readLines(file, warn = FALSE), collapse = "\n")
+  if (!nzchar(svg)) stop(label, " logo asset is empty.", call. = FALSE)
+  paste0("data:image/svg+xml;charset=utf-8,", utils::URLencode(svg, reserved = TRUE))
 }
-spc_logo_uri <- paste0("data:image/svg+xml;base64,", jsonlite::base64_enc(spc_logo_file))
-if (sum(gregexpr("__SPC_LOGO__", viewer_template, fixed = TRUE)[[1L]] >= 0L) != 1L) {
-  stop("Likelihood-profile viewer template must contain one SPC logo marker.", call. = FALSE)
+if (sum(gregexpr("__SPC_LOGO__", viewer_template, fixed = TRUE)[[1L]] >= 0L) != 1L ||
+    sum(gregexpr("__MFCLSHINY_LOGO__", viewer_template, fixed = TRUE)[[1L]] >= 0L) != 1L) {
+  stop("Likelihood-profile viewer template must contain one marker for each logo.", call. = FALSE)
 }
+spc_logo_uri <- embedded_logo_uri(system.file("app", "www", "spc-logo.svg", package = "mfclshiny"), "The SPC")
+mfclshiny_logo_uri <- embedded_logo_uri(system.file("app", "www", "mfclshiny-logo.svg", package = "mfclshiny"), "The mfclshiny")
 viewer_file <- file.path(viewer_dir, "bet-2026-likelihood-profile-viewer.html")
 viewer_template <- sub("__SPC_LOGO__", spc_logo_uri, viewer_template, fixed = TRUE)
+viewer_template <- sub("__MFCLSHINY_LOGO__", mfclshiny_logo_uri, viewer_template, fixed = TRUE)
 writeLines(sub("__VIEWER_DATA__", viewer_json, viewer_template, fixed = TRUE), viewer_file, useBytes = TRUE)
 
 # Jitter --------------------------------------------------------------------
@@ -1521,7 +1620,7 @@ if (!identical(as.integer(latex_status), 0L) || !file.exists(file.path(output_di
 }
 
 # Captions and report HTML --------------------------------------------------
-viewer_release_url <- "https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/releases/latest/download/bet-2026-likelihood-profile-viewer.html"
+viewer_release_url <- "https://pacificcommunity.github.io/ofp-sam-bet-2026-diagnostic/bet-2026-likelihood-profile-viewer.html"
 figure_meta <- list(
   `cpue-fit-residuals` = list(
     section = "Model fit",
@@ -1613,6 +1712,12 @@ rel_path <- function(path) {
   root <- paste0(output_dir, "/")
   sub(paste0("^", root), "", normalizePath(path, winslash = "/", mustWork = FALSE))
 }
+png_data_uri <- function(path) {
+  paste0(
+    "data:image/png;base64,",
+    jsonlite::base64_enc(readBin(path, "raw", n = file.info(path)$size))
+  )
+}
 for (id in names(mfcl_captions)) {
   png <- file.path(mfcl_dir, "figures", paste0(id, ".png"))
   pdf <- file.path(mfcl_dir, "figures", paste0(id, ".pdf"))
@@ -1678,7 +1783,7 @@ figure_block <- function(id, compact = FALSE) {
   viewer_link <- if (!is.null(meta$viewer)) paste0("<a href='", meta$viewer, "'>Likelihood-profile viewer</a>") else ""
   paste0(
     "<figure class='figure-card", if (compact) " compact" else "", "' id='fig-", id, "'>",
-    "<img src='", rel_path(meta$png), "' alt='", html_escape(meta$caption), "' loading='lazy'>",
+    "<img src='", png_data_uri(meta$png), "' alt='", html_escape(meta$caption), "' loading='lazy'>",
     "<figcaption><strong>Figure.</strong> ", html_escape(meta$caption), " ", viewer_link, "</figcaption>",
     "<div class='actions'><a href='", rel_path(meta$png), "' download>PNG</a>",
     if (!is.null(meta$pdf) && file.exists(meta$pdf)) paste0("<a href='", rel_path(meta$pdf), "' download>PDF</a>") else "",

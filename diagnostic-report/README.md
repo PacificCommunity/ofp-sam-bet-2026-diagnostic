@@ -31,24 +31,30 @@ observation errors. These bands are labelled separately in the report.
 ## Local build
 
 ```sh
-MFCLSHINY_REPO=/path/to/mfclshiny \
-  REPORT_OUTPUT_DIR=diagnostic-report-output \
-  bash diagnostic-report/run.sh
+docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  --volume "$PWD:/work" \
+  --workdir /work \
+  --entrypoint /bin/bash \
+  ghcr.io/pacificcommunity/tuna-flow-private:v2.7@sha256:4fee4c40cb6439ff920b1dd233a84bf19d5cc0e37278c99ceff3fd79cb9c8852 \
+  -lc 'bash diagnostic-report/run.sh'
 ```
 
-The Kflow task installs the pinned package revisions before invoking the report.
-For a local build, install those revisions first; `MFCLSHINY_REPO` may point to
-the matching source checkout when developing report figures.
+The same pinned TunaFlow v2.7 image is used by the report GitHub Action.
 
-## Kflow Local
+## Standalone likelihood-profile viewer
 
-The checked-in Kflow configuration targets the configured Kflow Local worker, not a remote cluster.
+The [GitHub Pages viewer](https://pacificcommunity.github.io/ofp-sam-bet-2026-diagnostic/bet-2026-likelihood-profile-viewer.html)
+is one self-contained HTML file: its data and logos are embedded, so it can be
+opened in a browser without adjacent assets. Rebuild it
+directly from the public compact payload without running the static-figure
+exporter:
 
 ```sh
-KFLOW_API_TOKEN=... python3 diagnostic-report/submit.py
+Rscript diagnostic-report/R/build_likelihood_profile_viewer.R . viewer-output
 ```
 
-Use `--dry-run` to inspect the submission payload without contacting Kflow.
+The command writes `viewer-output/bet-2026-likelihood-profile-viewer.html`.
 
 ## Rebuilding the compact payload
 

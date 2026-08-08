@@ -7,16 +7,22 @@ template <- paste(readLines(template_file, warn = FALSE), collapse = "\n")
 marker_count <- function(marker) {
   sum(gregexpr(marker, template, fixed = TRUE)[[1L]] >= 0L)
 }
-if (marker_count("__VIEWER_DATA__") != 1L || marker_count("__SPC_LOGO__") != 1L) {
-  stop("The viewer must retain exactly one data and SPC-logo marker.", call. = FALSE)
+if (marker_count("__VIEWER_DATA__") != 1L || marker_count("__SPC_LOGO__") != 1L ||
+    marker_count("__MFCLSHINY_LOGO__") != 1L) {
+  stop("The viewer must retain exactly one data and one marker for each logo.", call. = FALSE)
 }
 for (required in c(
-  "data-tier=\"overview\"", "data-tier=\"detail\"", "CPUE, LF, CAAL, Tag and Penalty",
-  "ownMinimum", "parentTotals", "Diagnostic fitted baseline", "Download plotted CSV",
+  "Select all", "Clear all", "parentComponent", "detail-panel", "each curve minimum = 0",
+  "Tag panels are organised by programme", "Download plotted CSV",
   "Kyuhan Kim", "kyuhank@spc.int"
 )) {
   if (!grepl(required, template, fixed = TRUE)) {
     stop("Viewer is missing required element: ", required, call. = FALSE)
+  }
+}
+for (forbidden in c("data-tier=", "fitted = 1", "Diagnostic fitted baseline", "base-dot", "fit-line")) {
+  if (grepl(forbidden, template, fixed = TRUE)) {
+    stop("Viewer retains obsolete fitted-baseline UI: ", forbidden, call. = FALSE)
   }
 }
 for (forbidden in c("/home/", "corp.spc.int", "ghp_", "github_pat_", "JOB[0-9]", "Job [0-9]")) {
@@ -46,7 +52,7 @@ payload <- list(
   title = "Viewer smoke test",
   groups = list(
     list(
-      key = "broad", label = "Broad components",
+      key = "broad", label = "Broad components", kind = "broad",
       curves = c(
         curve_rows("total", "Total", c(30, 0, 15), TRUE, "#073c5b"),
         curve_rows("cpue", "CPUE", c(8, 10, 13), FALSE, "#0072B2"),
@@ -57,7 +63,8 @@ payload <- list(
       )
     ),
     list(
-      key = "cpue", label = "CPUE indices",
+      key = "cpue", label = "CPUE indices", kind = "detail",
+      parent_component = "CPUE", panel = "CPUE indices",
       curves = c(
         curve_rows("total", "CPUE total", c(12, 0, 8), TRUE, "#073c5b"),
         # This offset is intentional: the child must still plot from its own zero.
@@ -69,18 +76,19 @@ payload <- list(
 probe <- paste0(
   "<script>(function(){",
   "var overview=document.getElementById('selected-count').textContent+'|'+document.getElementById('plot-status').textContent;",
-  "document.querySelector('[data-tier=detail]').click();",
+  "var toggle=[].slice.call(document.querySelectorAll('.detail-toggle')).filter(function(x){return x.textContent.indexOf('CPUE indices')===0})[0];toggle.click();",
   "var labels=function(){return [].slice.call(document.querySelectorAll('label.curve'))};",
   "labels().filter(function(x){return x.textContent.indexOf('Index A')===0})[0].querySelector('input').click();",
-  "var parent=labels().filter(function(x){return x.textContent.indexOf('CPUE total')===0})[0].querySelector('input').checked;",
+  "var parent=[].slice.call(document.querySelectorAll('.detail-total')).some(function(x){return x.textContent.indexOf('CPUE total')===0});",
   "var path=[].slice.call(document.querySelectorAll('path')).filter(function(x){return x.getAttribute('stroke')==='#ca6b26'})[0];",
-  "var ownMinimum=path&&/,470\\.00(?: |$)/.test(path.getAttribute('d'));",
+  "var ownMinimum=path&&/,415\\.00(?: |$)/.test(path.getAttribute('d'));",
   "var result=document.createElement('p');result.id='viewer-smoke-result';",
-  "result.textContent='SMOKE '+overview+' parent='+parent+' ownMinimum='+ownMinimum+' baseline='+document.querySelectorAll('.base-dot').length;",
+  "result.textContent='SMOKE '+overview+' parent='+parent+' ownMinimum='+ownMinimum+' panels='+document.querySelectorAll('.detail-grid .chart-card').length;",
   "document.body.appendChild(result);",
   "})();</script>"
 )
 viewer_html <- sub("__SPC_LOGO__", "data:image/svg+xml,", template, fixed = TRUE)
+viewer_html <- sub("__MFCLSHINY_LOGO__", "data:image/svg+xml,", viewer_html, fixed = TRUE)
 viewer_html <- sub(
   "__VIEWER_DATA__", jsonlite::toJSON(payload, auto_unbox = TRUE, dataframe = "rows"),
   viewer_html, fixed = TRUE
@@ -100,8 +108,8 @@ browser_output <- system2(
   stdout = TRUE, stderr = TRUE
 )
 result <- grep("viewer-smoke-result", browser_output, value = TRUE)
-expected <- "SMOKE 6 selected|6 plotted parent=true ownMinimum=true baseline=1"
+expected <- "SMOKE 6 selected|6 broad · 0 detail panels parent=true ownMinimum=true panels=1"
 if (!length(result) || !grepl(expected, result, fixed = TRUE)) {
   stop("Likelihood-profile browser smoke test failed.", call. = FALSE)
 }
-cat("Validated overview overlay, detail-parent selection, own-minimum ΔNLL, fitted baseline and public-safe viewer template.\n")
+cat("Validated hierarchical broad/detail selection, detail-panel totals, own-minimum ΔNLL and public-safe viewer template.\n")

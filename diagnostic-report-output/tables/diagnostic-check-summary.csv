@@ -1,0 +1,6 @@
+"Diagnostic","Planned","Completed","Primary result"
+"Jitter",30,26,"25 fits met MGC <= 1e-4"
+"Retrospective",7,7,"Seven terminal-year peels"
+"Self-test",50,50,"All refits completed"
+"Likelihood profile",45,45,"All profile points completed"
+"ASPM",1,2,"ASPM fit completed"
