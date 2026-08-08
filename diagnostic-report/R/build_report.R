@@ -277,7 +277,7 @@ lf_state <- jsonlite::toJSON(
 selection_items$input_state[selection_items$id == "length-frequency"] <- lf_state
 # Registered report plots use their own saved state rather than the app-wide
 # defaults.  Set those states explicitly so the five regions plus the pooled
-# `All regions` panel use a complete 3-by-2 layout, while four quarterly
+# `All regions` panel use a legible 2-by-3 layout, while four quarterly
 # movement matrices fill a 2-by-2 layout.
 set_selection_state <- function(ids, state) {
   selection_items$input_state[selection_items$id %in% ids] <<- jsonlite::toJSON(
@@ -292,7 +292,7 @@ set_selection_state(
 set_selection_state("regional-movement", list(fishery_process_facet_ncol = "2"))
 set_selection_state(
   c("depletion-by-area", "recruitment-by-area", "f-juvenile-adult-by-area"),
-  list(harvest_facet_ncol = "3", harvest_show_bmsy = FALSE)
+  list(harvest_facet_ncol = "2", harvest_show_bmsy = FALSE)
 )
 selection <- list(
   schema = "mfclshiny.report_selection.v1",
@@ -303,7 +303,7 @@ selection <- list(
     lf_unc_level = 95,
     population_biology_show_growth_band = TRUE,
     age_fit_facet_ncol = "3",
-    harvest_facet_ncol = "3",
+    harvest_facet_ncol = "2",
     harvest_show_bmsy = FALSE
   ),
   items = selection_items
@@ -381,10 +381,10 @@ region_fishery_map_plot <- function(vertices_file) {
   cards <- data.frame(
     region = 1:5,
     lon = c(166, 125, 162, 197.5, 175),
-    lat = c(29, 5, 0, 0, -25),
+    lat = c(29, 4.5, 0, 0, -25),
     label = c(
       "REGION 1\nLongline F01–03\nPurse seine F12 · Pole-and-line F13\nIndex F29",
-      "REGION 2\nLongline F04–05 · Handline F14–15\nPole-and-line F16\nPurse seine F17–20\nDomestic F21–23 · Index F30",
+      "REGION 2\nLongline F04–05\nHandline F14–15\nPole-and-line F16\nPurse seine F17–20\nDomestic F21–23 · Index F30",
       "REGION 3\nLongline F06–07, F09\nPole-and-line F24 · Purse seine F25, F27\nIndex F31",
       "REGION 4\nLongline F08\nPurse seine F26, F28\nIndex F32",
       "REGION 5\nLongline F10–11 · Index F33"
@@ -436,6 +436,130 @@ region_fishery_map_plot <- function(vertices_file) {
 message("Rendering curated figure: region-map")
 save_mfcl_figure(region_fishery_map_plot(map_asset), "region-map", width = 10.8, height = 8.15)
 message("Rendered curated figure: region-map")
+
+# Estimated tag-reporting rates --------------------------------------------
+# MFCL assigns every release-group x fishery matrix cell a group number.
+# Group 31 is the inactive placeholder assigned to Index fisheries F29--F33;
+# these fisheries have no tag-recapture likelihood and therefore no fitted
+# reporting rate.  Summarise and plot only groups whose estimation flag is on.
+rr_group_matrix <- par_out@tag_fish_rep_grp
+rr_rate_matrix <- par_out@tag_fish_rep_rate
+rr_flag_matrix <- par_out@tag_fish_rep_flags
+rr_target_matrix <- par_out@tag_fish_rep_target
+rr_penalty_matrix <- par_out@tag_fish_rep_pen
+rr_cells <- data.frame(
+  release_group = rep(seq_len(nrow(rr_group_matrix)), times = ncol(rr_group_matrix)),
+  fishery = rep(seq_len(ncol(rr_group_matrix)), each = nrow(rr_group_matrix)),
+  group = as.integer(rr_group_matrix),
+  fitted = as.numeric(rr_rate_matrix),
+  estimated = as.integer(rr_flag_matrix) == 1L,
+  prior_target = as.numeric(rr_target_matrix) / 100,
+  prior_penalty = as.numeric(rr_penalty_matrix),
+  stringsAsFactors = FALSE
+)
+rr_active <- rr_cells |>
+  dplyr::filter(estimated, group > 0L) |>
+  dplyr::group_by(group) |>
+  dplyr::summarise(
+    fitted = dplyr::first(fitted),
+    fitted_values = dplyr::n_distinct(round(fitted, 12)),
+    prior_target = dplyr::first(prior_target),
+    target_values = dplyr::n_distinct(round(prior_target, 12)),
+    prior_penalty = dplyr::first(prior_penalty),
+    penalty_values = dplyr::n_distinct(round(prior_penalty, 12)),
+    .groups = "drop"
+  )
+rr_active_mapping <- report_data$mappings$tag_reporting_groups |>
+  dplyr::filter(active) |>
+  dplyr::select(group = tag_rep_group, tag_programs, fisheries)
+if (any(rr_active$fitted_values != 1L) || any(rr_active$target_values != 1L) ||
+    any(rr_active$penalty_values != 1L)) {
+  stop("An estimated reporting-rate group has inconsistent fitted or prior values across its MFCL matrix cells.", call. = FALSE)
+}
+if (!setequal(rr_active$group, rr_active_mapping$group) ||
+    31L %in% rr_active$group || any(!is.finite(rr_active$fitted)) ||
+    any(rr_active$fitted <= 0)) {
+  stop("Estimated reporting-rate groups do not reconcile with tag_rep_map.R.", call. = FALSE)
+}
+rr_active <- dplyr::left_join(rr_active, rr_active_mapping, by = "group") |>
+  dplyr::arrange(group) |>
+  dplyr::mutate(
+    programme = gsub("/pooled", "", tag_programs, fixed = TRUE),
+    programme = gsub("/", "/", programme, fixed = TRUE),
+    panel = sprintf(
+      "Group %d · %s\nF%s · fitted %.3f",
+      group, programme, fisheries, fitted
+    )
+  )
+rr_active$panel <- factor(rr_active$panel, levels = rr_active$panel)
+rr_prior <- tidyr::crossing(
+  group = rr_active$group,
+  reporting_rate = seq(0, 1, length.out = 301L)
+) |>
+  dplyr::left_join(
+    rr_active[, c("group", "prior_target", "prior_penalty", "panel")],
+    by = "group"
+  ) |>
+  dplyr::mutate(
+    prior_sd = sqrt(1 / (2 * prior_penalty)),
+    density = stats::dnorm(reporting_rate, mean = prior_target, sd = prior_sd)
+  )
+p_reporting_rates <- ggplot2::ggplot(
+  rr_prior,
+  ggplot2::aes(x = reporting_rate, y = density)
+) +
+  ggplot2::geom_area(fill = "#C7D4D9", alpha = 0.55) +
+  ggplot2::geom_line(
+    ggplot2::aes(colour = "Prior density", linetype = "Prior density"),
+    linewidth = 0.62
+  ) +
+  ggplot2::geom_vline(
+    data = rr_active,
+    ggplot2::aes(xintercept = fitted, colour = "Fitted reporting rate", linetype = "Fitted reporting rate"),
+    linewidth = 0.92
+  ) +
+  ggplot2::geom_vline(
+    ggplot2::aes(xintercept = 0.99, colour = "Upper bound (0.99)", linetype = "Upper bound (0.99)"),
+    linewidth = 0.62
+  ) +
+  ggplot2::facet_wrap(~panel, ncol = 4, scales = "free_y") +
+  ggplot2::scale_x_continuous(
+    limits = c(0, 1), breaks = c(0, 0.5, 1),
+    expand = ggplot2::expansion(mult = c(0, 0))
+  ) +
+  ggplot2::scale_y_continuous(
+    breaks = NULL, expand = ggplot2::expansion(mult = c(0, 0.08))
+  ) +
+  ggplot2::scale_colour_manual(
+    values = c(
+      "Prior density" = "#202A2E",
+      "Fitted reporting rate" = "#C53A2F",
+      "Upper bound (0.99)" = "#2B6CB0"
+    ),
+    breaks = c("Prior density", "Fitted reporting rate", "Upper bound (0.99)")
+  ) +
+  ggplot2::scale_linetype_manual(
+    values = c(
+      "Prior density" = "solid",
+      "Fitted reporting rate" = "solid",
+      "Upper bound (0.99)" = "22"
+    ),
+    breaks = c("Prior density", "Fitted reporting rate", "Upper bound (0.99)")
+  ) +
+  ggplot2::labs(
+    x = "Tag-reporting rate", y = "Prior density",
+    colour = NULL, linetype = NULL
+  ) +
+  theme_report(9.7) +
+  ggplot2::theme(
+    strip.text = ggplot2::element_text(size = 8.7, face = "bold", lineheight = 1.02),
+    panel.spacing = grid::unit(0.65, "lines"),
+    legend.position = "bottom",
+    legend.box = "horizontal"
+  )
+save_mfcl_figure(
+  p_reporting_rates, "tag-reporting-rates-active", width = 10.8, height = 7.9
+)
 
 # Tag attrition ------------------------------------------------------------
 # The detailed temporary tag report applies the estimated reporting rate to
@@ -942,9 +1066,11 @@ save_mfcl_figure(
 )
 message("Rendered curated figure: fishery-selectivity-length")
 
-# Keep the spatial state time series on a common A4-ready panel arrangement:
-# five model regions followed by the stock-wide total.  These use the fitted
-# model outputs directly and deliberately begin their y axes at zero.
+# Keep the spatial state time series on a common A4-ready 2-by-3 panel
+# arrangement: five model regions followed by the stock-wide total.  The
+# additional panel height avoids visually exaggerating slopes through a
+# compressed aspect ratio.  These use the fitted outputs directly and begin
+# their y axes at zero.
 area_levels <- c(paste("Region", 1:5), "All regions")
 regional_recruitment_plot <- function(rep_out) {
   rec <- flatten_flquant(rep_out@rec_region, "data")
@@ -964,17 +1090,66 @@ regional_recruitment_plot <- function(rep_out) {
   )
   z$area_label <- factor(z$area_label, levels = area_levels)
   ggplot2::ggplot(z, ggplot2::aes(year, recruitment)) +
-    ggplot2::geom_line(colour = navy, linewidth = 0.76) +
+    ggplot2::geom_line(colour = navy, linewidth = 0.90, lineend = "round") +
     ggplot2::coord_cartesian(ylim = c(0, NA)) +
-    ggplot2::facet_wrap(~area_label, ncol = 3, scales = "free_y") +
+    ggplot2::facet_wrap(~area_label, ncol = 2, scales = "free_y") +
     ggplot2::labs(x = "Year", y = "Recruitment (millions of fish)") +
-    theme_report(10.2)
+    theme_report(11.2)
 }
 message("Rendering curated figure: recruitment-by-area")
 save_mfcl_figure(
-  regional_recruitment_plot(rep_out), "recruitment-by-area", width = 10.8, height = 7.65
+  regional_recruitment_plot(rep_out), "recruitment-by-area", width = 10.8, height = 12.2
 )
 message("Rendered curated figure: recruitment-by-area")
+
+regional_biomass_plot <- function(rep_out) {
+  biomass_series <- function(x, status) {
+    z <- flatten_flquant(x, "data")
+    z$year <- suppressWarnings(as.integer(z$year))
+    z$season <- suppressWarnings(as.integer(z$season))
+    z$area <- suppressWarnings(as.integer(z$area))
+    regional <- z |>
+      dplyr::group_by(year, area) |>
+      dplyr::summarise(biomass = mean(data, na.rm = TRUE) / 1e3, .groups = "drop") |>
+      dplyr::mutate(area_label = paste("Region", area), status = status)
+    total <- z |>
+      dplyr::group_by(year, season) |>
+      dplyr::summarise(biomass = sum(data, na.rm = TRUE), .groups = "drop") |>
+      dplyr::group_by(year) |>
+      dplyr::summarise(biomass = mean(biomass, na.rm = TRUE) / 1e3, .groups = "drop") |>
+      dplyr::mutate(area_label = "All regions", status = status)
+    dplyr::bind_rows(
+      dplyr::select(regional, year, biomass, area_label, status),
+      dplyr::select(total, year, biomass, area_label, status)
+    )
+  }
+  z <- dplyr::bind_rows(
+    biomass_series(rep_out@totalBiomass, "Fished"),
+    biomass_series(rep_out@totalBiomass_nofish, "No fishing")
+  )
+  z$area_label <- factor(z$area_label, levels = area_levels)
+  z$status <- factor(z$status, levels = c("Fished", "No fishing"))
+  ggplot2::ggplot(
+    z, ggplot2::aes(year, biomass, colour = status, linetype = status)
+  ) +
+    ggplot2::geom_line(linewidth = 0.92, alpha = 0.94, lineend = "round") +
+    ggplot2::scale_colour_manual(values = c("Fished" = navy, "No fishing" = teal), name = NULL) +
+    ggplot2::scale_linetype_manual(values = c("Fished" = "solid", "No fishing" = "22"), name = NULL) +
+    ggplot2::coord_cartesian(ylim = c(0, NA)) +
+    ggplot2::facet_wrap(~area_label, ncol = 2, scales = "free_y") +
+    ggplot2::labs(x = "Year", y = "Total biomass (thousand metric tonnes)") +
+    theme_report(11.2) +
+    ggplot2::guides(
+      colour = ggplot2::guide_legend(override.aes = list(linewidth = 1.4)),
+      linetype = "none"
+    )
+}
+message("Rendering curated figure: total-biomass-with-without-fishing")
+save_mfcl_figure(
+  regional_biomass_plot(rep_out), "total-biomass-with-without-fishing",
+  width = 10.8, height = 12.2
+)
+message("Rendered curated figure: total-biomass-with-without-fishing")
 
 regional_f_plot <- function(rep_out, par_out) {
   fm <- flatten_flquant(rep_out@fm, "data")
@@ -1060,18 +1235,28 @@ regional_f_plot <- function(rep_out, par_out) {
     plot_data$life_stage, levels = c("juvenile_f", "adult_f"),
     labels = c("Juvenile F", "Adult F")
   )
-  ggplot2::ggplot(plot_data, ggplot2::aes(year, fishing_mortality, linetype = life_stage)) +
-    ggplot2::geom_line(colour = navy, linewidth = 0.78) +
+  ggplot2::ggplot(
+    plot_data,
+    ggplot2::aes(year, fishing_mortality, colour = life_stage, linetype = life_stage)
+  ) +
+    ggplot2::geom_line(linewidth = 0.92, alpha = 0.95, lineend = "round") +
     ggplot2::coord_cartesian(ylim = c(0, NA)) +
-    ggplot2::facet_wrap(~area_label, ncol = 3, scales = "free_y") +
+    ggplot2::facet_wrap(~area_label, ncol = 2, scales = "free_y") +
+    ggplot2::scale_colour_manual(
+      values = c("Juvenile F" = orange, "Adult F" = navy), name = NULL
+    ) +
     ggplot2::scale_linetype_manual(values = c("Juvenile F" = "22", "Adult F" = "solid"), name = NULL) +
     ggplot2::labs(x = "Year", y = "Annual instantaneous fishing mortality") +
-    theme_report(10.2) +
-    ggplot2::theme(legend.position = "bottom")
+    theme_report(11.2) +
+    ggplot2::theme(legend.position = "bottom") +
+    ggplot2::guides(
+      colour = ggplot2::guide_legend(override.aes = list(linewidth = 1.4)),
+      linetype = "none"
+    )
 }
 message("Rendering curated figure: f-juvenile-adult-by-area")
 save_mfcl_figure(
-  regional_f_plot(rep_out, par_out), "f-juvenile-adult-by-area", width = 10.8, height = 7.65
+  regional_f_plot(rep_out, par_out), "f-juvenile-adult-by-area", width = 10.8, height = 12.2
 )
 message("Rendered curated figure: f-juvenile-adult-by-area")
 
@@ -2183,6 +2368,13 @@ names(tag_table) <- c(
 )
 tag_table$`Pooled matrix row` <- ifelse(tag_table$`Pooled matrix row`, "Yes", "No")
 tag_table$Estimated <- ifelse(tag_table$Estimated, "Yes", "No")
+tag_table <- dplyr::left_join(
+  tag_table,
+  rr_active |>
+    dplyr::transmute(Group = group, `Fitted RR` = sprintf("%.3f", fitted)),
+  by = "Group"
+)
+tag_table$`Fitted RR`[is.na(tag_table$`Fitted RR`)] <- "--"
 release_summary <- report_data$mappings$tag_release_groups |>
   dplyr::group_by(tag_program, release_region) |>
   dplyr::summarise(
@@ -2206,7 +2398,7 @@ tables <- list(
   write_table_bundle(selftest_table, "self-test-summary", "Relative recovery error for management quantities across 50 self-test refits.", "Relative recovery error for management quantities across 50 self-test refits."),
   write_table_bundle(aspm_terminal, "aspm-terminal-summary", "Terminal quantities for the diagnostic model and ASPM.", "Terminal quantities for the diagnostic model and ASPM."),
   write_table_bundle(fishery_table, "fishery-grouping", "Fishery definitions and final selectivity settings. All 33 fisheries have independent cubic-spline selectivity; F10 and F33 have a weak non-decreasing penalty of 10,000.", "Fishery definitions and final selectivity settings. All 33 fisheries have independent cubic-spline selectivity; F10 and F33 have a weak non-decreasing penalty of 10,000."),
-  write_table_bundle(tag_table, "tag-reporting-rate-groups", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status. Pooled matrix row refers only to MFCL's extra aggregate row 99: Yes means that row uses the same reporting-rate group number. It is not a tagging programme and does not combine the programme labels shown in the table.", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status. Pooled matrix row refers only to MFCL's extra aggregate row 99: Yes means that row uses the same reporting-rate group number. It is not a tagging programme and does not combine the programme labels shown in the table."),
+  write_table_bundle(tag_table, "tag-reporting-rate-groups", "Tag-reporting-rate groups for recapture fisheries, release coverage, estimation status and fitted values. Pooled matrix row refers only to MFCL's extra aggregate row 99: Yes means that row uses the same reporting-rate group number. It is not a tagging programme. Group 31, assigned to Index fisheries F29--F33 so that all MFCL matrix cells have a group, is an inactive technical placeholder with no tag-recapture likelihood and is omitted.", "Tag-reporting-rate groups for recapture fisheries, release coverage, estimation status and fitted values. Pooled matrix row refers only to MFCL's extra aggregate row 99: Yes means that row uses the same reporting-rate group number. It is not a tagging programme. Group 31, assigned to Index fisheries F29--F33 so that all MFCL matrix cells have a group, is an inactive technical placeholder with no tag-recapture likelihood and is omitted."),
   write_table_bundle(release_summary, "tag-release-groups", "Summary of tag-release groups by programme and release region.", "Summary of tag-release groups by programme and release region.")
 )
 names(tables) <- vapply(tables, `[[`, character(1L), "id")
@@ -2320,6 +2512,7 @@ mfcl_captions <- list(
   `age-data-coverage` = list(section = "Model fit", caption = "Coverage of conditional age-at-length observations by fishery and year. The samples and fish-aged arrays use increased height so all panels remain readable."),
   `tag-returns-all` = list(section = "Model fit", caption = "Observed and expected tag returns across tag-release and recapture groups."),
   `tag-returns-by-group` = list(section = "Model fit", caption = "Observed and expected tag returns by tag-release group."),
+  `tag-reporting-rates-active` = list(section = "Model fit", caption = "Fitted tag-reporting rates for the 12 groups estimated in the diagnostic model. Panels identify the MFCL group, tagging programme and recapture fisheries; black curves show priors, red vertical lines show fitted rates and blue dashed lines mark the 0.99 upper bound. Group 23 reached the upper bound. Inactive groups, including the Group 31 placeholder assigned to Index fisheries F29--F33, are not shown."),
   `tag-attrition-by-program` = list(section = "Model fit", caption = "Observed (black points) and model-predicted (red line) tag recaptures by time at liberty in quarters for RTTP, PTTP, JPTP and all recaptures. Programme predictions apply MFCL's premixing reporting-rate rule and reconcile to the official all-recapture diagnostic within its printed precision."),
   `population-biology` = list(section = "Population dynamics", caption = "Growth, maturity, natural mortality and weight-at-age assumptions used in the diagnostic model."),
   `growth-curve` = list(section = "Population dynamics", caption = "Fitted mean length at age. Shading is the mean plus or minus 1.96 length-at-age standard deviations and represents fish-level length variability, not parameter-estimation uncertainty."),
