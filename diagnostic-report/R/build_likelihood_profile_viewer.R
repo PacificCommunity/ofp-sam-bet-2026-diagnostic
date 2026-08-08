@@ -120,10 +120,18 @@ if (!nrow(detail) || any(!is.finite(detail$biomass_ratio)) || any(!is.finite(det
   stop("The detailed likelihood-profile payload is unavailable or invalid.", call. = FALSE)
 }
 detail$detail_group[detail$detail_group == "Length frequency"] <- "LF"
-detail$detail_group[detail$detail_group == "Weight frequency"] <- "Weight frequency"
-fishery_detail <- detail$detail_group %in% c("CPUE index", "LF", "Weight frequency")
-fishery_id <- suppressWarnings(as.integer(sub("^([0-9]+).*", "\\1", as.character(detail$detail))))
+fishery_detail <- detail$detail_group %in% c(
+  "CPUE index", "LF", "CAAL fishery"
+)
+fishery_id <- suppressWarnings(as.integer(sub(
+  "^F?0*([0-9]+).*", "\\1", as.character(detail$detail)
+)))
 fishery_label <- fisheries$fishery_name[match(fishery_id, fisheries$fishery)]
+detail$fishery_id <- fishery_id
+detail$fishery_region <- fisheries$region[match(fishery_id, fisheries$fishery)]
+if (any(fishery_detail & (!is.finite(detail$fishery_region) | is.na(fishery_label)))) {
+  stop("A fishery-level likelihood profile has no fishery or region mapping.", call. = FALSE)
+}
 detail$detail[fishery_detail & !is.na(fishery_label)] <- fishery_label[fishery_detail & !is.na(fishery_label)]
 detail <- attach_profile_axis(detail)
 detail <- normalise_curves(detail, c("detail_group", "detail"))
@@ -133,6 +141,7 @@ detail <- detail[as.character(detail_key) %in% names(detail_span)[detail_span > 
 
 profile_viewer_group <- function(key, label, z, colour, labels = NULL, total_label = NULL,
                                  parent_component = NULL, panel = NULL,
+                                 parent_group = NULL, parent_profile = NULL,
                                  kind = "detail") {
   if (is.null(z) || !nrow(z)) return(NULL)
   z <- attach_profile_axis(z)
@@ -170,6 +179,7 @@ profile_viewer_group <- function(key, label, z, colour, labels = NULL, total_lab
   list(
     key = key, label = label, kind = kind,
     parent_component = parent_component, panel = panel %||% label,
+    parent_group = parent_group, parent_profile = parent_profile,
     curves = rows
   )
 }
@@ -189,20 +199,33 @@ append_group(profile_viewer_group(
   "cpue", "CPUE indices", detail_group("CPUE index"), "#0072B2",
   total_label = "CPUE total", parent_component = "CPUE", panel = "CPUE indices"
 ))
-lf_parts <- Filter(Negate(is.null), list(
-  {
-    z <- detail_group("LF")
-    if (!is.null(z)) transform(z, curve = paste("Length", curve, sep = " | ")) else NULL
-  },
-  {
-    z <- detail_group("Weight frequency")
-    if (!is.null(z)) transform(z, curve = paste("Weight", curve, sep = " | ")) else NULL
+lf_detail <- detail_group("LF")
+if (!is.null(lf_detail) && nrow(lf_detail)) {
+  if (any(!is.finite(lf_detail$fishery_region))) {
+    stop("An LF profile has no model-region mapping.", call. = FALSE)
   }
-))
-if (length(lf_parts)) append_group(profile_viewer_group(
-  "lf", "LF data", do.call(rbind, lf_parts), "#D55E00",
-  total_label = "LF total", parent_component = "LF", panel = "LF data"
-))
+  lf_regions <- stats::aggregate(
+    value ~ biomass_ratio + fishery_region, data = lf_detail, FUN = sum
+  )
+  lf_regions$curve <- paste("Region", lf_regions$fishery_region)
+  lf_regions <- normalise_curves(lf_regions, "fishery_region")
+  append_group(profile_viewer_group(
+    "lf-regions", "LF regions", lf_regions, "#D55E00",
+    total_label = "LF total", parent_component = "LF",
+    panel = "LF region totals"
+  ))
+  for (region in sort(unique(lf_detail$fishery_region))) {
+    region_label <- paste("Region", region)
+    append_group(profile_viewer_group(
+      paste0("lf-region-", region), paste(region_label, "LF data"),
+      lf_detail[lf_detail$fishery_region == region, , drop = FALSE], "#D55E00",
+      total_label = paste(region_label, "LF total"),
+      parent_component = "LF", panel = paste(region_label, "LF fisheries"),
+      parent_group = "lf-regions",
+      parent_profile = paste("lf-regions", region_label, sep = "::")
+    ))
+  }
+}
 
 caal_regions <- detail_group("CAAL region")
 if (!is.null(caal_regions)) {
@@ -211,6 +234,21 @@ if (!is.null(caal_regions)) {
     total_label = "CAAL total", parent_component = "CAAL",
     panel = "CAAL regions"
   ))
+  caal_fisheries <- detail_group("CAAL fishery")
+  if (!is.null(caal_fisheries)) {
+    for (region in sort(unique(caal_fisheries$fishery_region))) {
+      region_label <- paste("Region", region)
+      append_group(profile_viewer_group(
+        paste0("caal-region-", region, "-fisheries"),
+        paste(region_label, "CAAL fisheries"),
+        caal_fisheries[caal_fisheries$fishery_region == region, , drop = FALSE],
+        "#6A5AA7", total_label = paste(region_label, "CAAL total"),
+        parent_component = "CAAL", panel = paste(region_label, "CAAL fisheries"),
+        parent_group = "caal-regions",
+        parent_profile = paste("caal-regions", region_label, sep = "::")
+      ))
+    }
+  }
 }
 
 tag_map <- report_data$mappings$tag_release_groups
@@ -237,6 +275,19 @@ if (!is.null(tag)) {
     labels = programme_labels, total_label = "Tag total",
     parent_component = "Tag", panel = "Tag programme totals"
   ))
+  for (programme in sort(unique(tag$programme))) {
+    programme_tag <- tag[tag$programme == programme, , drop = FALSE]
+    programme_key <- paste0(
+      "tag-", gsub("[^a-z0-9]+", "-", tolower(programme)), "-release-groups"
+    )
+    append_group(profile_viewer_group(
+      programme_key, paste(programme, "release groups"), programme_tag, "#009E73",
+      labels = tag_labels, total_label = paste(programme, "total"),
+      parent_component = "Tag", panel = paste(programme, "release groups"),
+      parent_group = "tag-programmes",
+      parent_profile = paste("tag-programmes", programme, sep = "::")
+    ))
+  }
 }
 append_group(profile_viewer_group(
   "penalty", "Penalty components", detail_group("Penalty"), "#6B7280",
@@ -246,7 +297,7 @@ groups <- Filter(Negate(is.null), groups)
 
 viewer_payload <- list(
   title = "BET 2026 likelihood-profile viewer",
-  subtitle = "Diagnostic-model total-average-biomass profiles: broad components with one level of data-set detail",
+  subtitle = "Diagnostic-model total-average-biomass profiles: broad components with nested data-set detail",
   developer = list(name = "Kyuhan Kim", email = "kyuhank@spc.int"),
   groups = groups
 )

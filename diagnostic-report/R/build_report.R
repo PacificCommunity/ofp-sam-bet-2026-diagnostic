@@ -198,26 +198,32 @@ p_cpue_fit_residual <- ggplot2::ggplot() +
   ggplot2::geom_ribbon(
     data = cpue,
     ggplot2::aes(x = period, ymin = lower, ymax = upper),
-    inherit.aes = FALSE, fill = blue80, alpha = 0.68
+    inherit.aes = FALSE, fill = "#B8DDE5", alpha = 0.48
   ) +
   ggplot2::geom_hline(
     data = residual_cpue, ggplot2::aes(yintercept = 0),
     inherit.aes = FALSE, colour = "#52656e", linewidth = 0.38, linetype = "22"
   ) +
   ggplot2::geom_line(
+    data = cpue, ggplot2::aes(x = period, y = fitted),
+    inherit.aes = FALSE, colour = "white", linewidth = 1.85,
+    lineend = "round", show.legend = FALSE
+  ) +
+  ggplot2::geom_line(
     data = cpue, ggplot2::aes(x = period, y = fitted, colour = "Fitted"),
-    inherit.aes = FALSE, linewidth = 1.08
+    inherit.aes = FALSE, linewidth = 1.05, lineend = "round"
   ) +
   ggplot2::geom_point(
     data = cpue, ggplot2::aes(x = period, y = observed, colour = "Observed"),
-    inherit.aes = FALSE, size = 1.15, alpha = 0.72
+    inherit.aes = FALSE, shape = 21, fill = "white", stroke = 0.48,
+    size = 1.45, alpha = 0.86
   ) +
   ggplot2::geom_point(
     data = residual_cpue, ggplot2::aes(x = period, y = standardized_residual),
     inherit.aes = FALSE, colour = "#4f2c7f", size = 1.12, alpha = 0.72
   ) +
   ggplot2::facet_wrap(~panel, ncol = 2, scales = "free_y") +
-  ggplot2::scale_colour_manual(values = c("Observed" = "#313D43", "Fitted" = navy)) +
+  ggplot2::scale_colour_manual(values = c("Observed" = "#28343A", "Fitted" = "#082F73")) +
   ggplot2::labs(
     x = "Year", y = "Relative CPUE / standardised residual", colour = NULL,
     caption = "Residual panels: shaded band = ±1.96 fixed observation-error SD."
@@ -708,12 +714,32 @@ if (is.list(age_fit) && nrow(age_fit$residuals %||% data.frame())) {
     ggplot2::geom_line(
       data = age_mean_lines,
       ggplot2::aes(length, fitted_mean_age, linetype = "Fitted mean age"),
-      inherit.aes = FALSE, colour = navy, linewidth = 0.72
+      inherit.aes = FALSE, colour = "white", linewidth = 1.42,
+      lineend = "round", show.legend = FALSE
     ) +
     ggplot2::geom_line(
       data = age_mean_lines,
-      ggplot2::aes(length, observed_mean_age, linetype = "Observed mean age"),
-      inherit.aes = FALSE, colour = "#C76B1C", linewidth = 0.68
+      ggplot2::aes(
+        length, observed_mean_age, linetype = "Observed mean age"
+      ),
+      inherit.aes = FALSE, colour = "white", linewidth = 1.36,
+      lineend = "round", show.legend = FALSE
+    ) +
+    ggplot2::geom_line(
+      data = age_mean_lines,
+      ggplot2::aes(
+        length, fitted_mean_age, linetype = "Fitted mean age",
+        colour = "Fitted mean age"
+      ),
+      inherit.aes = FALSE, linewidth = 0.78, lineend = "round"
+    ) +
+    ggplot2::geom_line(
+      data = age_mean_lines,
+      ggplot2::aes(
+        length, observed_mean_age, linetype = "Observed mean age",
+        colour = "Observed mean age"
+      ),
+      inherit.aes = FALSE, linewidth = 0.74, lineend = "round"
     ) +
     ggplot2::facet_wrap(~region_label, ncol = 3) +
     ggplot2::scale_fill_gradientn(
@@ -728,12 +754,17 @@ if (is.list(age_fit) && nrow(age_fit$residuals %||% data.frame())) {
     ggplot2::scale_linetype_manual(
       values = c("Fitted mean age" = "solid", "Observed mean age" = "22"), name = NULL
     ) +
+    ggplot2::scale_colour_manual(
+      values = c("Fitted mean age" = "#081D58", "Observed mean age" = "#E66101"),
+      name = NULL
+    ) +
     ggplot2::labs(x = "Length", y = "Age class") +
     theme_report(10.2) +
     ggplot2::guides(
       fill = ggplot2::guide_colourbar(barwidth = grid::unit(5.2, "cm"), barheight = grid::unit(0.35, "cm")),
       size = ggplot2::guide_legend(nrow = 1, byrow = TRUE),
-      linetype = ggplot2::guide_legend(nrow = 1, byrow = TRUE)
+      linetype = ggplot2::guide_legend(nrow = 1, byrow = TRUE),
+      colour = ggplot2::guide_legend(nrow = 1, byrow = TRUE)
     ) +
     ggplot2::theme(
       legend.position = "bottom", legend.box = "vertical",
@@ -1201,24 +1232,16 @@ profile_labels <- c(
   "Tags" = "Tag",
   "Penalties" = "Penalty"
 )
-profile$panel <- factor(
-  ifelse(profile$component == "Total", "Overall objective", "Likelihood components"),
-  levels = c("Overall objective", "Likelihood components")
-)
 profile_minima <- do.call(rbind, lapply(split(profile, profile$component), function(z) {
   z[which.min(z$delta_nll), , drop = FALSE]
 }))
-profile_reference_panels <- data.frame(
-  panel = levels(profile$panel), xmin = -Inf, xmax = Inf, ymin = 0, ymax = 1.92
-)
 p_profile <- ggplot2::ggplot(
   profile,
   ggplot2::aes(x = total_average_biomass_1000_t, y = delta_nll)
 ) +
-  ggplot2::geom_rect(
-    data = profile_reference_panels,
-    ggplot2::aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-    inherit.aes = FALSE, fill = "#EAF3F5", colour = NA
+  ggplot2::annotate(
+    "rect", xmin = -Inf, xmax = Inf, ymin = 0, ymax = 1.92,
+    fill = "#EAF3F5", colour = NA
   ) +
   ggplot2::geom_hline(yintercept = 0, colour = "#7C8D94", linewidth = 0.35) +
   ggplot2::geom_hline(
@@ -1231,7 +1254,6 @@ p_profile <- ggplot2::ggplot(
     data = profile_minima,
     ggplot2::aes(colour = component), size = 1.7, stroke = 0.2
   ) +
-  ggplot2::facet_grid(panel ~ ., scales = "free_y") +
   ggplot2::scale_colour_manual(values = profile_colours, labels = profile_labels, drop = FALSE) +
   ggplot2::scale_linewidth_manual(
     values = c("Total" = 1.18, "Indices" = 0.82, "LFs" = 0.82,
@@ -1248,11 +1270,9 @@ p_profile <- ggplot2::ggplot(
   ggplot2::theme(
     legend.position = "bottom",
     legend.box = "horizontal",
-    legend.text = ggplot2::element_text(size = 8),
-    strip.text.y = ggplot2::element_text(angle = 0),
-    panel.spacing.y = grid::unit(0.52, "lines")
+    legend.text = ggplot2::element_text(size = 8)
   )
-save_figure(p_profile, "likelihood-profile-components", width = 7.1, height = 6.3)
+save_figure(p_profile, "likelihood-profile-components", width = 7.1, height = 4.8)
 
 # Interactive likelihood-profile viewer ------------------------------------
 detail <- report_data$likelihood_profile$detail
@@ -1262,10 +1282,18 @@ if (any(!is.finite(detail$biomass_ratio)) || any(!is.finite(detail$value))) {
 # Backward-compatible labels for the compact payload, then use the final
 # checked-in fishery mapping for public EAST/WEST and region labels.
 detail$detail_group[detail$detail_group == "Length frequency"] <- "LF"
-detail$detail_group[detail$detail_group == "Weight frequency"] <- "Weight frequency"
-fishery_detail <- detail$detail_group %in% c("CPUE index", "LF", "Weight frequency")
-fishery_id <- suppressWarnings(as.integer(sub("^([0-9]+).*", "\\1", as.character(detail$detail))))
+fishery_detail <- detail$detail_group %in% c(
+  "CPUE index", "LF", "CAAL fishery"
+)
+fishery_id <- suppressWarnings(as.integer(sub(
+  "^F?0*([0-9]+).*", "\\1", as.character(detail$detail)
+)))
 fishery_label <- profile_fishery_map$fishery_name[match(fishery_id, profile_fishery_map$fishery)]
+detail$fishery_id <- fishery_id
+detail$fishery_region <- profile_fishery_map$region[match(fishery_id, profile_fishery_map$fishery)]
+if (any(fishery_detail & (!is.finite(detail$fishery_region) | is.na(fishery_label)))) {
+  stop("A fishery-level likelihood profile has no fishery or region mapping.", call. = FALSE)
+}
 detail$detail[fishery_detail & !is.na(fishery_label)] <- fishery_label[fishery_detail & !is.na(fishery_label)]
 detail <- attach_profile_axis(detail)
 detail_minimum <- do.call(rbind, lapply(split(detail, interaction(detail$detail_group, detail$detail, drop = TRUE)), function(z) {
@@ -1288,15 +1316,16 @@ if (!nrow(detail)) {
   stop("No informative detailed likelihood-profile curves are available.", call. = FALSE)
 }
 
-# Static detail uses a clearly separated component-total curve above a heatmap
-# of the child contributions. This retains every data set without producing an
-# unreadable overlay of dozens of lines. The interactive viewer remains the
-# place for user-selected curve overlays.
+# Static detail uses a prominent component-total curve above a heatmap of the
+# child contributions. Thin translucent child curves are included behind the
+# total so their shapes can be related directly to the corresponding heatmap
+# rows without obscuring the aggregate. The interactive viewer remains the
+# place for selectively inspecting individual curves.
 detail_group_labels <- c(
   "CPUE index" = "CPUE indices",
   "LF" = "Length frequencies",
   "CAAL region" = "CAAL by region",
-  "Tag release group" = "Tag release groups",
+  "Tag release group" = "Tag programmes",
   "Penalty" = "Penalties"
 )
 detail_group_colours <- c(
@@ -1307,16 +1336,24 @@ detail_group_colours <- c(
   "Penalty" = "#6B7280"
 )
 profile_detail_plot <- function(group) {
-  if (identical(group, "LF")) {
-    z_length <- detail[detail$detail_group == "LF", , drop = FALSE]
-    z_weight <- detail[detail$detail_group == "Weight frequency", , drop = FALSE]
-    if (nrow(z_length)) z_length$detail <- paste("Length", z_length$detail, sep = " | ")
-    if (nrow(z_weight)) z_weight$detail <- paste("Weight", z_weight$detail, sep = " | ")
-    z <- rbind(z_length, z_weight)
-  } else {
-    z <- detail[detail$detail_group == group, , drop = FALSE]
-  }
+  z <- detail[detail$detail_group == group, , drop = FALSE]
   if (!nrow(z)) stop("No informative likelihood-profile curves for ", group, call. = FALSE)
+
+  if (identical(group, "LF")) {
+    if (any(!is.finite(z$fishery_region))) {
+      stop("An LF profile has no model-region mapping.", call. = FALSE)
+    }
+    z <- stats::aggregate(
+      value ~ biomass_ratio + total_average_biomass_1000_t + fishery_region,
+      data = z, FUN = sum, na.rm = TRUE
+    )
+    z$detail <- paste("Region", z$fishery_region)
+    z$detail_group <- group
+    minima <- stats::aggregate(value ~ detail, data = z, FUN = min)
+    names(minima)[names(minima) == "value"] <- "minimum_value"
+    z <- merge(z, minima, by = "detail", all.x = TRUE, sort = FALSE)
+    z$delta_nll <- pmax(0, z$value - z$minimum_value)
+  }
 
   if (identical(group, "Tag release group")) {
     programme_lookup <- stats::setNames(
@@ -1345,6 +1382,24 @@ profile_detail_plot <- function(group) {
     data = z, FUN = sum, na.rm = TRUE
   )
   total$delta_nll <- pmax(0, total$value - min(total$value))
+  detail_order <- names(sort(tapply(z$delta_nll, z$detail, max, na.rm = TRUE)))
+  z$detail <- factor(z$detail, levels = detail_order)
+  detail_colours <- stats::setNames(
+    grDevices::hcl.colors(length(detail_order), palette = "Dark 3"),
+    detail_order
+  )
+  detail_line_width <- if (length(detail_order) > 20L) 0.36 else 0.52
+  detail_line_alpha <- if (length(detail_order) > 20L) 0.28 else 0.48
+  profile_x_values <- sort(unique(z$total_average_biomass_1000_t))
+  profile_x_step <- if (length(profile_x_values) > 1L) {
+    stats::median(diff(profile_x_values))
+  } else {
+    1
+  }
+  detail_keys <- data.frame(
+    detail = factor(detail_order, levels = detail_order),
+    total_average_biomass_1000_t = min(profile_x_values) - 0.8 * profile_x_step
+  )
 
   p_total <- ggplot2::ggplot(
     total,
@@ -1358,16 +1413,27 @@ profile_detail_plot <- function(group) {
     ggplot2::geom_hline(
       yintercept = 1.92, colour = orange, linetype = "33", linewidth = 0.52
     ) +
+    ggplot2::geom_line(
+      data = z,
+      ggplot2::aes(
+        x = total_average_biomass_1000_t, y = delta_nll,
+        group = detail, colour = detail
+      ),
+      inherit.aes = FALSE,
+      linewidth = detail_line_width, alpha = detail_line_alpha,
+      lineend = "round"
+    ) +
     ggplot2::geom_line(colour = navy, linewidth = 1.2, lineend = "round") +
     ggplot2::geom_point(
       data = total[which.min(total$delta_nll), , drop = FALSE],
       colour = navy, fill = "white", shape = 21, size = 2.1, stroke = 0.7
     ) +
+    ggplot2::scale_colour_manual(values = detail_colours, guide = "none") +
     ggplot2::scale_y_continuous(limits = c(0, NA), expand = ggplot2::expansion(mult = c(0, 0.06))) +
     ggplot2::labs(
       x = NULL,
       y = expression(Delta~"NLL"),
-      title = paste0(detail_group_labels[[group]], " total")
+      title = paste0(detail_group_labels[[group]], ": total and data sets")
     ) +
     theme_report(9.5) +
     ggplot2::theme(
@@ -1375,19 +1441,25 @@ profile_detail_plot <- function(group) {
       plot.margin = ggplot2::margin(5, 7, 0, 5)
     )
 
-  detail_order <- names(sort(tapply(z$delta_nll, z$detail, max, na.rm = TRUE)))
-  z$detail <- factor(z$detail, levels = detail_order)
   fill_max <- max(1.92, as.numeric(stats::quantile(z$delta_nll, 0.95, na.rm = TRUE)))
   p_children <- ggplot2::ggplot(
     z,
     ggplot2::aes(x = total_average_biomass_1000_t, y = detail, fill = delta_nll)
   ) +
     ggplot2::geom_tile(colour = "white", linewidth = 0.22) +
+    ggplot2::geom_point(
+      data = detail_keys,
+      ggplot2::aes(
+        x = total_average_biomass_1000_t, y = detail, colour = detail
+      ),
+      inherit.aes = FALSE, shape = 15, size = 2.7
+    ) +
     ggplot2::scale_fill_gradientn(
       colours = c("#F7FBFC", "#B9E0E4", "#55A7B4", "#0B5267"),
       limits = c(0, fill_max), oob = scales::squish,
       name = expression(Delta~"NLL")
     ) +
+    ggplot2::scale_colour_manual(values = detail_colours, guide = "none") +
     ggplot2::labs(
       x = expression("Total average biomass"~(10^3~"t")),
       y = NULL,
@@ -1420,7 +1492,7 @@ for (group in names(detail_group_labels)) {
       paste0("likelihood-profile-", suffix, "-detail"),
       width = 7.1,
       height = max(4.8, 3.4 + 0.16 * length(unique(
-        if (group == "LF") detail$detail[detail$detail_group %in% c("LF", "Weight frequency")]
+        if (group == "LF") detail$fishery_region[detail$detail_group == "LF"]
         else if (group == "Tag release group") report_data$mappings$tag_release_groups$tag_program
         else detail$detail[detail$detail_group == group]
       )))
@@ -1430,7 +1502,8 @@ for (group in names(detail_group_labels)) {
 
 profile_viewer_group <- function(
   key, label, z, colour, labels = NULL, total_label = NULL,
-  parent_component = NULL, panel = NULL, kind = "detail"
+  parent_component = NULL, panel = NULL,
+  parent_group = NULL, parent_profile = NULL, kind = "detail"
 ) {
   if (is.null(z) || !nrow(z)) return(NULL)
   z <- attach_profile_axis(z)
@@ -1478,6 +1551,8 @@ profile_viewer_group <- function(
     kind = kind,
     parent_component = parent_component,
     panel = panel %||% label,
+    parent_group = parent_group,
+    parent_profile = parent_profile,
     curves = rows
   )
 }
@@ -1497,10 +1572,20 @@ viewer_detail_group <- function(group) {
   if (is.null(z) || !nrow(z)) return(NULL)
   transform(z, curve = detail)
 }
+normalise_viewer_curves <- function(z, group_columns) {
+  key <- interaction(z[, group_columns, drop = FALSE], drop = TRUE, lex.order = TRUE)
+  minima <- do.call(rbind, lapply(split(z, key), function(curve) {
+    curve[which.min(curve$value), c(group_columns, "value"), drop = FALSE]
+  }))
+  names(minima)[names(minima) == "value"] <- "minimum_value"
+  z <- merge(z, minima, by = group_columns, all.x = TRUE, sort = FALSE)
+  z$delta_nll <- pmax(0, z$value - z$minimum_value)
+  z
+}
 
 # The viewer uses a single, progressively disclosed control hierarchy.  Broad
-# components appear first; selecting CAAL or Tag reveals region/programme
-# panels, each with a component total and selectable constituent curves.
+# components appear first. LF and CAAL reveal regions and then fisheries; Tag
+# reveals programmes and then release groups. Each panel retains its total.
 viewer_groups <- list(
   profile_viewer_group(
     "broad", "Broad components", viewer_broad, profile_colours,
@@ -1519,20 +1604,34 @@ append_viewer_group(profile_viewer_group(
   parent_component = "CPUE", panel = "CPUE indices"
 ))
 
-lf_sets <- list()
-lf_length <- viewer_detail_group("LF")
-lf_weight <- viewer_detail_group("Weight frequency")
-if (!is.null(lf_length) && nrow(lf_length)) {
-  lf_sets[[length(lf_sets) + 1L]] <- transform(lf_length, curve = paste("Length", curve, sep = " | "))
+lf_detail <- viewer_detail_group("LF")
+if (!is.null(lf_detail) && nrow(lf_detail)) {
+  if (any(!is.finite(lf_detail$fishery_region))) {
+    stop("An LF profile has no model-region mapping.", call. = FALSE)
+  }
+  lf_regions <- stats::aggregate(
+    value ~ biomass_ratio + fishery_region, data = lf_detail, FUN = sum
+  )
+  lf_regions$curve <- paste("Region", lf_regions$fishery_region)
+  lf_regions <- normalise_viewer_curves(lf_regions, "fishery_region")
+  append_viewer_group(profile_viewer_group(
+    "lf-regions", "LF regions", lf_regions, detail_group_colours[["LF"]],
+    total_label = "LF total", parent_component = "LF",
+    panel = "LF region totals"
+  ))
+  for (region in sort(unique(lf_detail$fishery_region))) {
+    region_label <- paste("Region", region)
+    append_viewer_group(profile_viewer_group(
+      paste0("lf-region-", region), paste(region_label, "LF data"),
+      lf_detail[lf_detail$fishery_region == region, , drop = FALSE],
+      detail_group_colours[["LF"]],
+      total_label = paste(region_label, "LF total"),
+      parent_component = "LF", panel = paste(region_label, "LF fisheries"),
+      parent_group = "lf-regions",
+      parent_profile = paste("lf-regions", region_label, sep = "::")
+    ))
+  }
 }
-if (!is.null(lf_weight) && nrow(lf_weight)) {
-  lf_sets[[length(lf_sets) + 1L]] <- transform(lf_weight, curve = paste("Weight", curve, sep = " | "))
-}
-lf_detail <- if (length(lf_sets)) do.call(rbind, lf_sets) else NULL
-append_viewer_group(profile_viewer_group(
-  "lf", "LF data", lf_detail, detail_group_colours[["LF"]],
-  total_label = "LF total", parent_component = "LF", panel = "LF data"
-))
 
 caal_regions <- viewer_detail_group("CAAL region")
 if (!is.null(caal_regions) && nrow(caal_regions)) {
@@ -1541,6 +1640,22 @@ if (!is.null(caal_regions) && nrow(caal_regions)) {
     detail_group_colours[["CAAL region"]], total_label = "CAAL total",
     parent_component = "CAAL", panel = "CAAL regions"
   ))
+  caal_fisheries <- viewer_detail_group("CAAL fishery")
+  if (!is.null(caal_fisheries) && nrow(caal_fisheries)) {
+    for (region in sort(unique(caal_fisheries$fishery_region))) {
+      region_label <- paste("Region", region)
+      append_viewer_group(profile_viewer_group(
+        paste0("caal-region-", region, "-fisheries"),
+        paste(region_label, "CAAL fisheries"),
+        caal_fisheries[caal_fisheries$fishery_region == region, , drop = FALSE],
+        detail_group_colours[["CAAL region"]],
+        total_label = paste(region_label, "CAAL total"),
+        parent_component = "CAAL", panel = paste(region_label, "CAAL fisheries"),
+        parent_group = "caal-regions",
+        parent_profile = paste("caal-regions", region_label, sep = "::")
+      ))
+    }
+  }
 }
 
 tag_detail <- viewer_detail_group("Tag release group")
@@ -1574,6 +1689,20 @@ if (!is.null(tag_detail) && nrow(tag_detail)) {
     total_label = "Tag total", parent_component = "Tag",
     panel = "Tag programme totals"
   ))
+  for (programme in programme_names) {
+    programme_tag <- tag_detail[tag_detail$programme == programme, , drop = FALSE]
+    programme_key <- paste0(
+      "tag-", gsub("[^a-z0-9]+", "-", tolower(programme)), "-release-groups"
+    )
+    append_viewer_group(profile_viewer_group(
+      programme_key, paste(programme, "release groups"), programme_tag,
+      detail_group_colours[["Tag release group"]], labels = tag_labels,
+      total_label = paste(programme, "total"), parent_component = "Tag",
+      panel = paste(programme, "release groups"),
+      parent_group = "tag-programmes",
+      parent_profile = paste("tag-programmes", programme, sep = "::")
+    ))
+  }
 }
 
 append_viewer_group(profile_viewer_group(
@@ -1584,7 +1713,7 @@ append_viewer_group(profile_viewer_group(
 viewer_groups <- Filter(Negate(is.null), viewer_groups)
 viewer_payload <- list(
   title = "BET 2026 likelihood-profile viewer",
-  subtitle = "Diagnostic-model total-average-biomass profiles: broad components with one level of data-set detail",
+  subtitle = "Diagnostic-model total-average-biomass profiles: broad components with nested data-set detail",
   developer = list(name = "Kyuhan Kim", email = "kyuhank@spc.int"),
   groups = viewer_groups
 )
@@ -1899,6 +2028,11 @@ fit_table <- data.frame(
   stringsAsFactors = FALSE
 )
 objective_table <- report_data$model$objective
+objective_table <- objective_table[
+  trimws(as.character(objective_table[[1L]])) != "Weight frequency",
+  ,
+  drop = FALSE
+]
 names(objective_table) <- c("Likelihood component", "Negative log likelihood")
 objective_table[[2L]] <- formatC(objective_table[[2L]], format = "f", digits = 1, big.mark = ",")
 recent <- report_data$model$recent
@@ -2072,7 +2206,7 @@ tables <- list(
   write_table_bundle(selftest_table, "self-test-summary", "Relative recovery error for management quantities across 50 self-test refits.", "Relative recovery error for management quantities across 50 self-test refits."),
   write_table_bundle(aspm_terminal, "aspm-terminal-summary", "Terminal quantities for the diagnostic model and ASPM.", "Terminal quantities for the diagnostic model and ASPM."),
   write_table_bundle(fishery_table, "fishery-grouping", "Fishery definitions and final selectivity settings. All 33 fisheries have independent cubic-spline selectivity; F10 and F33 have a weak non-decreasing penalty of 10,000.", "Fishery definitions and final selectivity settings. All 33 fisheries have independent cubic-spline selectivity; F10 and F33 have a weak non-decreasing penalty of 10,000."),
-  write_table_bundle(tag_table, "tag-reporting-rate-groups", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status. Pooled matrix row indicates that the same group number is also assigned to the extra pooled row in MFCL's reporting-rate matrices; pooled is not a tagging programme.", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status. Pooled matrix row indicates that the same group number is also assigned to the extra pooled row in MFCL's reporting-rate matrices; pooled is not a tagging programme."),
+  write_table_bundle(tag_table, "tag-reporting-rate-groups", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status. Pooled matrix row refers only to MFCL's extra aggregate row 99: Yes means that row uses the same reporting-rate group number. It is not a tagging programme and does not combine the programme labels shown in the table.", "Tag-reporting-rate groups for recapture fisheries, release coverage and estimation status. Pooled matrix row refers only to MFCL's extra aggregate row 99: Yes means that row uses the same reporting-rate group number. It is not a tagging programme and does not combine the programme labels shown in the table."),
   write_table_bundle(release_summary, "tag-release-groups", "Summary of tag-release groups by programme and release region.", "Summary of tag-release groups by programme and release region.")
 )
 names(tables) <- vapply(tables, `[[`, character(1L), "id")
@@ -2116,32 +2250,32 @@ figure_meta <- list(
   ),
   `likelihood-profile-components` = list(
     section = "Diagnostics",
-    caption = paste0("Likelihood profiles on the absolute total-average-biomass scale. Each curve is expressed as a change from its own minimum; the horizontal line marks a change of 1.92. The interactive viewer provides component-specific curve selection and numeric values."),
+    caption = paste0("Overall-objective and component likelihood profiles overlaid in one panel on the absolute total-average-biomass scale. Each curve is expressed as a change from its own minimum; the horizontal line marks a change of 1.92. The interactive viewer provides component-specific curve selection and numeric values."),
     viewer = viewer_release_url
   ),
   `likelihood-profile-cpue-detail` = list(
     section = "Diagnostics",
-    caption = "CPUE likelihood profile. The upper panel shows the CPUE total; the heatmap separates the five index contributions, each expressed as a change from its own minimum.",
+    caption = "CPUE likelihood profile. The upper panel overlays the prominent CPUE total with thin, muted index curves; coloured row keys connect those curves to the five heatmap contributions, each expressed as a change from its own minimum.",
     viewer = viewer_release_url
   ),
   `likelihood-profile-lf-detail` = list(
     section = "Diagnostics",
-    caption = "Length- and weight-frequency likelihood profile. The upper panel shows the LF total; the heatmap separates fishery contributions without overlapping dozens of curves.",
+    caption = "Length-frequency likelihood profile summarized by model region. The upper panel overlays the prominent LF total with five thin regional curves; coloured row keys connect them to the regional heatmap. Fishery-level curves are available by opening a region in the interactive viewer.",
     viewer = viewer_release_url
   ),
   `likelihood-profile-caal-region-detail` = list(
     section = "Diagnostics",
-    caption = "Conditional age-at-length likelihood profile. The upper panel shows the CAAL total; the heatmap separates contributions from the five model regions.",
+    caption = "Conditional age-at-length likelihood profile. The upper panel overlays the prominent CAAL total with thin regional curves; coloured row keys connect them to the five heatmap contributions. Fishery-level curves are available by opening a region in the interactive viewer.",
     viewer = viewer_release_url
   ),
   `likelihood-profile-tag-detail` = list(
     section = "Diagnostics",
-    caption = "Tag likelihood profile. The upper panel shows the tag total; the heatmap separates RTTP, PTTP and JPTP programme contributions.",
+    caption = "Tag likelihood profile. The upper panel overlays the prominent tag total with thin programme curves; coloured row keys connect them to the RTTP, PTTP and JPTP heatmap contributions. Release-group curves are available by opening a programme in the interactive viewer.",
     viewer = viewer_release_url
   ),
   `likelihood-profile-penalty-detail` = list(
     section = "Diagnostics",
-    caption = "Penalty likelihood profile. The upper panel shows the penalty total; the heatmap separates individual penalty components.",
+    caption = "Penalty likelihood profile. The upper panel overlays the prominent penalty total with thin, translucent component curves; coloured row keys connect them to the heatmap while limiting visual clutter.",
     viewer = viewer_release_url
   ),
   `jitter-diagnostics` = list(

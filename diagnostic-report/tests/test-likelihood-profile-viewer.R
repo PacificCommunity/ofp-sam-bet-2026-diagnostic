@@ -14,7 +14,10 @@ if (marker_count("__VIEWER_DATA__") != 1L || marker_count("__SPC_LOGO__") != 1L 
 for (required in c(
   "Select all", "Clear all", "parentComponent", "detail-panel",
   "detail-actions", "each curve minimum = 0",
-  "Tag shows programme totals", "Total average biomass (10³ t)",
+  "parentGroup", "parentProfile", "nested-details",
+  "LF and CAAL first show region totals", "Tag first shows programme totals",
+  "Chart added below",
+  "Total average biomass (10³ t)",
   "Download plotted CSV",
   "Kyuhan Kim", "kyuhank@spc.int"
 )) {
@@ -78,11 +81,57 @@ payload <- list(
       )
     ),
     list(
+      key = "lf-regions", label = "LF regions", kind = "detail",
+      parent_component = "LF", panel = "LF region totals",
+      curves = c(
+        curve_rows("total", "LF total", c(9, 0, 6), TRUE, "#073c5b"),
+        curve_rows("region-1", "Region 1", c(6, 1, 5), FALSE, "#D55E00")
+      )
+    ),
+    list(
+      key = "lf-region-1", label = "Region 1 LF data", kind = "detail",
+      parent_component = "LF", parent_group = "lf-regions",
+      parent_profile = "region-1", panel = "Region 1 LF fisheries",
+      curves = c(
+        curve_rows("total", "Region 1 LF total", c(6, 1, 5), TRUE, "#073c5b"),
+        curve_rows("fishery-1", "Length | Fishery 1", c(4, 0, 3), FALSE, "#D55E00")
+      )
+    ),
+    list(
+      key = "caal-regions", label = "CAAL regions", kind = "detail",
+      parent_component = "CAAL", panel = "CAAL regions",
+      curves = c(
+        curve_rows("total", "CAAL total", c(7, 0, 5), TRUE, "#073c5b"),
+        curve_rows("region-1", "Region 1", c(5, 1, 4), FALSE, "#6A5AA7")
+      )
+    ),
+    list(
+      key = "caal-region-1-fisheries", label = "Region 1 CAAL fisheries",
+      kind = "detail", parent_component = "CAAL",
+      parent_group = "caal-regions", parent_profile = "region-1",
+      panel = "Region 1 CAAL fisheries",
+      curves = c(
+        curve_rows("total", "Region 1 CAAL total", c(5, 1, 4), TRUE, "#073c5b"),
+        curve_rows("fishery-1", "Fishery 1", c(3, 0, 2), FALSE, "#6A5AA7")
+      )
+    ),
+    list(
       key = "tag-programmes", label = "Tag programmes", kind = "detail",
       parent_component = "Tag", panel = "Tag programme totals",
       curves = c(
         curve_rows("total", "Tag total", c(8, 0, 6), TRUE, "#073c5b"),
         curve_rows("program-a", "Program A total", c(5, 1, 4), FALSE, "#168a72")
+      )
+    ),
+    list(
+      key = "tag-program-a-release-groups", label = "Program A release groups",
+      kind = "detail", parent_component = "Tag",
+      parent_group = "tag-programmes", parent_profile = "program-a",
+      panel = "Program A release groups",
+      curves = c(
+        curve_rows("total", "Program A total", c(5, 1, 4), TRUE, "#073c5b"),
+        curve_rows("group-1", "Group 1 | Region 2 | 1990 Q3", c(3, 0, 2), FALSE, "#b83d55"),
+        curve_rows("group-2", "Group 2 | Region 2 | 1991 Q1", c(2, 1, 2), FALSE, "#2874b9")
       )
     )
   )
@@ -100,12 +149,18 @@ probe <- paste0(
   "var tagOpenToggle=[].slice.call(document.querySelectorAll('.detail-toggle')).filter(function(x){return x.textContent.indexOf('Tag programme totals')===0})[0];",
   "var tagPanel=tagOpenToggle.closest('.detail-panel');tagPanel.querySelector('.detail-actions button').click();",
   "tagPanel.querySelectorAll('.detail-actions button')[1].click();",
+  "var releaseToggle=[].slice.call(document.querySelectorAll('.nested-details .detail-toggle')).filter(function(x){return x.textContent.indexOf('Program A release groups')===0})[0];releaseToggle.click();",
+  "var lfToggle=[].slice.call(document.querySelectorAll('.detail-toggle')).filter(function(x){return x.textContent.indexOf('LF region totals')===0})[0];lfToggle.click();",
+  "var lfNested=[].slice.call(document.querySelectorAll('.nested-details .detail-toggle')).filter(function(x){return x.textContent.indexOf('Region 1 LF fisheries')===0})[0];lfNested.click();",
+  "var caalToggle=[].slice.call(document.querySelectorAll('.detail-toggle')).filter(function(x){return x.textContent.indexOf('CAAL regions')===0})[0];caalToggle.click();",
+  "var caalNested=[].slice.call(document.querySelectorAll('.nested-details .detail-toggle')).filter(function(x){return x.textContent.indexOf('Region 1 CAAL fisheries')===0})[0];caalNested.click();",
   "var nested=document.querySelectorAll('.nested-details .detail-toggle').length;",
+  "var nestedIds=['tag-program-a-release-groups','lf-region-1','caal-region-1-fisheries'];var nestedChart=nestedIds.every(function(id){return [].slice.call(document.querySelectorAll('.detail-grid .chart-card')).some(function(x){return x.getAttribute('data-group-id')===id})});",
   "var totalLines=document.querySelectorAll('.detail-grid .curve-line.total').length;",
   "var absoluteAxis=[].slice.call(document.querySelectorAll('.axis-label')).some(function(x){return x.textContent==='Total average biomass (10³ t)'});",
   "var localActions=document.querySelectorAll('.detail-actions').length;",
   "var result=document.createElement('p');result.id='viewer-smoke-result';",
-  "result.textContent='SMOKE '+overview+' parent='+parent+' ownMinimum='+ownMinimum+' nested='+nested+' totals='+totalLines+' absoluteAxis='+absoluteAxis+' actions='+localActions+' panels='+document.querySelectorAll('.detail-grid .chart-card').length;",
+  "result.textContent='SMOKE '+overview+' parent='+parent+' ownMinimum='+ownMinimum+' nested='+nested+' nestedChart='+nestedChart+' totals='+totalLines+' absoluteAxis='+absoluteAxis+' actions='+localActions+' panels='+document.querySelectorAll('.detail-grid .chart-card').length;",
   "document.body.appendChild(result);",
   "})();</script>"
 )
@@ -135,7 +190,7 @@ result_match <- regexec(
 )
 result <- regmatches(browser_document, result_match)[[1L]]
 if (length(result) >= 2L) result <- result[[2L]] else result <- character()
-expected <- "SMOKE 6 selected|6 broad · 0 detail panels parent=true ownMinimum=true nested=0 totals=2 absoluteAxis=true actions=2 panels=2"
+expected <- "SMOKE 6 selected|6 broad · 0 detail panels parent=true ownMinimum=true nested=3 nestedChart=true totals=7 absoluteAxis=true actions=7 panels=7"
 if (!length(result) || !grepl(expected, result, fixed = TRUE)) {
   stop(
     "Likelihood-profile browser smoke test failed: ",
@@ -143,4 +198,4 @@ if (!length(result) || !grepl(expected, result, fixed = TRUE)) {
     call. = FALSE
   )
 }
-cat("Validated one-level broad/detail selection, persistent detail totals, absolute biomass axis, own-minimum ΔNLL and public-safe viewer template.\n")
+cat("Validated nested LF/CAAL fishery and Tag release-group selection, visible panel placement, persistent detail totals, absolute biomass axis, own-minimum ΔNLL and public-safe viewer template.\n")
