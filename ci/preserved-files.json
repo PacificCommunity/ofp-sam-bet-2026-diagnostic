@@ -61,8 +61,8 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "git_blob": "538a0e2ec6c39bde37eca43eaf76096cac076d66",
-      "sha256": "7365b19e607db1d2e28b72ca3e5429d6db7a02d9e0c28986c957026dec2c97cb"
+      "git_blob": "a71b9e87efb3faebb0a1e5996f39f7cb5d810fd4",
+      "sha256": "77d392a0ec0bf9937ed5d97e803e132fdab1a7ef8bd70bb547f6ec2a439896f0"
     },
     {
       "path": "TAU2_FIXED_HEADER.sh",
@@ -957,6 +957,15 @@
       "mode": "100755",
       "git_blob": "6cb9337fd0c57aa3fb9ece8eef45205ce5d70d8a",
       "sha256": "41ad31d8208d87e9817c64ebf529c113c74d701a5f70fa3e668c7f2f0dc66cce"
+    }
+  ],
+  "approved_updates": [
+    {
+      "path": "README.md",
+      "reason": "Condense reader and reproduction instructions; preserve the original scientific files, links and heading anchors. Detailed methods are retained under docs/.",
+      "original_sha256": "7365b19e607db1d2e28b72ca3e5429d6db7a02d9e0c28986c957026dec2c97cb",
+      "original_git_blob": "538a0e2ec6c39bde37eca43eaf76096cac076d66",
+      "expected_sha256": "77d392a0ec0bf9937ed5d97e803e132fdab1a7ef8bd70bb547f6ec2a439896f0"
     }
   ]
 }
