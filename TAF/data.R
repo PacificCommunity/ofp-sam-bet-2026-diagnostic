@@ -42,7 +42,7 @@ cpue <- realisations(frq)
 cpue <- merge(cpue, fisheries[c("fishery", "area", "gear_long")])
 cpue <- cpue[cpue$gear_long == "Index",]
 cpue$season <- (1 + cpue$month) / 3
-cpue$index <- cpue$catch / cpue$effort / 1e6
+cpue$index <- cpue$catch / cpue$effort
 cpue <- cpue[c("year", "season", "fishery", "area", "index")]
 
 # Length compositions

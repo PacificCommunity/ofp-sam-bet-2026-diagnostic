@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, mfcl-taf-check]
   pull_request:
-    paths: ["MFCL/**", "TAF/**", "ci/check-taf.R", "ci/compare-taf-results.py", "ci/verify-mfcl-files.py", ".github/workflows/check-taf.yml"]
+    paths: ["MFCL/**", "TAF/**", "ci/check-taf.R", "ci/compare-taf-results.py", "ci/check-cpue.py", "ci/verify-mfcl-files.py", ".github/workflows/check-taf.yml"]
 
 permissions:
   contents: read
@@ -68,6 +68,7 @@ jobs:
       - name: Run every default TAF stage and compare the saved tables
         run: |
           Rscript --vanilla ci/check-taf.R "$RUNNER_TEMP/taf-check"
+          python3 ci/check-cpue.py "$GITHUB_WORKSPACE" "$RUNNER_TEMP/taf-check"
           python3 ci/compare-taf-results.py "$GITHUB_WORKSPACE" "$RUNNER_TEMP/taf-check"
       - name: Confirm the repository and original files are unchanged
         if: always()
@@ -76,11 +77,14 @@ jobs:
           python3 ci/verify-mfcl-files.py
           git -c safe.directory="$GITHUB_WORKSPACE" diff --exit-code
       - name: Retain TAF verification and rebuilt figures
+        if: always() && steps.work.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: taf-regeneration-check
           path: |
             ${{ steps.work.outputs.path }}/taf-check.json
+            ${{ steps.work.outputs.path }}/cpue-check.json
+            ${{ steps.work.outputs.path }}/TAF/data/cpue.csv
             ${{ steps.work.outputs.path }}/TAF/report/
           if-no-files-found: error
           retention-days: 14

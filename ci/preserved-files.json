@@ -61,8 +61,8 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "git_blob": "636d3f4a24c9a1022d948b80925ff94ad79bca3a",
-      "sha256": "d315b0e2eef083492b19b1204d3157ce0bca8f0776226007b317473c9ab10808"
+      "git_blob": "ee24f3856e5205bc1b52b43e3f4d86a63fc222e1",
+      "sha256": "b6f03fc37e79fea34ca875a46219c231d417219613c888adae15bb292d725e7e"
     },
     {
       "path": "TAU2_FIXED_HEADER.sh",
@@ -966,6 +966,16 @@
       "original_sha256": "7365b19e607db1d2e28b72ca3e5429d6db7a02d9e0c28986c957026dec2c97cb",
       "original_git_blob": "538a0e2ec6c39bde37eca43eaf76096cac076d66",
       "expected_sha256": "77d392a0ec0bf9937ed5d97e803e132fdab1a7ef8bd70bb547f6ec2a439896f0"
+    },
+    {
+      "path": "README.md",
+      "reason": "Add current CI status badges requested by Kyuhan. The complete previous README body is byte-identical after removing the exact badge prefix. Scientific files, reports, links and anchors are unchanged.",
+      "previous_sha256": "d315b0e2eef083492b19b1204d3157ce0bca8f0776226007b317473c9ab10808",
+      "previous_git_blob": "636d3f4a24c9a1022d948b80925ff94ad79bca3a",
+      "expected_sha256": "b6f03fc37e79fea34ca875a46219c231d417219613c888adae15bb292d725e7e",
+      "expected_git_blob": "ee24f3856e5205bc1b52b43e3f4d86a63fc222e1",
+      "exact_added_prefix": "[![Preservation checks](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/actions/workflows/verify-preserved-results.yml/badge.svg?branch=main)](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/actions/workflows/verify-preserved-results.yml?query=branch%3Amain) [![TAF checks](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/actions/workflows/check-taf.yml/badge.svg?branch=main)](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/actions/workflows/check-taf.yml?query=branch%3Amain)\n\n",
+      "authorization": "Task-scoped human instruction: CI\ub41c\uac83\ub4e4\uc740 \ub9ac\ub4dc\ubbf8\uc5d0 \uadf8 \uccb4\ud06c\ubc43\uc9c0\ub098 \uc774\ub7f0\uac70\ub3c4 \uc880 \ub123\uc5b4\uc8fc\uba74 \uc88b\uaca0\ub2e4"
     }
   ]
 }

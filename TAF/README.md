@@ -15,5 +15,9 @@ stopifnot(all(TAF::source.all(taf = TRUE)))
 Install TAF, FLR4MFCL, FLCore and gridExtra first. The versions checked in CI
 are recorded in [the workflow](../.github/workflows/check-taf.yml).
 Saved [tables](output/) and [figures](report/) can be browsed directly.
+
+Input CPUE `index` retains the MFCL FRQ scale (`catch/effort`). Output `obs`
+and `pred` use the model’s relative CPUE scale (`exp(log CPUE)`).
+
 Use a separate working copy for regeneration. `model_full.R` runs the original
 full fit; [MFCL/README.md](../MFCL/README.md) describes the native commands.
