@@ -1,26 +1,27 @@
-# Profile and ASPM native files
+# Profile and ASPM reruns
 
-This bundle retains 44 original likelihood-profile final PARs and the constant
-ASPM final PAR. The scalar-100 anchor, six MFCL inputs, executable and original
-Diagnostic `doitall` reuse checksum-verified public Git files.
+The small archive retains 44 original profile final PARs, the constant ASPM
+final PAR and the fitted ASPM pre-restart PAR. The scalar-100 anchor, native
+inputs, MFCL executable and Diagnostic `doitall` reuse checksum-verified Git files.
 
-On 64-bit x86 Linux, from the Diagnostic repository root:
+On 64-bit x86 Linux, from the repository root:
 
 ```sh
 python3 reproduce/run-native.py profiles /tmp/bet-profile
-python3 reproduce/run-native.py aspm-constant /tmp/bet-aspm
+python3 reproduce/replay-aspm.py constant /tmp/bet-aspm-constant
+python3 reproduce/replay-aspm.py fitted /tmp/bet-aspm-fitted
 ```
 
-Choose `profile-75` for one point, or `available` for all 46 preserved cases.
-Each run uses one function evaluation, checks the original reported objective,
-and leaves the saved PAR and inputs unchanged. Profile objectives use the
-original zero-penalty switches. Generated native outputs stay in the new folder;
-Hessian and full REP byte identity are outside this check.
+Choose `profile-75` for one profile point. Runs use one function evaluation,
+check the original objective and preserve the source PAR and inputs. Profile
+objectives use the original zero-penalty switches. Both ASPM commands require
+the complete original REP checksum to match. Detailed outputs stay in the new folder.
 
-`python3 reproduce/restore.py --verify` checks the small PAR archive.
-`validation.json` retains the original profile switches; `source-status.json`
-links the original controllers. The generated profile continuation scripts were
-not retained. The fitted ASPM terminal PAR and last restart input are missing,
-so that case is refused. Keep its original source material until recovered.
+The fitted ASPM pre-restart PAR reproduces its original final REP exactly;
+the original terminal PAR and restart input remain unavailable. `run-native.py`
+therefore continues to refuse that terminal-PAR case.
 
-Published results, figures and HTML remain unchanged.
+`python3 reproduce/restore.py --verify` checks the archive without MFCL.
+`validation.json` records profile controls; `source-status.json` records source
+files and controllers. Original generated profile continuation scripts were not
+retained. Published results, figures and HTML remain unchanged.

@@ -55,3 +55,29 @@ jobs:
             ${{ runner.temp }}/bet-native/*/native-check.json
           if-no-files-found: error
           retention-days: 14
+
+  aspm-reports:
+    name: Reproduce both complete original ASPM reports
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify original source and compact native files
+        run: |
+          python3 ci/verify-preserved-files.py
+          python3 reproduce/restore.py --verify
+      - name: Reproduce both original complete REP files
+        run: |
+          python3 reproduce/replay-aspm.py constant "$RUNNER_TEMP/aspm-constant"
+          python3 reproduce/replay-aspm.py fitted "$RUNNER_TEMP/aspm-fitted"
+          python3 ci/verify-preserved-files.py
+          git diff --exit-code
+      - name: Retain replay verification receipts
+        uses: actions/upload-artifact@v4
+        with:
+          name: aspm-report-replay-checks
+          path: |
+            ${{ runner.temp }}/aspm-constant/native-check.json
+            ${{ runner.temp }}/aspm-fitted/native-check.json
+          if-no-files-found: error
+          retention-days: 14
