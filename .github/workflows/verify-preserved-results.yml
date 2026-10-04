@@ -1,0 +1,31 @@
+name: Verify preserved BET results
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify preserved assessment files
+        run: python3 ci/verify-preserved-files.py
+      - name: Check preserved inputs and results
+        shell: bash
+        run: |
+          ./verify
+          work=$(mktemp -d "$RUNNER_TEMP/bet-diagnostic-final.XXXXXX")
+          for file in bet.age_length bet.frq bet.ini bet.reg_scaling bet.tag mfcl.cfg; do
+            cp "model/$file" "$work/$file"
+          done
+          cp mfclo64 results/reference/final.par standalone/run-final "$work/"
+          chmod +x "$work/mfclo64" "$work/run-final"
+          (cd "$work" && ./run-final)
+          python3 ci/verify-preserved-files.py
+          git diff --exit-code

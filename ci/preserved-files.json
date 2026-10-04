@@ -1,0 +1,962 @@
+{
+  "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+  "source_branch": "main",
+  "source_commit": "81c11f06fcc7450f69b379160cbd77fbc636212b",
+  "hash_algorithm": "sha256",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "mode": "100644",
+      "git_blob": "b416b7368201263c286ab64cadb2b199f7e0489a",
+      "sha256": "3517cbcbfd0494b55f8035f7d3417349d2c6272cf71d6152c2bc0865077bc163"
+    },
+    {
+      "path": ".github/workflows/release-final-outputs.yml",
+      "mode": "100644",
+      "git_blob": "46139a54390f39420b80e847af0d3d3d9a4a34aa",
+      "sha256": "fae5517361fc26adabd4a9822b2dc522a24863d61daec69a78cd53e57ab17a00"
+    },
+    {
+      "path": ".github/workflows/render-diagnostic-report.yml",
+      "mode": "100644",
+      "git_blob": "ab185999293c16612344e9498300665e7f8c70e2",
+      "sha256": "83fe243a5aaa6ae83b86ff355bc31e17afc6d0bb56274c713660e7ed90ce7204"
+    },
+    {
+      "path": ".github/workflows/validate.yml",
+      "mode": "100644",
+      "git_blob": "9b94d3efb20aeca758e0b340650608ce8b98f04b",
+      "sha256": "cd8e5c720ec9b44049f6e731cc417d0f4d79d9ad0ed219aa755904be6f49f80a"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "git_blob": "1a7c4e1bce542c3dee8e04c23b336350551aef9f",
+      "sha256": "899d361e652c53260b13e5bcaa0870254a09a8ec28e938152b92d878d9192924"
+    },
+    {
+      "path": "BUNDLED.sha256",
+      "mode": "100644",
+      "git_blob": "0e217adbb55b6b562ef2bdc4d7cb31ab222823f6",
+      "sha256": "d4dff027c4598f3c85b7cfe98804fc533155cf190574b44ec6f4c97b87fb5ad8"
+    },
+    {
+      "path": "JOB19835_COMPARISON.md",
+      "mode": "100644",
+      "git_blob": "78639765c1a838a2e400f3f7fa26933540a8f9df",
+      "sha256": "f178c4504bf0b44bbe4d7f9bf2fc58725d692086deb06b40a681c2a712cb0fcf"
+    },
+    {
+      "path": "Makefile",
+      "mode": "100644",
+      "git_blob": "cdbea35ac284badaf0dd6345045c28c554d6ec4b",
+      "sha256": "a264bae804ca6efe6ff6e532d12ccfbdaac5b90216362a0d0bbede9c42ed7e0f"
+    },
+    {
+      "path": "PROVENANCE.md",
+      "mode": "100644",
+      "git_blob": "bd1db27a99f39e20d7739e9f7f6998124cc2812a",
+      "sha256": "d5c81f887c082aaa3e16b87adbefd994dd001e277d3d1f275298719955c2ca44"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "git_blob": "538a0e2ec6c39bde37eca43eaf76096cac076d66",
+      "sha256": "7365b19e607db1d2e28b72ca3e5429d6db7a02d9e0c28986c957026dec2c97cb"
+    },
+    {
+      "path": "TAU2_FIXED_HEADER.sh",
+      "mode": "100644",
+      "git_blob": "e0a01a095b83ae05f91b3341ab990bed4fb362c5",
+      "sha256": "9b79bc8e13bc79f6163d111689c90dec1d8bf7256ef357a980d368fc2e56bed9"
+    },
+    {
+      "path": "TAU2_FIXED_SNIPPET.md",
+      "mode": "100644",
+      "git_blob": "34789a3e8c3e6678ebf35112e3515eb39dbdcd40",
+      "sha256": "48a0b2d40f1bad1c74d3daf33f36a240b02ebc515160f15cca7d83efd96d0303"
+    },
+    {
+      "path": "diagnostic-report-output/bet-2026-diagnostic-report.html",
+      "mode": "100644",
+      "git_blob": "e49042622494157bded627f3323b2dfaf913ca17",
+      "sha256": "c8788b43672feb0fb1999e26b78ad47d319f165b48f6fc64daeef4e474d85264"
+    },
+    {
+      "path": "diagnostic-report-output/figure-captions.csv",
+      "mode": "100644",
+      "git_blob": "4efb94079516a3344fbcabaddf00fc9191339d11",
+      "sha256": "fa8fd951e0e412d48beddfb6f3f6aa87ad915cd48dea3eb84e0957cdf5886c8b"
+    },
+    {
+      "path": "diagnostic-report-output/figures/aspm-comparison.png",
+      "mode": "100644",
+      "git_blob": "35ea77d42c133ad6c3abe755e421247d5d64aed3",
+      "sha256": "166dfb4bb65d00bd91a29abb3f1ae188752943d39e9762d9676b90511cefb8e7"
+    },
+    {
+      "path": "diagnostic-report-output/figures/cpue-fit-residuals.png",
+      "mode": "100644",
+      "git_blob": "4ff189abda4ff79d5fab5b701215dec5def0f9fe",
+      "sha256": "8a16e26c451a9f1b9df2f8398f933e08b44616d006d3a3f980708cc94f7a90cb"
+    },
+    {
+      "path": "diagnostic-report-output/figures/diagnostic-population-dynamics.png",
+      "mode": "100644",
+      "git_blob": "63b8068642e8c705c8d11b61721fd0259df803fd",
+      "sha256": "41675d3f91c3a3b38232ca6c5782671f5630a3db9267e012df67b527fd9ed13c"
+    },
+    {
+      "path": "diagnostic-report-output/figures/hessian-parameter-scales.png",
+      "mode": "100644",
+      "git_blob": "422778dc1181231d869b04751762355188ec6bac",
+      "sha256": "ad4b0ce3a23d0b082c8b557c38f022d1dbabc0a88a7da01bcaf2d5fccca4a700"
+    },
+    {
+      "path": "diagnostic-report-output/figures/jitter-diagnostics.png",
+      "mode": "100644",
+      "git_blob": "8034ddfa7efeeac7ecd71131644fa90dacb1ac4b",
+      "sha256": "092390ba691ec00231291919c2bb4745c1a330452a2f86e2437361d14312f004"
+    },
+    {
+      "path": "diagnostic-report-output/figures/likelihood-profile-caal-region-detail.png",
+      "mode": "100644",
+      "git_blob": "1830b06d43567ce3df639b460fba71d292f1a8f2",
+      "sha256": "1f2fd9dd19a3953e83c139830c7edbf7b4e236953d0da3b44d24d9293483603d"
+    },
+    {
+      "path": "diagnostic-report-output/figures/likelihood-profile-components.png",
+      "mode": "100644",
+      "git_blob": "ba1a83d95c28a06ca4bb0da4b7736260e5a82983",
+      "sha256": "bfdba35f1e39acb346b9f6d614e238e7768d2f20fb85abef137251b5c77a88f3"
+    },
+    {
+      "path": "diagnostic-report-output/figures/likelihood-profile-cpue-detail.png",
+      "mode": "100644",
+      "git_blob": "b4c1b947e6eeddf8ddbf2265d96fdb1e05908472",
+      "sha256": "b256d5f3f7033d2227b3870a264d7475df287ec6f2c7a4d291d438c882d5a5a5"
+    },
+    {
+      "path": "diagnostic-report-output/figures/likelihood-profile-lf-detail.png",
+      "mode": "100644",
+      "git_blob": "22cd7e5aea003cb65cecf8c325125f6f3255f225",
+      "sha256": "9c2d22dd2c2a0ba1c403fb09f07a85420b8c3849592b0219dc4aeee87ed7dac9"
+    },
+    {
+      "path": "diagnostic-report-output/figures/likelihood-profile-penalty-detail.png",
+      "mode": "100644",
+      "git_blob": "9b4f045c35b19e18e6a178cfcdca4f553c99311f",
+      "sha256": "fd17e2ab8313dda86e7c9a9589ef990060ab3ae2fc64840bd7358c2d3553df23"
+    },
+    {
+      "path": "diagnostic-report-output/figures/likelihood-profile-tag-detail.png",
+      "mode": "100644",
+      "git_blob": "04da24804b581c59135deb2825ac1affd080582b",
+      "sha256": "7a2c4b411588b207fe94cd462bd24ac301114a39aaca772d321a5022477262c6"
+    },
+    {
+      "path": "diagnostic-report-output/figures/retrospective-diagnostics.png",
+      "mode": "100644",
+      "git_blob": "1ef61f456fc8f16764d35f63794cb1638db8690f",
+      "sha256": "b028e3c7d3d4b54a13fa248a04475f197b863cf6d989e6e49e691bc54a004a26"
+    },
+    {
+      "path": "diagnostic-report-output/figures/self-test-diagnostics.png",
+      "mode": "100644",
+      "git_blob": "3fbd21b365c53e1265bf980fde084417fc134d9e",
+      "sha256": "c328a5711af96affda50c30a5cb480ace599ad884f6aec1d8361920f9b06bc6f"
+    },
+    {
+      "path": "diagnostic-report-output/figures/stock-recruitment.png",
+      "mode": "100644",
+      "git_blob": "ee13734a88768f640f5217220ffafabaa0644d3d",
+      "sha256": "02a6e8b869889da972cfe4ad62d705c29e643711e419755efa28e59a4c0f9ccf"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/age-data-coverage.png",
+      "mode": "100644",
+      "git_blob": "1c2218061704e61e6244ebd075c3b11b0233c7fb",
+      "sha256": "bc20d8e0ffb8324ae73c8a86b1342cc4937a5c2462f82545a2ded00179dc666b"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/age-data-fit-by-region.png",
+      "mode": "100644",
+      "git_blob": "37ebf124889281241db903a1b0eb49e02c9a6873",
+      "sha256": "c7ea9ea6182bcbd58c97d9826309d8e73be0de37ef6cc7b3311fcf6bf906b51b"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/age-data-fit.png",
+      "mode": "100644",
+      "git_blob": "83da72bd414f4f98e8a7ba952d05b91405b894be",
+      "sha256": "21b95f0ba5d0d60dd3cc3c35e01de5ebd6927536c363159997fb6024b22c22b0"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/age-data-growth-by-region.png",
+      "mode": "100644",
+      "git_blob": "74fe581efbbe9976ee3d55d630d3b6f0391c4a0c",
+      "sha256": "086170295ba3fdde48c3b2c08379fd2f79e169cea44c3233432e8f8c5362b4cf"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/age-data-residuals-by-region.png",
+      "mode": "100644",
+      "git_blob": "28ec9227fbe10dea1cadd40ffd91559fe22cf3f4",
+      "sha256": "641bc681b0cc9360b2cb8a63e15d8cb2e2d76cd5e297d73b6bcaad7401a72160"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/catch-by-fishery-fits.png",
+      "mode": "100644",
+      "git_blob": "8a6b28cb50b293385655f00a9fe2627f5fd657c7",
+      "sha256": "023b17bd574612f7933dcfa04228bceb7d7266d245e6da09de54b61f5e2647c5"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/depletion-by-area.png",
+      "mode": "100644",
+      "git_blob": "ea18f5908b780adb552621e6aa5a5a3b5815e8d1",
+      "sha256": "e8f2fb07ba8b1465491c2a26e164168b074383301b536493633a773c4d366b94"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/f-juvenile-adult-by-area.png",
+      "mode": "100644",
+      "git_blob": "90271b546d5f03633df0a72471243e1560e3222f",
+      "sha256": "eb5221d22cc7198dba310e8c7d63ee8ecc073a53034dd85da4ba2939fdd704dd"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/fishery-process.png",
+      "mode": "100644",
+      "git_blob": "4dc38ad24cd08323a0d641edf044f12549a8408e",
+      "sha256": "490220353536348b921402bb6d96a56f92bc0405e54b53102d1db05ce8dc9074"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/fishery-selectivity-length.png",
+      "mode": "100644",
+      "git_blob": "83091e45d62036d67afe508e18370f5f7c0b7054",
+      "sha256": "5d116aeccb6b744977d30cf9330477ce800aac0119268995ac018d354d991e89"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/growth-curve.png",
+      "mode": "100644",
+      "git_blob": "53426aa51b6e78218852500cf966f9e10751ac0c",
+      "sha256": "8e0cc64bde38e6d04eda5597cde274c56b1c9ec1c9da58465e298c5a45b54900"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/length-frequency-fit-by-region.png",
+      "mode": "100644",
+      "git_blob": "c5f46fd1e5e486fe80e6191c84540c3ac2604e9b",
+      "sha256": "543c1de1bf5d7700bb26f3f62a14bf12f2e1135eab186694ab61acaa4ba67404"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/length-frequency-residuals.png",
+      "mode": "100644",
+      "git_blob": "0680fdadddf3b949560bdd7219d2262ec4aa701d",
+      "sha256": "de1bf3792988ccd403bf9cb1c92075733279f96f9ddee2ff516d813588795321"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/length-frequency.png",
+      "mode": "100644",
+      "git_blob": "d849beae39d77bc57a16243beee11675ef15cde6",
+      "sha256": "74b12fce9ac344223014187b69f91b526836de6adbf4709946b67c74a5366e54"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/population-biology.png",
+      "mode": "100644",
+      "git_blob": "053da46ad17c3621ed11fae04112ba4e4fa6321a",
+      "sha256": "d5331711dcab9d22fbdb7d25416cc6bdb6b28949d4a2af6c284dd05664674449"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/recruitment-by-area.png",
+      "mode": "100644",
+      "git_blob": "1f4c3a2656b72fa5654ac83f1edbccd28b0d42cd",
+      "sha256": "9251311f6fdec2fae8a8fb8ca1d1f36cfad66d167d440a4a501a4ecea889109d"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/region-map.png",
+      "mode": "100644",
+      "git_blob": "c6f39ad85b403bf66613c54ed7b71d1af95c98f2",
+      "sha256": "73c774045f804bc454bb06a4ede49dbffcf59d3d1454f700013e479949e43bf3"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/regional-movement.png",
+      "mode": "100644",
+      "git_blob": "a26191dca93ffd5b91dce4ac1c091d9ba3afc59e",
+      "sha256": "57e0ddb4f20a069d684b43532aa17834449f0d855a307b6f81c1bc8a5d5e1b5d"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/spawning-potential-with-without-fishing.png",
+      "mode": "100644",
+      "git_blob": "963d21cbce2ed87ea7bfffb19956be282a919d03",
+      "sha256": "fd4cc69a926b635d055967c4fa4c21a260aafe8c0f4c897df25d194b71775736"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/tag-attrition-by-program.png",
+      "mode": "100644",
+      "git_blob": "3a0258a020e73616c4fc4b9a677c95bb0df71073",
+      "sha256": "161afd0ba3764dc2261a23fe02d17c1b9df73369723cdd172de852ca18ccbc8a"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/tag-reporting-rates-active.png",
+      "mode": "100644",
+      "git_blob": "01aeff0e48597607b93566f4f2267a1ab888f8ba",
+      "sha256": "610f84ed9d63f4cd2f42e719c6e02a4adf4d3cfabe0e1c730fd5d1ebf6a79f6e"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/tag-returns-all.png",
+      "mode": "100644",
+      "git_blob": "45692aa8daa3d0d63f4b3ece8d14efe91553f2ec",
+      "sha256": "809ccf71dba1ade0b79b7e4435c60fc13571e42fc862c4da4fff2d9e8ec4c711"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/tag-returns-by-group.png",
+      "mode": "100644",
+      "git_blob": "08faeeba97f82dfc9912a84c2faa8413b70ea86e",
+      "sha256": "34164c54c202e737cf5d50d6aa712cef6acee6d2568182f32c1083eb047bd16d"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/total-biomass-with-without-fishing.png",
+      "mode": "100644",
+      "git_blob": "c45b9286e0dbb688a29d3f35b65408885838e710",
+      "sha256": "1e75812c074e9be51c80d41a414fbeeb467a8915704f5520a308a508242c56cd"
+    },
+    {
+      "path": "diagnostic-report-output/mfclshiny/figures/total-catch-fits.png",
+      "mode": "100644",
+      "git_blob": "8f61ff51f9dcd6713310a7e5c53daf05666e8401",
+      "sha256": "0886e2d2b7ba8199a1d9f5906414dc2d81bc08a2ec2fce8bfb425e581a2fdbab"
+    },
+    {
+      "path": "diagnostic-report-output/report-manifest.csv",
+      "mode": "100644",
+      "git_blob": "2dff6192cc1e235bdebaa4a5c040bbec66b58349",
+      "sha256": "425f509a69d0d067577c8a6111354068df2cc725ccba2154e4faaa94d9020792"
+    },
+    {
+      "path": "diagnostic-report-output/tables/aspm-terminal-summary.csv",
+      "mode": "100644",
+      "git_blob": "82649ea9c754439ab90503ebfcfbb1f3a44366fd",
+      "sha256": "39e4f086771334f7b3b31c3af3ba32137fbcf46f4828331ffe6436dd10a98a4f"
+    },
+    {
+      "path": "diagnostic-report-output/tables/aspm-terminal-summary.tex",
+      "mode": "100644",
+      "git_blob": "03e7a2ab455d584271df5d71aded7d35553647cb",
+      "sha256": "be549f8d62a41d002b050446eb6106e5871f293740dd48b08499969d2b7a203c"
+    },
+    {
+      "path": "diagnostic-report-output/tables/diagnostic-check-summary.csv",
+      "mode": "100644",
+      "git_blob": "1664126a04c1a148474b35bc60bfbabb6575d93a",
+      "sha256": "72dd5fe6284a25579921c19405dce31fb6e9abaac0e90b2e5d57654a6ca4f44a"
+    },
+    {
+      "path": "diagnostic-report-output/tables/diagnostic-check-summary.tex",
+      "mode": "100644",
+      "git_blob": "76d18d32e8fe9d88d25d15be643402b757286ae3",
+      "sha256": "9a35319935c77cc2dd28f33cc8192e5ee16d8d80a9282f3d144ee8017450702a"
+    },
+    {
+      "path": "diagnostic-report-output/tables/fishery-grouping.csv",
+      "mode": "100644",
+      "git_blob": "01912ef8b6a157ea05d15db68f93f059b305881d",
+      "sha256": "32b69cb1d3d65f5b82b9d52763a3ddaa0b989c6167d3945d157f8e529ea78042"
+    },
+    {
+      "path": "diagnostic-report-output/tables/fishery-grouping.tex",
+      "mode": "100644",
+      "git_blob": "3ac8741e1224e105550cf3aacbd2f3ac2a7d1baf",
+      "sha256": "b264d4e4a63af088b7fd3a8426b7a9ec55879b37c996a9f5498b4b6df7b5445c"
+    },
+    {
+      "path": "diagnostic-report-output/tables/hessian-summary.csv",
+      "mode": "100644",
+      "git_blob": "2afdee9c329bb697699bcc9baae599476eb5adb7",
+      "sha256": "6cb60ee5dfa477eb136c67a6100f940b1359c1ccc382343948eb1e5490275ec4"
+    },
+    {
+      "path": "diagnostic-report-output/tables/hessian-summary.tex",
+      "mode": "100644",
+      "git_blob": "ec16ec9151ecc3ba3b3e9d549846e406672c0b26",
+      "sha256": "a15c241313de770d5c9244a0630aef032a8037df12bfbca328346f421debf3ab"
+    },
+    {
+      "path": "diagnostic-report-output/tables/jitter-summary.csv",
+      "mode": "100644",
+      "git_blob": "eaac32dc5deaa617ebf6ca3100eec4700e56b54e",
+      "sha256": "30a2d2c255632fdae87cfa92fc900011f4e3877f3a527cb5cb96727c5e2f84f3"
+    },
+    {
+      "path": "diagnostic-report-output/tables/jitter-summary.tex",
+      "mode": "100644",
+      "git_blob": "a9c10ed963b5cba9f449d90fece5e8da649be335",
+      "sha256": "4281822e9f7a0fa68cd0cd80f21c0e4fec7f688b0c955e359979339a79e855ce"
+    },
+    {
+      "path": "diagnostic-report-output/tables/model-fit-summary.csv",
+      "mode": "100644",
+      "git_blob": "9ba5ba7b96df2646b1508e04b19bd4294cf4fcc3",
+      "sha256": "ca8abdd20a4520e860793ba1454cb17a3c644c45bdab4979255dbb6dce855d0c"
+    },
+    {
+      "path": "diagnostic-report-output/tables/model-fit-summary.tex",
+      "mode": "100644",
+      "git_blob": "40645980dd06b463a0e47fee7b598adb23519880",
+      "sha256": "bae9f979dca36a6acdf558424f532bd284cff3fce555611fbfa053ee1d430cd4"
+    },
+    {
+      "path": "diagnostic-report-output/tables/objective-components.csv",
+      "mode": "100644",
+      "git_blob": "bc3941d5d41a86cd87df7d6ddaeb7faa954dd7c0",
+      "sha256": "bca2e5d1e448c7e0171dddc0a8c97fc833ee09ebe1a9b5c811f5013685f10adb"
+    },
+    {
+      "path": "diagnostic-report-output/tables/objective-components.tex",
+      "mode": "100644",
+      "git_blob": "ee7c5deae4a509f0dccd8ca64aa6ce4f22814e51",
+      "sha256": "186d06887e82beff559131e0333e4200da99f49e727b15785f5f6c653990773f"
+    },
+    {
+      "path": "diagnostic-report-output/tables/parameter-bounds.csv",
+      "mode": "100644",
+      "git_blob": "649c94784f2ccbe6b3cf685625dfbd3a7e0c3ef4",
+      "sha256": "b547b89d218c07a1d4afc338f76d53256a670cfdf6c42fe110abd48815e2a877"
+    },
+    {
+      "path": "diagnostic-report-output/tables/parameter-bounds.tex",
+      "mode": "100644",
+      "git_blob": "8132d14a844f8dcfce55c541bb0e1c02eac19418",
+      "sha256": "ca2713c13df4828ba418f9501a1bf11862f20c943e18b6390891cae5effca115"
+    },
+    {
+      "path": "diagnostic-report-output/tables/parameter-correlations.csv",
+      "mode": "100644",
+      "git_blob": "4d65dc6de0299154cf894a915bc2ac2afefc7f2c",
+      "sha256": "ed67683b6cf2369cd3d46bb923057b89b26d056bed566e09e939427fb296a326"
+    },
+    {
+      "path": "diagnostic-report-output/tables/parameter-correlations.tex",
+      "mode": "100644",
+      "git_blob": "831a0d02788a392414d264f976d4208cc21f529f",
+      "sha256": "aad200d74eac54db2d5937d5a13931d6823789da2ebb91eb267164009629d063"
+    },
+    {
+      "path": "diagnostic-report-output/tables/recent-stock-status.csv",
+      "mode": "100644",
+      "git_blob": "86d8c1b76cdc63d730ab14ff864a243e25f6f57b",
+      "sha256": "aff958dc205037b6c45f4cfd8bb781308f9d70e19cd88995b09588206d980a25"
+    },
+    {
+      "path": "diagnostic-report-output/tables/recent-stock-status.tex",
+      "mode": "100644",
+      "git_blob": "f29df5f16297bb2d8f8a891e71e97ee20112aa00",
+      "sha256": "349c7296f5531626a24014df6a133651043412161b6170db457c634dea258e1c"
+    },
+    {
+      "path": "diagnostic-report-output/tables/retrospective-summary.csv",
+      "mode": "100644",
+      "git_blob": "7da862f1aa4967cbcea291e44cf428669fd5b2c3",
+      "sha256": "9817638bdf4355367e975fbbbde3126b0d475be019eabcc9a8b5f4c993a0e229"
+    },
+    {
+      "path": "diagnostic-report-output/tables/retrospective-summary.tex",
+      "mode": "100644",
+      "git_blob": "9b3968f827259b47b36206889c51cfe481770b17",
+      "sha256": "29472d3a60cb7e68ea745752e6c69363bb3e6e4b75d1ea391c50041912222051"
+    },
+    {
+      "path": "diagnostic-report-output/tables/self-test-summary.csv",
+      "mode": "100644",
+      "git_blob": "0a4dd6b531c0a45d91e91fe021f2877ed2e8b893",
+      "sha256": "b321de7706856fb1bb600fa34802c0ecbba69d22e89a111ee93404f9eba43028"
+    },
+    {
+      "path": "diagnostic-report-output/tables/self-test-summary.tex",
+      "mode": "100644",
+      "git_blob": "fabac0faba7c6630f70bfc57e15893f6a8a9baa0",
+      "sha256": "ff193370339d2873a7e58821ce1e3ce6ad5125b26b563654a07c6dc892cec7d1"
+    },
+    {
+      "path": "diagnostic-report-output/tables/tag-attrition-validation.csv",
+      "mode": "100644",
+      "git_blob": "61a027d241f111718ee230740f0aa4f844e586ac",
+      "sha256": "c54ba3afe198293f57365d48b3128a2e87bc56580202be447793f36b08a08d2d"
+    },
+    {
+      "path": "diagnostic-report-output/tables/tag-release-groups.csv",
+      "mode": "100644",
+      "git_blob": "4e3c0694cacb8613d7a66131f676eacf87c845d4",
+      "sha256": "cd8584f88c07874e356cbf41b06cc6920d448dfee98087c31efd970cdcdb5e11"
+    },
+    {
+      "path": "diagnostic-report-output/tables/tag-release-groups.tex",
+      "mode": "100644",
+      "git_blob": "828df8caaf3404324b0b1d4d93fc95f00b23f486",
+      "sha256": "3a7efeae52f089dad7d5e152bc1c1f4973dbbc5702b98e427f89e0648283467a"
+    },
+    {
+      "path": "diagnostic-report-output/tables/tag-reporting-rate-groups.csv",
+      "mode": "100644",
+      "git_blob": "5ecf21097f4b7b735da6fb64bc2cf660ae7df994",
+      "sha256": "c1d12c0ef0ad997a1ec5d109f55a9541fe9fa2f1b2512537caa4a92e1db92168"
+    },
+    {
+      "path": "diagnostic-report-output/tables/tag-reporting-rate-groups.tex",
+      "mode": "100644",
+      "git_blob": "b9e24b476a967b15722981df58e1138c102b42ec",
+      "sha256": "83cfafdf7d2f1de81b34dad958da7bbf756d6a1f56970c48196bbac38c046181"
+    },
+    {
+      "path": "diagnostic-report-output/viewer/bet-2026-likelihood-profile-viewer.html",
+      "mode": "100644",
+      "git_blob": "45019eb7e428c4312b3b1a4c95cbad8e17181c34",
+      "sha256": "757d83f3f1bf8cd9166c8e83c03dc6479c1fb1aede40ebbd9dd2ac360004ae9d"
+    },
+    {
+      "path": "diagnostic-report/R/augment_public_payload_uncertainty.R",
+      "mode": "100644",
+      "git_blob": "2326d22b6a355d2e800825473cf453a82297cfce",
+      "sha256": "933cf94b3e58524fc9a71b7c27254a8758f35dafb547760763eafb113ea1c5c0"
+    },
+    {
+      "path": "diagnostic-report/R/build_likelihood_profile_viewer.R",
+      "mode": "100644",
+      "git_blob": "4bca6ae008d25493748196ea08ca7ee2a1d14726",
+      "sha256": "a31270c91bee0f3101f78aa45a70154d6cb7de9926a74db2a88b0ef6a2aae403"
+    },
+    {
+      "path": "diagnostic-report/R/build_report.R",
+      "mode": "100644",
+      "git_blob": "0733da2d21044b26bb700f18e99003895bfdc826",
+      "sha256": "a0532ee547553b0f9c9f465f2e92678e2f37fce866a4318220dd14ed6f9c8a82"
+    },
+    {
+      "path": "diagnostic-report/R/build_uncertainty.R",
+      "mode": "100755",
+      "git_blob": "cb44a53aef9de4503d405db053139807066468a2",
+      "sha256": "a9aa5d212875c4a99c258fa329f6f4023d9ecdc99a9f6b68681ff09fc4dca3a3"
+    },
+    {
+      "path": "diagnostic-report/R/generate_annual_uncertainty.R",
+      "mode": "100755",
+      "git_blob": "2552a7d6f0a5c6d8376cbb4835892ea9e8dcc0f1",
+      "sha256": "df041e61b852a6d541d9139a155dc4f6853f93c38425a1b534d9b2cc1ef2764d"
+    },
+    {
+      "path": "diagnostic-report/R/generate_fishing_mortality_uncertainty.R",
+      "mode": "100644",
+      "git_blob": "6a71dd4b92252dbbfbe0024920bf329f91c9a5ff",
+      "sha256": "3a0ab4657b782fdd7811f459ef8821b12bccc9f19c7ec1cd0fa492130894f6bd"
+    },
+    {
+      "path": "diagnostic-report/R/prepare_public_payload.R",
+      "mode": "100644",
+      "git_blob": "5b24212c96fdc9e9aa4ca4015ecfe94b9b8515fe",
+      "sha256": "e7670bcf00f01bdc40d30e71b5a870dd16af4faa7c7f3ffac144bfebf465e025"
+    },
+    {
+      "path": "diagnostic-report/R/refresh_likelihood_profile_payload.R",
+      "mode": "100644",
+      "git_blob": "9f2c7db5aff9be7b1784c5661bd0b579139ad035",
+      "sha256": "ee0d7864f6bea3f99f0df644cf73ed65889bd63d9aee86def5b1e0523d843c69"
+    },
+    {
+      "path": "diagnostic-report/R/sync_public_fishery_map.R",
+      "mode": "100644",
+      "git_blob": "23cff57f0ec8a173acbd0a46c6871088f5744286",
+      "sha256": "90a40cdc229281920997d8bf91fda7fa8e5de57bfb3ac31c87b3c0cc11480bb4"
+    },
+    {
+      "path": "diagnostic-report/README.md",
+      "mode": "100644",
+      "git_blob": "39e1a746fd317cd29fb40498066e65c230f84dd7",
+      "sha256": "99b503b6ac9113fd8ed78341165b06156384b201fdfefb29fcfa4633693cc007"
+    },
+    {
+      "path": "diagnostic-report/data/SHA256SUMS",
+      "mode": "100644",
+      "git_blob": "882cc08465307a01cd5c9eac8f9acc03db93a901",
+      "sha256": "073694a0250b8702091a5b8bd3811252652adc99070999b8516ee51b61eb06fa"
+    },
+    {
+      "path": "diagnostic-report/data/diagnostic-report-data-manifest.csv",
+      "mode": "100644",
+      "git_blob": "12e34133d30f034bb0fdb169cdb780d93348afaa",
+      "sha256": "7166b1d27991085ff68fa004cd901067d25c73e420a4a8b0db39e42dc0e0f6d5"
+    },
+    {
+      "path": "diagnostic-report/data/diagnostic-report-data.rds",
+      "mode": "100644",
+      "git_blob": "783130785a702c9c48da8916b93db425a0c57628",
+      "sha256": "bbad66efc63306f97bfd1af540f44fdf1d519e3bf83444b5d757c122fc6ce59f"
+    },
+    {
+      "path": "diagnostic-report/kflow.yaml",
+      "mode": "100644",
+      "git_blob": "6ce46d75ec16313c2ea2c3a965cc57babc529e7e",
+      "sha256": "1d09717ff43116de150d1667a0be846a468eb035bd5245b607bc3d4614a60e50"
+    },
+    {
+      "path": "diagnostic-report/likelihood-profile-viewer-template.html",
+      "mode": "100644",
+      "git_blob": "7b1d8181413da1ea8bb4369353d8b34958dfe9a5",
+      "sha256": "0109297fff63b3f1b64da00920d6b42afda1f48a598f74b3e94d4d237b9476fc"
+    },
+    {
+      "path": "diagnostic-report/run.sh",
+      "mode": "100755",
+      "git_blob": "bf4625a038ec4bef8e30624b888e4a3b954c4251",
+      "sha256": "8273c542858a69f5509c6309891f232bb4e36230c11fc1d6adc0e9010d36cdc0"
+    },
+    {
+      "path": "diagnostic-report/submit.py",
+      "mode": "100755",
+      "git_blob": "2adecca865b5d9dac95033bf10ff0e853492a98a",
+      "sha256": "a8c870a1667a2def7a7c6dc3c2dd2fe4374fd53057a1854c7862a03e2cc11754"
+    },
+    {
+      "path": "diagnostic-report/tests/test-likelihood-profile-viewer.R",
+      "mode": "100644",
+      "git_blob": "08f3fa5d8821d691d302ce382fb24aae0bcf27a5",
+      "sha256": "142f63f7104571e88a40f2d3bcb53de5548162321d2fb5139f8317ce58c0fad7"
+    },
+    {
+      "path": "diagnostic-report/tests/test-public-payload.R",
+      "mode": "100644",
+      "git_blob": "4884e34a41cd3eb4d3287eceec8fea6f0596fa4a",
+      "sha256": "2d7e8fecee18eecd4c261473805284ba6b691404db75c8a8d4c1209f81e9ea49"
+    },
+    {
+      "path": "doitall",
+      "mode": "100755",
+      "git_blob": "4ac312385391c155cfabdb5771841c50e533f4c9",
+      "sha256": "d940241b8099bb2f7d58c7bb3447ff544e2bbdb6ccc64e866f943a88510d7377"
+    },
+    {
+      "path": "doitall.ps1",
+      "mode": "100644",
+      "git_blob": "103140dded81ce5c83a16093db287bd35b3e37c4",
+      "sha256": "166bb2dab874caa804a789b4a38ae3adf8c087355d3a877e31e8f035ec1c147c"
+    },
+    {
+      "path": "kflow.yaml",
+      "mode": "100644",
+      "git_blob": "75a6a41a684e7b7b3ca5abae09a2d32a4e58629a",
+      "sha256": "17ab22ec7a703842a50cba576eafc2e1b29eac9cccb53ec1078bad71dac849a5"
+    },
+    {
+      "path": "mfclo64",
+      "mode": "100755",
+      "git_blob": "c78c2619d204f2555729a8db684f7f2fab6f04e5",
+      "sha256": "8995f72019869863c1d1c0b4f44fc6a6268d1f79031f5bc79dc354ee10f0a63e"
+    },
+    {
+      "path": "model.json",
+      "mode": "100644",
+      "git_blob": "f6d94584e42d40569c158ce05a6b5f1d2ab25681",
+      "sha256": "afe84387aa570991c8493e81400a6647d1bd87d7d7e58313ab38f75af998bf72"
+    },
+    {
+      "path": "model/MANIFEST.sha256",
+      "mode": "100644",
+      "git_blob": "313723378ee37e1e19d8c7dc1b62c3e49a00cfce",
+      "sha256": "764327d9a449757e060b537eeeb67a648eb8c16f21caa3353d74974213a3522b"
+    },
+    {
+      "path": "model/README.md",
+      "mode": "100644",
+      "git_blob": "f51ac37622546a08e685bff1f35569a16f699fff",
+      "sha256": "21d4a05dae83e741fe2038f9c51808f407aa6e4766d834035fa7c3693f4ed37f"
+    },
+    {
+      "path": "model/bet.age_length",
+      "mode": "100644",
+      "git_blob": "0ee68f193e11e3c0f516460d9536cb47d1bdc697",
+      "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c"
+    },
+    {
+      "path": "model/bet.frq",
+      "mode": "100644",
+      "git_blob": "5cad7d617ee7681966f1cc4e35801d0877ca4f60",
+      "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004"
+    },
+    {
+      "path": "model/bet.ini",
+      "mode": "100644",
+      "git_blob": "1e63cdba45d5ce499edb5dcbc113116321769d42",
+      "sha256": "fbd064c3d0ccb4d2e1b9beb06fe3eacf0180677821e6a1773d20b308474d984e"
+    },
+    {
+      "path": "model/bet.reg_scaling",
+      "mode": "100644",
+      "git_blob": "fa22c978510f64f133245a9dcb27d3db038dfc7c",
+      "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3"
+    },
+    {
+      "path": "model/bet.tag",
+      "mode": "100644",
+      "git_blob": "44c3b585ad1fe461f34e48a44a3321cf0594a38c",
+      "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f"
+    },
+    {
+      "path": "model/cpue_mle_sigma_audit.csv",
+      "mode": "100644",
+      "git_blob": "c0121775e1b7e94362e16a722aa42416af3f4336",
+      "sha256": "cd2d9a9b61f6efda432318be34c856029b355f0ea35f33681dc1dc37820cbc86"
+    },
+    {
+      "path": "model/doitall.sh",
+      "mode": "100755",
+      "git_blob": "477fe46d84c91d7257ee08bec70f643f20317df8",
+      "sha256": "96ea1dae6e8119a142d6a9cc3f5c3b99d20da8e31b1067e02e5701fbb0bf51fa"
+    },
+    {
+      "path": "model/fishery_map.R",
+      "mode": "100644",
+      "git_blob": "eae4e325cd97b345d5e06762519afa3dcada54ad",
+      "sha256": "d133fe8735739531f00046485c639bcc3d8a86f077256e569c9c2fa30e39074d"
+    },
+    {
+      "path": "model/mfcl.cfg",
+      "mode": "100644",
+      "git_blob": "4d25120b2f1a1dd322747ca47dcede6fe1e65169",
+      "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae"
+    },
+    {
+      "path": "model/model-inputs/Diagnostic.conf",
+      "mode": "100644",
+      "git_blob": "c99795042e0e9d4c1dfd8fe4042482ede4fb863d",
+      "sha256": "45ed73f3d53f6ab24e477353e310b0cf4a50c2dd8413375a7befc0e5d4f7790e"
+    },
+    {
+      "path": "model/selectivity-models/Diagnostic.csv",
+      "mode": "100644",
+      "git_blob": "4825bbc5925e79f7a62b0b8ac21e04e4613e5cca",
+      "sha256": "790e21a01054349a20f4fbbb7db926f6452d059344815a3a9d6a5de51db3310a"
+    },
+    {
+      "path": "model/tag_rep_map.R",
+      "mode": "100644",
+      "git_blob": "f4566f44c8812d143a8b7cf7417efa6a72a3d534",
+      "sha256": "e1bddfe316a8b3e39333d0792f58db8f070d3f6f370770507e2f500f9d88786c"
+    },
+    {
+      "path": "restore-hessian",
+      "mode": "100755",
+      "git_blob": "5982f38e40402225e9da3c8b1d39b1902ec6f32c",
+      "sha256": "0d84bf14728516f2e62142ead19a2405417eaec9956a56b50335ba30b6ce290a"
+    },
+    {
+      "path": "restore-hessian.ps1",
+      "mode": "100644",
+      "git_blob": "3119dd0d4457d0865ca7e292912ddf4f71962bd3",
+      "sha256": "f51fa2c0ac746c020a34fdc811a614ad006b3b226e50635ba0e14f00e63870de"
+    },
+    {
+      "path": "restore-payload",
+      "mode": "100755",
+      "git_blob": "d772216a640d6a3b27167a338d2d42395789dae0",
+      "sha256": "a49ccfd71d3d5ae92a9529e7e0d1e1d715582e314168ba10fa8d3960654d9f94"
+    },
+    {
+      "path": "results/reference/README.md",
+      "mode": "100644",
+      "git_blob": "45715622fb7be6fadf71281ffbd2c4d4bea798fd",
+      "sha256": "b716234b336454b77b1fe4124d13f481508e98f40151af82ab605acc0441a42d"
+    },
+    {
+      "path": "results/reference/SHA256SUMS",
+      "mode": "100644",
+      "git_blob": "ad002e914d79f174b48741776197017812617edb",
+      "sha256": "ed5a0d969a7de9200c6880610592c5d4248faef3630b87c668d64544a029a640"
+    },
+    {
+      "path": "results/reference/final.par",
+      "mode": "100644",
+      "git_blob": "acb77e06cf0f5077e7e642b8d2c139482205a535",
+      "sha256": "21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3"
+    },
+    {
+      "path": "results/reference/fit-summary.csv",
+      "mode": "100644",
+      "git_blob": "540cf439f1d3c775357fa8ea387d1b53f0024fea",
+      "sha256": "f965a94c6c12e37e6bf25cdd122ce772b9b913aa2a90ba6b0acb962f8da7bfc2"
+    },
+    {
+      "path": "results/reference/hessian/README.md",
+      "mode": "100644",
+      "git_blob": "34a835c37bc7bfc1f2e2954bc7e60fbf05f8ae9f",
+      "sha256": "cf6b28f1b45aa01f1b21a7524f03090119319f30e0251071721232d61989b746"
+    },
+    {
+      "path": "results/reference/hessian/SHA256SUMS",
+      "mode": "100644",
+      "git_blob": "0a08712912c79782b07d5b51b71e0ca880b540df",
+      "sha256": "60dbf9c149b6ac3fc9f015fa966fc5da53297a69dd12295ce45a18012ab0e3cb"
+    },
+    {
+      "path": "results/reference/hessian/check-summary.csv",
+      "mode": "100644",
+      "git_blob": "4d9cfb907fc5b0582ac5e9a75712031157512ea3",
+      "sha256": "48eec9df282b145f1a102971390e5af4f5519b2a32379e4b822c9ced7a703ed0"
+    },
+    {
+      "path": "results/reference/hessian/check-unit-status.csv",
+      "mode": "100644",
+      "git_blob": "a3ef5d65821d3aca27759ddbb77a491aec075059",
+      "sha256": "5020a806dfc93515aa937822fa2a2eaaab2fd01cbbc110b12249bfa9098bc17e"
+    },
+    {
+      "path": "results/reference/hessian/hessian_info.rds",
+      "mode": "100644",
+      "git_blob": "f8426f50ca49c5018c5b26451a9b2aa6ede70cb6",
+      "sha256": "592453bf2db9bdd9c3a34059a2cfd5097b5ef32329a79d5796a9945fbbd0bcdb"
+    },
+    {
+      "path": "results/reference/hessian/mfcl_eigen_log.txt",
+      "mode": "100644",
+      "git_blob": "7f5a218c0030f201ccdd90750b0aeedbfcbe858c",
+      "sha256": "75ab2009d81ac2eceef1379244b79f1968f4e7828ced57900a8c3df466c308f4"
+    },
+    {
+      "path": "results/reference/hessian/mfcl_stitch_log.txt",
+      "mode": "100644",
+      "git_blob": "09800e34993b01f672e5a056aeb04daaac5ff0fd",
+      "sha256": "22eee600dd0c2355fc6aaf83f7852d1b7c4ba2470dc98a38955e2a439b7e235d"
+    },
+    {
+      "path": "results/reference/hessian/neigenvalues",
+      "mode": "100644",
+      "git_blob": "c9701e3d2c36f32da2444dcb7fb0027f2e6fcec7",
+      "sha256": "88850137b94b2e0048fc2573a878575d7f5dde42de8b4fff6bc9b107e0fd181c"
+    },
+    {
+      "path": "results/reference/model_payload.rds",
+      "mode": "100644",
+      "git_blob": "0ed25e6cde504cce4e698bcc54f8c989cac73ac7",
+      "sha256": "c132589cae2c8dea8a17c64e62913abc6081ec2fc11c5b4e6936267f2ebdf5d0"
+    },
+    {
+      "path": "results/reference/model_payload_manifest.csv",
+      "mode": "100644",
+      "git_blob": "2e525b24f563c7876220b6b8b0bb7eeaa60a0e64",
+      "sha256": "04748418ad4d68794cd305cf5687344c0a6858df74e97cf86b207f6c5d7e77e9"
+    },
+    {
+      "path": "results/reference/model_payload_manifest.json",
+      "mode": "100644",
+      "git_blob": "aa20217ef799b4fdda6c61a9dc074f7216997d74",
+      "sha256": "7c9253352f80fcc1fbdc7fee115a4b5b90ff3f21908ced51de7bc104ddbb71e0"
+    },
+    {
+      "path": "results/reference/payload-restore-audit.csv",
+      "mode": "100644",
+      "git_blob": "ef3cb0d3d5798efd2f69e3318c8f61a1c81974c6",
+      "sha256": "b6db897b70075b0e822251119a040992c391a00c3914d09857561d064c1d13ca"
+    },
+    {
+      "path": "results/reference/run-summary.csv",
+      "mode": "100644",
+      "git_blob": "92421c5e9927c2f3e636a976b6e2f70766445c5e",
+      "sha256": "3dcd35c9261f0340d41dda7a409b334ad0d371ff4294fcf275a5d0aff4fa4e72"
+    },
+    {
+      "path": "results/reference/tag-tau-audit.csv",
+      "mode": "100644",
+      "git_blob": "00b3e2cf6009330f764ac9250ee72ce5c18553a6",
+      "sha256": "62801797a8ea86a0108826cc3a17ab2c58dcd8470014e90a5b439cb6d8535f4e"
+    },
+    {
+      "path": "results/reference/uncertainty/README.md",
+      "mode": "100644",
+      "git_blob": "c39f9d3601dfa3b2ddb1850d976ca958ba3389fc",
+      "sha256": "9a60a431fc45b47823df8cd050cb4f2da944a5344881bc273f3e1c7e7a9637c6"
+    },
+    {
+      "path": "results/reference/uncertainty/SHA256SUMS",
+      "mode": "100644",
+      "git_blob": "e29dd10e74c48872eb8a40830da7c921110d00eb",
+      "sha256": "635b4165d9bae962d7aa635bdf6ac7b5779306156fabf7f26a555cd429c06d45"
+    },
+    {
+      "path": "results/reference/uncertainty/annual-fishing-mortality-hessian-time-series.csv",
+      "mode": "100644",
+      "git_blob": "6f7b3200397490480c88590c576cad0ba0d55bb9",
+      "sha256": "730c7447516a98a3039cf26d32029808355737c0c5230c3a3e209d0801c22401"
+    },
+    {
+      "path": "results/reference/uncertainty/annual-hessian-time-series.csv",
+      "mode": "100644",
+      "git_blob": "87de479c15bb6ca9273a06f1be35d55572c76b62",
+      "sha256": "edd1f03a8f9585153bc836c0d771702a737a27d14d938aa5328b38551000b8f9"
+    },
+    {
+      "path": "results/reference/uncertainty/quarterly-hessian-time-series.csv",
+      "mode": "100644",
+      "git_blob": "b932a57709551a1d398d3999139576c6af43ba75",
+      "sha256": "cf28996fc688ef8221e9ab54bac435b1c3f4b25b192330ac8f1b05c948194c24"
+    },
+    {
+      "path": "run-final",
+      "mode": "100755",
+      "git_blob": "1325bca15ad9388fb5740b0d83e4f789f294b818",
+      "sha256": "3082fb7e900121d5ee539b865ea833d5562340e6cc81b17bc0ea0155b0e401e6"
+    },
+    {
+      "path": "run-final.ps1",
+      "mode": "100644",
+      "git_blob": "ed2127b7ac15b908019811caa73058d65db624b4",
+      "sha256": "d00a8104e94b6a50efcdba3d3f6479f1b9f9947a2e624216e6cc87bb64ca3191"
+    },
+    {
+      "path": "run.sh",
+      "mode": "100755",
+      "git_blob": "9194bc6dc79e171de5ec5ffb36900c3d5412037c",
+      "sha256": "d6e6d16d25139da703e4733b6d375280b13fe4d255a9b52150c4af977dac3a41"
+    },
+    {
+      "path": "scripts/build-model-payload",
+      "mode": "100755",
+      "git_blob": "8370968ea97237d5d5ead590013e3a6fca65bd3b",
+      "sha256": "2cd927f74d77dccea4e4c060210bbc4cdcb0b2def260ce2a8cfa65f7f8c7137a"
+    },
+    {
+      "path": "scripts/build-standalone-release",
+      "mode": "100755",
+      "git_blob": "99f40576b8454e5273da373e67c05d206b26c850",
+      "sha256": "e6c44d017058ce96c01210d4aca6d9c70c10a4747a5ef882bb43009575dfe3f7"
+    },
+    {
+      "path": "scripts/container-run",
+      "mode": "100755",
+      "git_blob": "d78dc543342b6dc323a6d41866309a09f03da096",
+      "sha256": "4c985764dd1fe6fe12438743c65263b4372b0bb129754aee49bd77bb0229807e"
+    },
+    {
+      "path": "scripts/run-model",
+      "mode": "100755",
+      "git_blob": "9de343015fa46dffede86dac4cc9369c5f3db484",
+      "sha256": "d490ef2ecc0d7202c89ae504e612a7a3cf461e6696ea2e4b08dd612ac99edf29"
+    },
+    {
+      "path": "scripts/validate-selectivity-models",
+      "mode": "100755",
+      "git_blob": "11c90e6d9e3e8a475252b3c3b37d4a038550dea4",
+      "sha256": "27d773a0722d6bc235263be6850cb1e37790762fc7e8ac47dcbc9c726e4e5c0f"
+    },
+    {
+      "path": "standalone/README.txt",
+      "mode": "100644",
+      "git_blob": "0b944b6a607313229eaa563668311c83628fa73e",
+      "sha256": "2b6a71ff7ee7ff6025c77f3dcab96946eb579d55392aca9d11e87b1c7742fc5d"
+    },
+    {
+      "path": "standalone/run-final",
+      "mode": "100755",
+      "git_blob": "6f97a096727b8b16fac694fad5c267ad41e9a387",
+      "sha256": "df2d957a92b0fc592e6e04f9e324ae57795677dfb684d229061c8e42f0989622"
+    },
+    {
+      "path": "verify",
+      "mode": "100755",
+      "git_blob": "6cb9337fd0c57aa3fb9ece8eef45205ce5d70d8a",
+      "sha256": "41ad31d8208d87e9817c64ebf529c113c74d701a5f70fa3e668c7f2f0dc66cce"
+    }
+  ]
+}
