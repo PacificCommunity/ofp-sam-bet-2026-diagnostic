@@ -21,17 +21,17 @@ The repository includes the native MFCL executable, complete inputs,
 `doitall.sh` and exact fitted PAR. On 64-bit Linux, run from the repository root:
 
 ```sh
-./verify
-./run-final
+make help
+make verify
+make rerun OUT=/tmp/bet-final
 ```
 
-`run-final` evaluates the saved fit with zero optimisation iterations and
-checks the archived objective and 1,997 active parameters. The standalone
-bundle instead uses one evaluation to regenerate its five checksum-locked
-REP files.
+`make rerun` uses the saved fit and a function-evaluation ceiling of 1 to
+regenerate five checksum-locked REP files in a new directory. Source inputs
+and published results stay in place.
 
 Use `./restore-payload` to restore saved core outputs without MFCL, or
-`./doitall` for a complete fit from the committed inputs.
+`make refit OUT=/tmp/bet-refit` for a complete fit from the committed inputs.
 
 The profile and constant ASPM final PARs are retained in `reproduce/`;
 see [native reruns and remaining gaps](reproduce/README.md).
