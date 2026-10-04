@@ -29,3 +29,29 @@ jobs:
           (cd "$work" && ./run-final)
           python3 ci/verify-preserved-files.py
           git diff --exit-code
+
+  native:
+    name: Regenerate saved profile and ASPM fits
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify preserved source and native archive
+        run: |
+          python3 ci/verify-preserved-files.py
+          python3 reproduce/restore.py --verify
+      - name: Regenerate native outputs and compare original results
+        run: python3 reproduce/run-native.py available "$RUNNER_TEMP/bet-native"
+      - name: Confirm source files are unchanged
+        run: |
+          python3 ci/verify-preserved-files.py
+          git diff --exit-code
+      - name: Retain numerical verification receipts
+        uses: actions/upload-artifact@v4
+        with:
+          name: saved-diagnostic-native-checks
+          path: |
+            ${{ runner.temp }}/bet-native/native-checks.json
+            ${{ runner.temp }}/bet-native/*/native-check.json
+          if-no-files-found: error
+          retention-days: 14

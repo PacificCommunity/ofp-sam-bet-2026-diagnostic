@@ -1,0 +1,566 @@
+{
+  "schema_version": 1,
+  "scope": "Native files for the current published Diagnostic profile and ASPM cases; original model results unchanged; no fit or native evaluation validation claimed",
+  "profile": {
+    "completed_profile_points": 45,
+    "constrained_fitted_cases": 44,
+    "scalar100_role": "original central-model anchor; no extra profile refit",
+    "archive": {
+      "name": "profile-original-native-candidate.tar.gz",
+      "bytes": 2659312,
+      "sha256": "4ae215685cb3e877ef85f5bc7da09f44941d0b57fcf3b20174f19fca5509bebc"
+    },
+    "files": [
+      {
+        "path": "profile/total_average_biomass/scalar_50/profile.par",
+        "bytes": 2956625,
+        "sha256": "8deb518b388dccfdbab52faf01f0862231afa907926aae32971f4ddd15c29657",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 50
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_52.5/profile.par",
+        "bytes": 2956603,
+        "sha256": "9e68522fc1d71ab1c64bdee535983de2ac5471e16c0a9e6533c82e59726e6844",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 52.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_55/profile.par",
+        "bytes": 2956686,
+        "sha256": "4ef51ca49ace4801c116b547faa7d4b1202bdbbe74f5421a8903208f03d380c9",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 55
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_57.5/profile.par",
+        "bytes": 2956610,
+        "sha256": "81a190d3b48c7c941093246a2acc753cbf91ae8b8fb8ccbd5a2fd9c476f0fb42",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 57.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_60/profile.par",
+        "bytes": 2956609,
+        "sha256": "ec28b32ffda7e0b73a79fdc451a19d39efc1e821a722aa427ed50db1a1d57133",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 60
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_62.5/profile.par",
+        "bytes": 2956591,
+        "sha256": "fca97114b9655f96d12df45a60065e4c13eab403d7fd4302191855c7da5485d5",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 62.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_65/profile.par",
+        "bytes": 2956677,
+        "sha256": "b7d364426df7f366de10f0e9a7e6abb81918fee02cdf459803afc42a672f38f5",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 65
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_67.5/profile.par",
+        "bytes": 2956581,
+        "sha256": "8483596cafe806e9032ea6c19bee8579e10610c033d7f0c840058f5948161019",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 67.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_70/profile.par",
+        "bytes": 2956634,
+        "sha256": "dc7f80af05f779568be25fd107f7b2da25ea08894798df8e2bc8aa1aa269bac1",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 70
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_72.5/profile.par",
+        "bytes": 2956673,
+        "sha256": "b7fbf8fbdeb6ce357df11da4e87b1237bfa9cc6065d0bf1562ebe0592eb8d999",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 72.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_75/profile.par",
+        "bytes": 2956661,
+        "sha256": "0115648f912a28eb70364264909aee1ae4268b02ca4ef6d7227ba4a1594a14ed",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 75
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_77.5/profile.par",
+        "bytes": 2956595,
+        "sha256": "a55051231c3830eac770344c4a73cbb0794c364de834f09b4a0129cc1d3182c1",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 77.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_80/profile.par",
+        "bytes": 2956611,
+        "sha256": "2d87fd46ab1165ff8f1c2c1d5fccc0ad7c49b3670369e710924384318f3c315d",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 80
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_82.5/profile.par",
+        "bytes": 2956664,
+        "sha256": "11147336a64fb92b6d753698a5587e96ed09cd343c7090dceb75c1593c640a2b",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 82.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_85/profile.par",
+        "bytes": 2956639,
+        "sha256": "b55197cf71aecc5b772bbb1c0e1a56a877251c475f678fcdb59e46c1fae77063",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 85
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_87.5/profile.par",
+        "bytes": 2956564,
+        "sha256": "f5e164065c7f9827fb876c96b8d86c111c73e5382ed6e136985cc1c144d7a1ef",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 87.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_90/profile.par",
+        "bytes": 2956564,
+        "sha256": "ffa1e65cd1ced578ff229b85363a7d7e0f8fd7151791d05d9f8bd72474413ecf",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 90
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_92.5/profile.par",
+        "bytes": 2956657,
+        "sha256": "7ff767088e7f3d47a2835d8af33ee9a9b3b2ab159db1ac80908be35e489b438e",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 92.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_95/profile.par",
+        "bytes": 2956649,
+        "sha256": "c4475cc3b0e0b3c4e85a1ed80a6427b6b33d54fa1be72a9b512caa4011dc75f6",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 95
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_97.5/profile.par",
+        "bytes": 2956654,
+        "sha256": "03511c34c698b4074b0ee9091ac3a7bd99bbbc92e6aa7ea4afa76ef96b4eb2bc",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 97.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_102.5/profile.par",
+        "bytes": 2956567,
+        "sha256": "2a4024c2da5f5d833f08ec66191cce18abe871d63b13f22a78bb76d6867e1285",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 102.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_105/profile.par",
+        "bytes": 2956586,
+        "sha256": "1f98e19dcac56f4f3082a090e36c0db2865465dadf0f202a6efec7d58dd61e30",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 105
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_107.5/profile.par",
+        "bytes": 2956640,
+        "sha256": "f5b88c32a78056b941ac9981ffddb0f5ea32d9c514265a9b876efbbe30b7e9bf",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 107.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_110/profile.par",
+        "bytes": 2956638,
+        "sha256": "a21ab62336472ed1ff34e30eb12bebf73e979236244d4df4002c7bd8a119f9ce",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 110
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_112.5/profile.par",
+        "bytes": 2956582,
+        "sha256": "a5ab94946d42d7819589f1b2d704e761b765e4b254c4023465035e5e070a3dc1",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 112.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_115/profile.par",
+        "bytes": 2956619,
+        "sha256": "580753bc0eac09dd9ca446bf4d90497654bd77452e971a9341550e860c519951",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 115
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_117.5/profile.par",
+        "bytes": 2956638,
+        "sha256": "64db20fb8005617ad023057a4b65583c36830cba8ea0d85eee4b7589c11688e8",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 117.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_120/profile.par",
+        "bytes": 2956582,
+        "sha256": "4b8a9d0e648dd99f26a3973d51c1a6928574cf25433bed98f3045acddceb4dbe",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 120
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_122.5/profile.par",
+        "bytes": 2956580,
+        "sha256": "b2d90da9556d1b4bba2dc42391cb6a8f1df6bf766efca7c09579c40eea3b097b",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 122.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_125/profile.par",
+        "bytes": 2956641,
+        "sha256": "0527b068279a301484279a36f950635f38399439f810d3e93fdaf2430ef7701b",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 125
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_127.5/profile.par",
+        "bytes": 2956605,
+        "sha256": "8ce3bc89a98dc87fc74a257395c6f172ab50135b4d0be51f1e11c40adfe00759",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 127.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_130/profile.par",
+        "bytes": 2956590,
+        "sha256": "852d465fd912b7722bdb965377390b633659a887a55d3cde644a95ff292c9e7c",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 130
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_132.5/profile.par",
+        "bytes": 2956587,
+        "sha256": "cb49c91042904ac132eb18d47492f962c0340f2e0e4246901a99850dd5a46174",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 132.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_135/profile.par",
+        "bytes": 2956622,
+        "sha256": "d2128b42d3790cc6e5ac46d2612cd3418cb4d6fdefb1f500e598da23acda5fbd",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 135
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_137.5/profile.par",
+        "bytes": 2956643,
+        "sha256": "932b2bc691025aa16db1d59ee27bd89d0285c5baccaadf2700fba42da7557fdb",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 137.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_140/profile.par",
+        "bytes": 2956643,
+        "sha256": "4d3f59fed5d553a29cacb2ca5117e9d9eb642d5e497ba82735667446a054cdda",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 140
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_142.5/profile.par",
+        "bytes": 2956596,
+        "sha256": "356144036692679b034b1193894325d07d6bed4d6e7b0ddfcd0deb2dbad4aeef",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 142.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_145/profile.par",
+        "bytes": 2956646,
+        "sha256": "95a428bda86d5c8f0cd7990de57cf891a671cf1c0cc217b88a59ba50a2d39c73",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 145
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_147.5/profile.par",
+        "bytes": 2956563,
+        "sha256": "5f2f9d4ba8f806ec92320c8809cf340d58a272a6609f4d0c41dc941beec0765f",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 147.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_150/profile.par",
+        "bytes": 2956651,
+        "sha256": "788f93cf4d72bafe609e5476c7db2f5b853e2888ea0f689518eb992816538290",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 150
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_152.5/profile.par",
+        "bytes": 2956636,
+        "sha256": "6f9150c19d56ed64746a45bf1a359557111bf69b81b06c78f9906ff6b0c53d97",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 152.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_155/profile.par",
+        "bytes": 2956599,
+        "sha256": "ae0056f223e0e1c71e42965187c8fee56427e5a185f3593770f0ca166d0f5415",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 155
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_157.5/profile.par",
+        "bytes": 2956600,
+        "sha256": "6f72f666b9b0030c2d84044d1cb666ca87b238da87bde393c0aed366e8cf2f4b",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 157.5
+      },
+      {
+        "path": "profile/total_average_biomass/scalar_160/profile.par",
+        "bytes": 2956657,
+        "sha256": "3d87353337f15725c39a7cd478486becb5e5ef3f652433eacc953d446186ea63",
+        "mode": 420,
+        "role": "original constrained last PAR recovered losslessly from retained native raw bytes",
+        "scalar": 160
+      }
+    ],
+    "anchor": {
+      "repository": "PacificCommunity/ofp-sam-bet-2026-jitter",
+      "commit": "bb3f4016b2d145f42c7a76072ed2b10b49aff71f",
+      "path": "data/diagnostic/reproduction/fitted-reference/final.par",
+      "native_name": "final.par",
+      "bytes": 2956541,
+      "sha256": "21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3",
+      "mode": 420,
+      "role": "scalar100 original central-model reference; not an extra profile refit"
+    },
+    "source_controllers": [
+      {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-checks",
+        "commit": "2602c6a92a5169f1b0f391f937a61f6c9dcaccf6",
+        "path": "R/run_check.R"
+      },
+      {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-checks",
+        "commit": "4b416036efc4d54b227a4735429e06b69f61b8d6",
+        "path": "R/run_check.R"
+      }
+    ],
+    "generated_original_script_bytes": "not retained; original source-pinned recipe controls are recorded separately"
+  },
+  "ASPM": {
+    "completed_cases": 2,
+    "original_terminal_PAR_cases_proved": 1,
+    "archive": {
+      "name": "aspm-original-native-candidate-v2.tar.gz",
+      "bytes": 191716,
+      "sha256": "4ae3394edc087e92d67644d3dd2e609f7378988ba6e102e2d372a38e9b6e77e5"
+    },
+    "files": [
+      {
+        "name": "aspm/constant/aspm-input-final.par",
+        "bytes": 2882872,
+        "sha256": "8b3d8b8e8af8879292f0933c2cc24e7be4b8c3c6f157dc23ca019537b58af4f8",
+        "mode": 420
+      },
+      {
+        "name": "aspm/constant/aspm.par",
+        "bytes": 2898313,
+        "sha256": "813398732e0356c5b8715e264bc984b6373b75819c3a35c03c2c548e43ce57fe",
+        "mode": 420
+      },
+      {
+        "name": "aspm/constant/aspm_control.txt",
+        "bytes": 713,
+        "sha256": "faf44659217ef070977bf734639dc8297f231f5601256831d9967e0c646f7266",
+        "mode": 420
+      },
+      {
+        "name": "aspm/constant/run_aspm.sh",
+        "bytes": 122,
+        "sha256": "12e635b5aa2cb1fbf4aa400336d401e9b6484dafa573bf3c0de7bf312fb0ff6b",
+        "mode": 493
+      },
+      {
+        "name": "aspm/fitted/aspm-input-final.par",
+        "bytes": 2917139,
+        "sha256": "7f9d1dfadefadda0d80c8db77fb3f47553917a1db3d22bd87f0091d69ff53c5f",
+        "mode": 420
+      },
+      {
+        "name": "aspm/fitted/aspm.par",
+        "bytes": 2923853,
+        "sha256": "0450a2f159e3d31aa10bb1f856179058a185faa8224f14c4ab8b1117e64dba94",
+        "mode": 420
+      },
+      {
+        "name": "aspm/fitted/aspm_control.txt",
+        "bytes": 690,
+        "sha256": "e90ddda16ac0cb5965e8afd5054fa03e24c273549f49daca2acfc58671b52238",
+        "mode": 420
+      },
+      {
+        "name": "aspm/fitted/run_aspm.sh",
+        "bytes": 131,
+        "sha256": "b409e0295e14c1805c2d3ca90500a2963fcb863c67f04b32efe18a18a671b26a",
+        "mode": 493
+      }
+    ],
+    "cases": [
+      {
+        "variant": "constant",
+        "declared_last_output": "aspm.par",
+        "last_PAR_available": true,
+        "available_aspm_par_role": "original terminal output",
+        "last_script_input": "aspm-input-final.par",
+        "last_script_input_available": true,
+        "gap": null
+      },
+      {
+        "variant": "fitted",
+        "declared_last_output": "aspm-restart-1.par",
+        "last_PAR_available": false,
+        "available_aspm_par_role": "original restart source input; NOT final output",
+        "last_script_input": "aspm-input-aspm.par",
+        "last_script_input_available": false,
+        "gap": "aspm-restart-1.par original bytes not in indexed unit members or retained raw PAR; merged payload/scratch availability uninspected"
+      }
+    ],
+    "source_controller": {
+      "repository": "PacificCommunity/ofp-sam-bet-2026-checks",
+      "commit": "8c5980e85389227d7c14dad0da502283c63650f3",
+      "path": "R/run_check.R"
+    }
+  },
+  "shared_existing_Git_inputs": [
+    {
+      "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+      "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+      "path": "model/bet.frq",
+      "native_name": "bet.frq",
+      "bytes": 2932052,
+      "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+      "mode": 420,
+      "role": "existing conservative common native input"
+    },
+    {
+      "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+      "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+      "path": "model/bet.ini",
+      "native_name": "bet.ini",
+      "bytes": 66790,
+      "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+      "mode": 420,
+      "role": "existing conservative common native input"
+    },
+    {
+      "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+      "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+      "path": "model/bet.tag",
+      "native_name": "bet.tag",
+      "bytes": 110051,
+      "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+      "mode": 420,
+      "role": "existing conservative common native input"
+    },
+    {
+      "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+      "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+      "path": "model/bet.age_length",
+      "native_name": "bet.age_length",
+      "bytes": 1403841,
+      "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+      "mode": 420,
+      "role": "existing conservative common native input"
+    },
+    {
+      "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+      "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+      "path": "model/bet.reg_scaling",
+      "native_name": "bet.reg_scaling",
+      "bytes": 1186,
+      "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+      "mode": 420,
+      "role": "existing conservative common native input"
+    },
+    {
+      "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+      "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+      "path": "model/mfcl.cfg",
+      "native_name": "mfcl.cfg",
+      "bytes": 31,
+      "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+      "mode": 420,
+      "role": "existing conservative common native input"
+    },
+    {
+      "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+      "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+      "path": "model/doitall.sh",
+      "native_name": "doitall.sh",
+      "bytes": 40697,
+      "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+      "mode": 493,
+      "role": "original common Diagnostic doitall; profile/ASPM use separate native command controllers"
+    }
+  ],
+  "input_byte_identity_note": "Selected common Git bytes match the original prepared input manifest; shared FRQ is unchanged by the recorded ASPM cases",
+  "engine": {
+    "static_candidate_sha256": "f5bc1e232a86e51f920bce7271d8e0930d0b160e4d18dc46de44078f0fa24cd0",
+    "recorded_profile_executable_md5": "2c095ca6e80aff7aca81387cbc5a2ca3",
+    "original_execution_sha256": "UNKNOWN",
+    "identity_limit": "Recorded profile MD5 matches this preserved static candidate; original executed SHA was not recorded. ASPM original execution SHA alsoUNKNOWN"
+  },
+  "limits": [
+    "Fitted ASPM aspm-restart-1.par and transformed last restart input remain unproved retained",
+    "Original profile generated continuation-script bytes are missing, while source-pinned controllers and recipe metadata remain",
+    "Hessian was disabled for the selected original profile fit recipe; uncertainty/Hessian products are separate outputs",
+    "This metadata does not assert offline-refit completeness, original engine SHA identity, native-output parity, credential absence, or deletion readiness"
+  ],
+  "ASPM_output_source_note": {
+    "constant_original_final_REP_sha256": "2803c87af4232cf7a5f2797d51d9a4bf8d3b6d355373770820d756c381d9f0a7",
+    "fitted_original_final_REP_sha256": "39ccb835cc6b88395049905b057d75d1e870a7727c27e39445a8645bebbad12c",
+    "fitted_preserved_PAR_role": "pre-restart; original terminal PAR and restart input remain unavailable",
+    "source": "original merged payload raw REP, decoded losslessly; cached REP biomass/MSY sections agree exactly"
+  }
+}

@@ -31,6 +31,9 @@ REP files.
 Use `./restore-payload` to restore saved core outputs without MFCL, or
 `./doitall` for a complete fit from the committed inputs.
 
+The profile and constant ASPM final PARs are retained in `reproduce/`;
+see [native reruns and remaining gaps](reproduce/README.md).
+
 See [model and reproduction details](docs/reproduction.md),
 [reference results](results/reference/README.md),
 [report instructions](diagnostic-report/README.md),

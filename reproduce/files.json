@@ -1,0 +1,377 @@
+{
+  "schema_version": 1,
+  "family": "diagnostic checks",
+  "files": [
+    {
+      "path": "profile-50/final.par",
+      "bytes": 2956625,
+      "sha256": "8deb518b388dccfdbab52faf01f0862231afa907926aae32971f4ddd15c29657",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-52.5/final.par",
+      "bytes": 2956603,
+      "sha256": "9e68522fc1d71ab1c64bdee535983de2ac5471e16c0a9e6533c82e59726e6844",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-55/final.par",
+      "bytes": 2956686,
+      "sha256": "4ef51ca49ace4801c116b547faa7d4b1202bdbbe74f5421a8903208f03d380c9",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-57.5/final.par",
+      "bytes": 2956610,
+      "sha256": "81a190d3b48c7c941093246a2acc753cbf91ae8b8fb8ccbd5a2fd9c476f0fb42",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-60/final.par",
+      "bytes": 2956609,
+      "sha256": "ec28b32ffda7e0b73a79fdc451a19d39efc1e821a722aa427ed50db1a1d57133",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-62.5/final.par",
+      "bytes": 2956591,
+      "sha256": "fca97114b9655f96d12df45a60065e4c13eab403d7fd4302191855c7da5485d5",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-65/final.par",
+      "bytes": 2956677,
+      "sha256": "b7d364426df7f366de10f0e9a7e6abb81918fee02cdf459803afc42a672f38f5",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-67.5/final.par",
+      "bytes": 2956581,
+      "sha256": "8483596cafe806e9032ea6c19bee8579e10610c033d7f0c840058f5948161019",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-70/final.par",
+      "bytes": 2956634,
+      "sha256": "dc7f80af05f779568be25fd107f7b2da25ea08894798df8e2bc8aa1aa269bac1",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-72.5/final.par",
+      "bytes": 2956673,
+      "sha256": "b7fbf8fbdeb6ce357df11da4e87b1237bfa9cc6065d0bf1562ebe0592eb8d999",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-75/final.par",
+      "bytes": 2956661,
+      "sha256": "0115648f912a28eb70364264909aee1ae4268b02ca4ef6d7227ba4a1594a14ed",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-77.5/final.par",
+      "bytes": 2956595,
+      "sha256": "a55051231c3830eac770344c4a73cbb0794c364de834f09b4a0129cc1d3182c1",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-80/final.par",
+      "bytes": 2956611,
+      "sha256": "2d87fd46ab1165ff8f1c2c1d5fccc0ad7c49b3670369e710924384318f3c315d",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-82.5/final.par",
+      "bytes": 2956664,
+      "sha256": "11147336a64fb92b6d753698a5587e96ed09cd343c7090dceb75c1593c640a2b",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-85/final.par",
+      "bytes": 2956639,
+      "sha256": "b55197cf71aecc5b772bbb1c0e1a56a877251c475f678fcdb59e46c1fae77063",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-87.5/final.par",
+      "bytes": 2956564,
+      "sha256": "f5e164065c7f9827fb876c96b8d86c111c73e5382ed6e136985cc1c144d7a1ef",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-90/final.par",
+      "bytes": 2956564,
+      "sha256": "ffa1e65cd1ced578ff229b85363a7d7e0f8fd7151791d05d9f8bd72474413ecf",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-92.5/final.par",
+      "bytes": 2956657,
+      "sha256": "7ff767088e7f3d47a2835d8af33ee9a9b3b2ab159db1ac80908be35e489b438e",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-95/final.par",
+      "bytes": 2956649,
+      "sha256": "c4475cc3b0e0b3c4e85a1ed80a6427b6b33d54fa1be72a9b512caa4011dc75f6",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-97.5/final.par",
+      "bytes": 2956654,
+      "sha256": "03511c34c698b4074b0ee9091ac3a7bd99bbbc92e6aa7ea4afa76ef96b4eb2bc",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-102.5/final.par",
+      "bytes": 2956567,
+      "sha256": "2a4024c2da5f5d833f08ec66191cce18abe871d63b13f22a78bb76d6867e1285",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-105/final.par",
+      "bytes": 2956586,
+      "sha256": "1f98e19dcac56f4f3082a090e36c0db2865465dadf0f202a6efec7d58dd61e30",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-107.5/final.par",
+      "bytes": 2956640,
+      "sha256": "f5b88c32a78056b941ac9981ffddb0f5ea32d9c514265a9b876efbbe30b7e9bf",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-110/final.par",
+      "bytes": 2956638,
+      "sha256": "a21ab62336472ed1ff34e30eb12bebf73e979236244d4df4002c7bd8a119f9ce",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-112.5/final.par",
+      "bytes": 2956582,
+      "sha256": "a5ab94946d42d7819589f1b2d704e761b765e4b254c4023465035e5e070a3dc1",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-115/final.par",
+      "bytes": 2956619,
+      "sha256": "580753bc0eac09dd9ca446bf4d90497654bd77452e971a9341550e860c519951",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-117.5/final.par",
+      "bytes": 2956638,
+      "sha256": "64db20fb8005617ad023057a4b65583c36830cba8ea0d85eee4b7589c11688e8",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-120/final.par",
+      "bytes": 2956582,
+      "sha256": "4b8a9d0e648dd99f26a3973d51c1a6928574cf25433bed98f3045acddceb4dbe",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-122.5/final.par",
+      "bytes": 2956580,
+      "sha256": "b2d90da9556d1b4bba2dc42391cb6a8f1df6bf766efca7c09579c40eea3b097b",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-125/final.par",
+      "bytes": 2956641,
+      "sha256": "0527b068279a301484279a36f950635f38399439f810d3e93fdaf2430ef7701b",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-127.5/final.par",
+      "bytes": 2956605,
+      "sha256": "8ce3bc89a98dc87fc74a257395c6f172ab50135b4d0be51f1e11c40adfe00759",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-130/final.par",
+      "bytes": 2956590,
+      "sha256": "852d465fd912b7722bdb965377390b633659a887a55d3cde644a95ff292c9e7c",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-132.5/final.par",
+      "bytes": 2956587,
+      "sha256": "cb49c91042904ac132eb18d47492f962c0340f2e0e4246901a99850dd5a46174",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-135/final.par",
+      "bytes": 2956622,
+      "sha256": "d2128b42d3790cc6e5ac46d2612cd3418cb4d6fdefb1f500e598da23acda5fbd",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-137.5/final.par",
+      "bytes": 2956643,
+      "sha256": "932b2bc691025aa16db1d59ee27bd89d0285c5baccaadf2700fba42da7557fdb",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-140/final.par",
+      "bytes": 2956643,
+      "sha256": "4d3f59fed5d553a29cacb2ca5117e9d9eb642d5e497ba82735667446a054cdda",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-142.5/final.par",
+      "bytes": 2956596,
+      "sha256": "356144036692679b034b1193894325d07d6bed4d6e7b0ddfcd0deb2dbad4aeef",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-145/final.par",
+      "bytes": 2956646,
+      "sha256": "95a428bda86d5c8f0cd7990de57cf891a671cf1c0cc217b88a59ba50a2d39c73",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-147.5/final.par",
+      "bytes": 2956563,
+      "sha256": "5f2f9d4ba8f806ec92320c8809cf340d58a272a6609f4d0c41dc941beec0765f",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-150/final.par",
+      "bytes": 2956651,
+      "sha256": "788f93cf4d72bafe609e5476c7db2f5b853e2888ea0f689518eb992816538290",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-152.5/final.par",
+      "bytes": 2956636,
+      "sha256": "6f9150c19d56ed64746a45bf1a359557111bf69b81b06c78f9906ff6b0c53d97",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-155/final.par",
+      "bytes": 2956599,
+      "sha256": "ae0056f223e0e1c71e42965187c8fee56427e5a185f3593770f0ca166d0f5415",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-157.5/final.par",
+      "bytes": 2956600,
+      "sha256": "6f72f666b9b0030c2d84044d1cb666ca87b238da87bde393c0aed366e8cf2f4b",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "profile-160/final.par",
+      "bytes": 2956657,
+      "sha256": "3d87353337f15725c39a7cd478486becb5e5ef3f652433eacc953d446186ea63",
+      "mode": 420,
+      "role": "original constrained last PAR"
+    },
+    {
+      "path": "aspm-constant/aspm-input-final.par",
+      "bytes": 2882872,
+      "sha256": "8b3d8b8e8af8879292f0933c2cc24e7be4b8c3c6f157dc23ca019537b58af4f8",
+      "mode": 420,
+      "role": "original ASPM native file"
+    },
+    {
+      "path": "aspm-constant/aspm.par",
+      "bytes": 2898313,
+      "sha256": "813398732e0356c5b8715e264bc984b6373b75819c3a35c03c2c548e43ce57fe",
+      "mode": 420,
+      "role": "original ASPM native file"
+    },
+    {
+      "path": "aspm-constant/final.par",
+      "bytes": 2898313,
+      "sha256": "813398732e0356c5b8715e264bc984b6373b75819c3a35c03c2c548e43ce57fe",
+      "mode": 420,
+      "role": "exact original terminal ASPM PAR alias"
+    },
+    {
+      "path": "aspm-constant/aspm_control.txt",
+      "bytes": 713,
+      "sha256": "faf44659217ef070977bf734639dc8297f231f5601256831d9967e0c646f7266",
+      "mode": 420,
+      "role": "original ASPM native file"
+    },
+    {
+      "path": "aspm-constant/run_aspm.sh",
+      "bytes": 122,
+      "sha256": "12e635b5aa2cb1fbf4aa400336d401e9b6484dafa573bf3c0de7bf312fb0ff6b",
+      "mode": 493,
+      "role": "original ASPM native file"
+    },
+    {
+      "path": "aspm-fitted/aspm-input-final.par",
+      "bytes": 2917139,
+      "sha256": "7f9d1dfadefadda0d80c8db77fb3f47553917a1db3d22bd87f0091d69ff53c5f",
+      "mode": 420,
+      "role": "original ASPM native file"
+    },
+    {
+      "path": "aspm-fitted/aspm.par",
+      "bytes": 2923853,
+      "sha256": "0450a2f159e3d31aa10bb1f856179058a185faa8224f14c4ab8b1117e64dba94",
+      "mode": 420,
+      "role": "original ASPM native file"
+    },
+    {
+      "path": "aspm-fitted/aspm_control.txt",
+      "bytes": 690,
+      "sha256": "e90ddda16ac0cb5965e8afd5054fa03e24c273549f49daca2acfc58671b52238",
+      "mode": 420,
+      "role": "original ASPM native file"
+    },
+    {
+      "path": "aspm-fitted/run_aspm.sh",
+      "bytes": 131,
+      "sha256": "b409e0295e14c1805c2d3ca90500a2963fcb863c67f04b32efe18a18a671b26a",
+      "mode": 493,
+      "role": "original ASPM native file"
+    }
+  ]
+}

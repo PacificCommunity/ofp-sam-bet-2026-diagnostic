@@ -1,0 +1,3220 @@
+{
+  "schema_version": 1,
+  "family": "diagnostic checks",
+  "models": [
+    {
+      "model": "profile-50",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-52.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-55",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-57.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-60",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-62.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-65",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-67.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-70",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-72.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-75",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-77.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-80",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-82.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-85",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-87.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-90",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-92.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-95",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-97.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-102.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-105",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-107.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-110",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-112.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-115",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-117.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-120",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-122.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-125",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-127.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-130",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-132.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-135",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-137.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-140",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-142.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-145",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-147.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-150",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-152.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-155",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-157.5",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-160",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ]
+    },
+    {
+      "model": "profile-100",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-jitter",
+          "commit": "bb3f4016b2d145f42c7a76072ed2b10b49aff71f",
+          "path": "data/diagnostic/reproduction/fitted-reference/final.par",
+          "bytes": 2956541,
+          "sha256": "21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3",
+          "mode": 420,
+          "target_name": "final.par"
+        }
+      ]
+    },
+    {
+      "model": "aspm-constant",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ],
+      "original_last_par_available": true,
+      "original_last_output": "aspm.par"
+    },
+    {
+      "model": "aspm-fitted",
+      "reused_git_files": [
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.frq",
+          "bytes": 2932052,
+          "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+          "mode": 420,
+          "target_name": "bet.frq"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.ini",
+          "bytes": 66790,
+          "sha256": "5292938d4743c1dfdd2f1a095c1aa87482c9c17f78b8d879671fe6851d58646f",
+          "mode": 420,
+          "target_name": "bet.ini"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.tag",
+          "bytes": 110051,
+          "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+          "mode": 420,
+          "target_name": "bet.tag"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.age_length",
+          "bytes": 1403841,
+          "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+          "mode": 420,
+          "target_name": "bet.age_length"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/bet.reg_scaling",
+          "bytes": 1186,
+          "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+          "mode": 420,
+          "target_name": "bet.reg_scaling"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/mfcl.cfg",
+          "bytes": 31,
+          "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+          "mode": 420,
+          "target_name": "mfcl.cfg"
+        },
+        {
+          "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+          "commit": "3abf0c64fb9b0c2d70b9c672dc7d9a655d3060d6",
+          "path": "model/doitall.sh",
+          "bytes": 40697,
+          "sha256": "5c53802daf44e700ee91aa8108f0b2289473c0344d7feecf04cab458dc49ca77",
+          "mode": 493,
+          "target_name": "doitall.sh"
+        }
+      ],
+      "original_last_par_available": false,
+      "original_last_output": "aspm-restart-1.par"
+    }
+  ],
+  "limits": [
+    "Fitted ASPM terminal PAR and original transformed restart input are missing; its native rerun is refused.",
+    "Original generated profile continuation-script bytes are missing; source-pinned controllers and exact harvested/objective switches are retained separately.",
+    "Native output parity awaits actual CI; historical executed engine SHA remains unknown."
+  ]
+}

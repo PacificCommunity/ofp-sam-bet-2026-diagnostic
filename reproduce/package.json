@@ -1,0 +1,30 @@
+{
+  "archive": {
+    "path": "native.tar.gz",
+    "sha256": "18f77fd333870bc1be8d23bf65d20620cafe63bd95ee1bfd84ba4125aaa461fd",
+    "bytes": 2613703
+  },
+  "manifest": {
+    "path": "files.json",
+    "sha256": "98a9b807e5661e851543e94d6d55deefe1d8341a8ff3d54b02be1d4c3bd283c7",
+    "bytes": 12034
+  },
+  "closure": {
+    "path": "closure.json",
+    "sha256": "ae7757c3b5e638f9ba93a3048e5b754deece5e70a2034d5e8fb1345287f133fa",
+    "bytes": 126333
+  },
+  "validation": {
+    "path": "validation.json",
+    "sha256": "3fd27ca24f19bea458c3a398419583e01ca172fed63ba5dcdad76feabeedc349",
+    "bytes": 45281
+  },
+  "engine": {
+    "repository": "PacificCommunity/ofp-sam-bet-2026-jitter",
+    "commit": "bb3f4016b2d145f42c7a76072ed2b10b49aff71f",
+    "path": "data/diagnostic/mfcl/mfclo64",
+    "sha256": "f5bc1e232a86e51f920bce7271d8e0930d0b160e4d18dc46de44078f0fa24cd0",
+    "bytes": 34549392,
+    "mode": 493
+  }
+}
