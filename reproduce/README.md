@@ -1,5 +1,8 @@
 # Profile and ASPM reruns
 
+[Download native.tar.gz](https://raw.githubusercontent.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/main/reproduce/native.tar.gz). It is included in a normal clone;
+[files.json](files.json) lists the archived files and checksums.
+
 The small archive retains 44 original profile final PARs, the constant ASPM
 final PAR and the fitted ASPM pre-restart PAR. The scalar-100 anchor, native
 inputs, MFCL executable and Diagnostic `doitall` reuse checksum-verified Git files.

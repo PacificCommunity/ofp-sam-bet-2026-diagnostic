@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+  "release_id": 368339134,
+  "tag": "diagnostic-standalone-2026.08.11",
+  "release_commit": "81c11f06fcc7450f69b379160cbd77fbc636212b",
+  "archive_prefix": "bet-2026-diagnostic-standalone/",
+  "archive_member_count": 67,
+  "assets": [
+    {
+      "id": 511034058,
+      "name": "bet-2026-diagnostic-standalone.zip",
+      "bytes": 29254019,
+      "sha256": "9352e75da2bb152b4f5368d48c68e1dbaf9ba0eee840a49eb421e79295419c32",
+      "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/releases/download/diagnostic-standalone-2026.08.11/bet-2026-diagnostic-standalone.zip"
+    },
+    {
+      "id": 511034059,
+      "name": "bet-2026-diagnostic-standalone.contents.sha256",
+      "bytes": 7357,
+      "sha256": "e75443f0c57626751c20efbac9b7a274d112228a51ba191eb89e0ad10dda6892",
+      "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/releases/download/diagnostic-standalone-2026.08.11/bet-2026-diagnostic-standalone.contents.sha256"
+    },
+    {
+      "id": 511034060,
+      "name": "bet-2026-diagnostic-standalone.zip.sha256",
+      "bytes": 101,
+      "sha256": "c1134343accc13610cc506302e5f927984e54afd3455b8e4fb52ef7ca8dabc76",
+      "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/releases/download/diagnostic-standalone-2026.08.11/bet-2026-diagnostic-standalone.zip.sha256"
+    }
+  ],
+  "files": [
+    {
+      "path": "MFCL/11.par",
+      "bytes": 2956535,
+      "mode": "0644",
+      "sha256": "bca611a59ed6c41fe08ebd6a59a0370011921438459ab39f8509ac4dbed9c29d",
+      "source_member": "bet-2026-diagnostic-standalone/11.par"
+    },
+    {
+      "path": "MFCL/BUILD-INFO.txt",
+      "bytes": 1345,
+      "mode": "0644",
+      "sha256": "ef184d2a4286af3adbb4a672374568f0361c150712c3d581cab11831e66e395a",
+      "source_member": "bet-2026-diagnostic-standalone/BUILD-INFO.txt"
+    },
+    {
+      "path": "MFCL/PROVENANCE.md",
+      "bytes": 2742,
+      "mode": "0644",
+      "sha256": "d5c81f887c082aaa3e16b87adbefd994dd001e277d3d1f275298719955c2ca44",
+      "source_member": "bet-2026-diagnostic-standalone/PROVENANCE.md"
+    },
+    {
+      "path": "MFCL/README.txt",
+      "bytes": 2361,
+      "mode": "0644",
+      "sha256": "84b73e15788117f0d9c94a96c972be465c0b00c69cf6c282cbfa467645589ab1",
+      "source_member": "bet-2026-diagnostic-standalone/README.txt"
+    },
+    {
+      "path": "MFCL/bet-2026-diagnostic-standalone.contents.sha256",
+      "bytes": 7357,
+      "mode": "0644",
+      "sha256": "e75443f0c57626751c20efbac9b7a274d112228a51ba191eb89e0ad10dda6892",
+      "source_asset": 511034059
+    },
+    {
+      "path": "MFCL/bet-2026-diagnostic-standalone.zip",
+      "bytes": 29254019,
+      "mode": "0644",
+      "sha256": "9352e75da2bb152b4f5368d48c68e1dbaf9ba0eee840a49eb421e79295419c32",
+      "source_asset": 511034058
+    },
+    {
+      "path": "MFCL/bet-2026-diagnostic-standalone.zip.sha256",
+      "bytes": 101,
+      "mode": "0644",
+      "sha256": "c1134343accc13610cc506302e5f927984e54afd3455b8e4fb52ef7ca8dabc76",
+      "source_asset": 511034060
+    },
+    {
+      "path": "MFCL/bet.age_length",
+      "bytes": 1403841,
+      "mode": "0644",
+      "sha256": "426859b825bd815aa69c8d97c9dd93097027ed1eb6b9e444d88b69562097a00c",
+      "source_member": "bet-2026-diagnostic-standalone/bet.age_length"
+    },
+    {
+      "path": "MFCL/bet.frq",
+      "bytes": 2932052,
+      "mode": "0644",
+      "sha256": "d0d84f0a498e6a62681f2a58ffc1ba53dab9e3d6af856b4ad1fd907196250004",
+      "source_member": "bet-2026-diagnostic-standalone/bet.frq"
+    },
+    {
+      "path": "MFCL/bet.ini",
+      "bytes": 66791,
+      "mode": "0644",
+      "sha256": "fbd064c3d0ccb4d2e1b9beb06fe3eacf0180677821e6a1773d20b308474d984e",
+      "source_member": "bet-2026-diagnostic-standalone/bet.ini"
+    },
+    {
+      "path": "MFCL/bet.reg_scaling",
+      "bytes": 1186,
+      "mode": "0644",
+      "sha256": "5f047ddb4053d1f6df9ace18e85e440b11553de246d024ce8138b427f5f9f7e3",
+      "source_member": "bet-2026-diagnostic-standalone/bet.reg_scaling"
+    },
+    {
+      "path": "MFCL/bet.tag",
+      "bytes": 110051,
+      "mode": "0644",
+      "sha256": "b140e66eb52f2b7e022ef2c562134f8bc9baf3dede18ce95283a001acd2b013f",
+      "source_member": "bet-2026-diagnostic-standalone/bet.tag"
+    },
+    {
+      "path": "MFCL/catch.rep",
+      "bytes": 68905,
+      "mode": "0644",
+      "sha256": "11a4ddf1836e5bd27dc230fad171d7ba89a4946178a5bed16158f907ddda1ae3",
+      "source_member": "bet-2026-diagnostic-standalone/catch.rep"
+    },
+    {
+      "path": "MFCL/doitall.sh",
+      "bytes": 50762,
+      "mode": "0755",
+      "sha256": "96ea1dae6e8119a142d6a9cc3f5c3b99d20da8e31b1067e02e5701fbb0bf51fa",
+      "source_member": "bet-2026-diagnostic-standalone/doitall.sh"
+    },
+    {
+      "path": "MFCL/final.par",
+      "bytes": 2956541,
+      "mode": "0644",
+      "sha256": "21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3",
+      "source_member": "bet-2026-diagnostic-standalone/final.par"
+    },
+    {
+      "path": "MFCL/final.par.sha256",
+      "bytes": 76,
+      "mode": "0644",
+      "sha256": "c882f5a33bafa654b127663c5caeef54c2ad5cd41e2a7c19dab53a0c50ef4c9c",
+      "source_member": "bet-2026-diagnostic-standalone/final.par.sha256"
+    },
+    {
+      "path": "MFCL/indepvar.rpt",
+      "bytes": 150850,
+      "mode": "0644",
+      "sha256": "135a1314ee6dfb2f35190cbf5e6c62c62469bbd3f5df2731b5f7050cad4aabde",
+      "source_member": "bet-2026-diagnostic-standalone/indepvar.rpt"
+    },
+    {
+      "path": "MFCL/length.fit",
+      "bytes": 68800931,
+      "mode": "0644",
+      "sha256": "142d1f396dd09d0b9836eb3c4cbdf162010c97ae3359ba415d812921b22e7b2d",
+      "source_member": "bet-2026-diagnostic-standalone/length.fit"
+    },
+    {
+      "path": "MFCL/mfcl.cfg",
+      "bytes": 31,
+      "mode": "0644",
+      "sha256": "2ec8a291fae62c6f37541aec1de37444626d42b3290b371bb42b63d510034eae",
+      "source_member": "bet-2026-diagnostic-standalone/mfcl.cfg"
+    },
+    {
+      "path": "MFCL/mfclo64",
+      "bytes": 9433720,
+      "mode": "0755",
+      "sha256": "8995f72019869863c1d1c0b4f44fc6a6268d1f79031f5bc79dc354ee10f0a63e",
+      "source_member": "bet-2026-diagnostic-standalone/mfclo64"
+    },
+    {
+      "path": "MFCL/plot-11.par.rep",
+      "bytes": 2846950,
+      "mode": "0644",
+      "sha256": "bdc4468ea540da966bed821c2179c0d0e8bcc82698d4ac4665bfa04685928e3f",
+      "source_member": "bet-2026-diagnostic-standalone/plot-11.par.rep"
+    },
+    {
+      "path": "MFCL/run-final",
+      "bytes": 2608,
+      "mode": "0755",
+      "sha256": "df2d957a92b0fc592e6e04f9e324ae57795677dfb684d229061c8e42f0989622",
+      "source_member": "bet-2026-diagnostic-standalone/run-final"
+    },
+    {
+      "path": "MFCL/standalone-final-evaluation.log",
+      "bytes": 29497,
+      "mode": "0644",
+      "sha256": "4c279780c20f69ab8907aa17246a80ebf30410f090e582ec50ffa8da5f6ad25b",
+      "source_member": "bet-2026-diagnostic-standalone/standalone-final-evaluation.log"
+    },
+    {
+      "path": "MFCL/temporary_tag_report",
+      "bytes": 25623859,
+      "mode": "0644",
+      "sha256": "2c98dbdea63c21a70b5da8ce6d0a2583fb92b39879058382f0e1957cb879ded1",
+      "source_member": "bet-2026-diagnostic-standalone/temporary_tag_report"
+    },
+    {
+      "path": "MFCL/test_plot_output",
+      "bytes": 1645911,
+      "mode": "0644",
+      "sha256": "67df33efb11896d615065fa68f42b774ca17dba64f1c4a5230031e7236844838",
+      "source_member": "bet-2026-diagnostic-standalone/test_plot_output"
+    },
+    {
+      "path": "MFCL/fishery-grouping.csv",
+      "bytes": 1598,
+      "sha256": "32b69cb1d3d65f5b82b9d52763a3ddaa0b989c6167d3945d157f8e529ea78042",
+      "mode": "0644",
+      "source_git": {
+        "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+        "commit": "33016240b79d81068c94121e10a24006c462ad42",
+        "path": "diagnostic-report-output/tables/fishery-grouping.csv",
+        "git_blob": "01912ef8b6a157ea05d15db68f93f059b305881d"
+      }
+    }
+  ]
+}

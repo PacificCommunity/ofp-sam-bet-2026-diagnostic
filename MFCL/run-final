@@ -1,0 +1,75 @@
+#!/bin/sh
+set -eu
+
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+cd "$here"
+
+if [ ! -x ./mfclo64 ]; then
+  echo "MFCL executable not found: ./mfclo64" >&2
+  echo "Run 'chmod +x mfclo64 run-final'." >&2
+  exit 1
+fi
+if [ ! -s bet.frq ] || [ ! -s final.par ]; then
+  echo "bet.frq and final.par must be in this directory." >&2
+  exit 1
+fi
+
+expected_par_sha=21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3
+observed_par_sha=$(sha256sum final.par | awk '{print $1}')
+if [ "$observed_par_sha" != "$expected_par_sha" ]; then
+  echo "final.par is not the fitted Job 21641 PAR." >&2
+  exit 1
+fi
+cp final.par 10.par
+if [ "$(sha256sum 10.par | awk '{print $1}')" != "$expected_par_sha" ]; then
+  echo "Could not stage an exact 10.par copy of final.par." >&2
+  exit 1
+fi
+
+set +e
+./mfclo64 bet.frq 10.par 11.par -file - > mfcl-final.log 2>&1 <<'MFCL_SWITCHES'
+  1 1 1
+  1 50 -4
+  1 121 0
+  1 246 1
+MFCL_SWITCHES
+status=$?
+set -e
+cat mfcl-final.log
+
+if [ "$status" -ne 0 ]; then
+  echo "MFCL final-PAR evaluation failed with status $status." >&2
+  exit "$status"
+fi
+
+for output in 11.par plot-11.par.rep plotq0-11.par.rep ests.rep catch.rep tag.rep; do
+  if [ ! -s "$output" ]; then
+    echo "MFCL did not create the required output: $output" >&2
+    exit 1
+  fi
+done
+if [ "$(sha256sum final.par | awk '{print $1}')" != "$expected_par_sha" ] ||
+   [ "$(sha256sum 10.par | awk '{print $1}')" != "$expected_par_sha" ]; then
+  echo "MFCL modified the fitted final.par input or its 10.par copy." >&2
+  exit 1
+fi
+
+reference_objective=$(awk '/^# Objective function value/{getline; print $1; exit}' final.par)
+output_objective=$(awk '/^# Objective function value/{getline; print $1; exit}' 11.par)
+output_npars=$(awk '/^# The number of parameters/{getline; print $1; exit}' 11.par)
+if [ "$output_npars" != 1997 ] || ! awk \
+    -v observed="$output_objective" -v expected="$reference_objective" \
+    'BEGIN { d=observed-expected; if (d<0) d=-d; exit(d <= 1e-6 ? 0 : 1) }'; then
+  echo "The one-evaluation output does not match the fitted final.par." >&2
+  exit 1
+fi
+
+printf '%s  %s\n' \
+  bdc4468ea540da966bed821c2179c0d0e8bcc82698d4ac4665bfa04685928e3f plot-11.par.rep \
+  340c29fe105bb35364c980dd4ab504b14bf8751bb3dbbd4e54032034e5374149 plotq0-11.par.rep \
+  b4109ee8c9019c913b09e7ecdb5dd104b2fd585e1caff176c2f7c020cde0b0e5 ests.rep \
+  11a4ddf1836e5bd27dc230fad171d7ba89a4946178a5bed16158f907ddda1ae3 catch.rep \
+  0db4e9d3f597fbd41d5c71ce2cd881ff18d40b1266d5e8e0c8709a9e4b8f0792 tag.rep \
+  | sha256sum -c -
+
+echo "Final PAR evaluated once successfully; canonical Job 21641 REP outputs were reproduced."

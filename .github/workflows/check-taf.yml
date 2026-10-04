@@ -1,0 +1,86 @@
+name: Check MFCL files and TAF workflow
+
+on:
+  push:
+    branches: [main, mfcl-taf-check]
+  pull_request:
+    paths: ["MFCL/**", "TAF/**", "ci/check-taf.R", "ci/compare-taf-results.py", "ci/verify-mfcl-files.py", ".github/workflows/check-taf.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: Check the published native files and final-PAR evaluation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify original assessment and new native files
+        run: |
+          python3 ci/verify-preserved-files.py
+          python3 ci/verify-mfcl-files.py
+      - name: Evaluate the original PAR in a separate working directory
+        run: |
+          work=$(mktemp -d "$RUNNER_TEMP/bet-mfcl.XXXXXX")
+          for file in final.par bet.age_length bet.frq bet.ini bet.reg_scaling bet.tag mfcl.cfg mfclo64 doitall.sh run-final; do
+            cp "MFCL/$file" "$work/$file"
+          done
+          (cd "$work" && ./run-final)
+      - name: Confirm the repository is unchanged
+        run: |
+          python3 ci/verify-preserved-files.py
+          python3 ci/verify-mfcl-files.py
+          git diff --exit-code
+
+  taf:
+    name: Rebuild TAF tables and figures from saved results
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    container:
+      image: ghcr.io/pacificcommunity/tuna-flow-private:v2.7@sha256:4fee4c40cb6439ff920b1dd233a84bf19d5cc0e37278c99ceff3fd79cb9c8852
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify original assessment and new native files
+        run: |
+          python3 ci/verify-preserved-files.py
+          python3 ci/verify-mfcl-files.py
+      - name: Install the pinned public TAF readers
+        env:
+          TAF_DOWNLOAD_TOKEN: ${{ github.token }}
+        run: |
+          export R_LIBS_USER="$RUNNER_TEMP/taf-r-library"
+          printf 'R_LIBS_USER=%s\n' "$R_LIBS_USER" >> "$GITHUB_ENV"
+          mkdir "$R_LIBS_USER"
+          Rscript --vanilla -e 'lib <- file.path(Sys.getenv("RUNNER_TEMP"), "taf-r-library"); stopifnot(requireNamespace("remotes", quietly=TRUE)); for (repo in c("flr/FLCore@0642117cb7b66d398abc084f814c7c8b4a12dc8d", "PacificCommunity/ofp-sam-flr4mfcl@56d9e6e079b0cfa6023ebfdbdc8ca8cfb102cb0b", "ices-tools-prod/TAF@e7960d0d8092072ed4910a7d8d7da4ef6eb38832")) remotes::install_github(repo, auth_token=Sys.getenv("TAF_DOWNLOAD_TOKEN"), dependencies=FALSE, upgrade="never", force=TRUE, build_vignettes=FALSE, lib=lib)'
+      - name: Prepare an independent working copy
+        id: work
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, shutil
+          target = pathlib.Path(os.environ["RUNNER_TEMP"]) / "taf-check"
+          target.mkdir()
+          for name in ("MFCL", "TAF"):
+              shutil.copytree(name, target / name)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as stream:
+              stream.write("path=" + str(target) + "\n")
+          PY
+      - name: Run every default TAF stage and compare the saved tables
+        run: |
+          Rscript --vanilla ci/check-taf.R "$RUNNER_TEMP/taf-check"
+          python3 ci/compare-taf-results.py "$GITHUB_WORKSPACE" "$RUNNER_TEMP/taf-check"
+      - name: Confirm the repository and original files are unchanged
+        if: always()
+        run: |
+          python3 ci/verify-preserved-files.py
+          python3 ci/verify-mfcl-files.py
+          git -c safe.directory="$GITHUB_WORKSPACE" diff --exit-code
+      - name: Retain TAF verification and rebuilt figures
+        uses: actions/upload-artifact@v4
+        with:
+          name: taf-regeneration-check
+          path: |
+            ${{ steps.work.outputs.path }}/taf-check.json
+            ${{ steps.work.outputs.path }}/TAF/report/
+          if-no-files-found: error
+          retention-days: 14

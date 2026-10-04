@@ -1,0 +1,21 @@
+BET 2026 Diagnostic standalone with complete one-evaluation outputs
+Repository commit: 81c11f06fcc7450f69b379160cbd77fbc636212b
+Kflow source job: 21641 (j470a734773c)
+Kflow archive SHA-256: de732634023a558c38fa364de9ea43c8e37eee197622c8e3d386081eeeaa48c5
+MFCL executable SHA-256: 8995f72019869863c1d1c0b4f44fc6a6268d1f79031f5bc79dc354ee10f0a63e
+Final PAR SHA-256: 21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3
+Evaluation: final.par was copied byte-for-byte to 10.par, then evaluated once
+as ./mfclo64 bet.frq 10.par 11.par -file - with the archived Phase 11 controls
+(1 1 1; 1 50 -4; 1 121 0; 1 246 1). The source final.par remained unchanged.
+
+All 52 files written or refreshed by that evaluation are retained, including
+fishmort2 and every auxiliary native output. Together with the ten runnable
+inputs/helpers and five documentation/checksum files, the ZIP contains 67
+files. SHA256SUMS inventories all 66 files other than itself.
+
+Evaluation result: objective 9.08148573966594e+04; MGC
+9.67941308427665e-05; 1,997 active parameters. All five canonical REP files,
+fishmort, fishmort2 and 41 other overlapping files match the original Job
+21641 archive byte-for-byte. A separate clean rerun reproduced 65 of 67 files
+byte-for-byte; only the two logs differed because they record paths, timings
+and process memory addresses.
