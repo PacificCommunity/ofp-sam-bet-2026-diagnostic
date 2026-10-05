@@ -1,0 +1,60 @@
+{
+  "cases": {
+    "diagnostic": {
+      "archive": {
+        "bytes": 30866022,
+        "sha256": "fbc801ca3bddfacd4bb29836fe11be9085a671748eeb3b7fe9cf8504b0be147d",
+        "url": "https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/releases/download/bet2026-hessians-20261006/diagnostic.tar.gz"
+      },
+      "final_par_sha256": "21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3",
+      "hessian_header": {
+        "bytes_hex": "cd070000",
+        "n_parameter": 1997,
+        "row_bounds": [
+          1,
+          1997
+        ]
+      },
+      "hessian_sha256": "e289a150c45930c2f4f164fb43432d5c034d8caec7bda7ce664caca9e4ad20c5",
+      "members": {
+        "bet.hes": {
+          "bytes": 31904076,
+          "sha256": "e289a150c45930c2f4f164fb43432d5c034d8caec7bda7ce664caca9e4ad20c5"
+        },
+        "check-summary.csv": {
+          "bytes": 699,
+          "sha256": "37158f037b3903c02bd288aaf2f3437370accddf7c9659f1e02d301e028efea6"
+        },
+        "check-unit-status.csv": {
+          "bytes": 10491,
+          "sha256": "573b53d715de0428b93e975948a32fc7ef74ef3319cb1529917c8edc851900fd"
+        },
+        "final.par": {
+          "bytes": 2956541,
+          "sha256": "21dcaea9db8c89ddc8c29fa3c3a5e514b50bef6e26587c168c00c05f35fbebc3"
+        },
+        "hessian_info.rds": {
+          "bytes": 47188,
+          "sha256": "67f65e3655d505f5c8bc916b7bfeb6cfb59c4e38a608c8a61e74af73f6f9e296"
+        },
+        "mfcl_eigen_log.txt": {
+          "bytes": 21853,
+          "sha256": "eda4de903bb814267256341a2a6fd6c4c5f4f2a35d2a2aafd8a3cb39bcda7c3d"
+        },
+        "mfcl_stitch_log.txt": {
+          "bytes": 26491,
+          "sha256": "d8cf3304f08c3715449595deeeb6235d175eb6579958d5d09e016f3ba9cde914"
+        },
+        "neigenvalues": {
+          "bytes": 7,
+          "sha256": "88850137b94b2e0048fc2573a878575d7f5dde42de8b4fff6bc9b107e0fd181c"
+        }
+      },
+      "model_id": "diagnostic",
+      "pdh_status": "PDH"
+    }
+  },
+  "classification": "PUBLIC",
+  "repository": "PacificCommunity/ofp-sam-bet-2026-diagnostic",
+  "schema_version": 1
+}

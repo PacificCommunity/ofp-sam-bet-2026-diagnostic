@@ -33,3 +33,18 @@ Python 3 are required; no Python commands need to be edited.
 `validation.json` records profile controls; `source-status.json` records source
 files and controllers. Original generated profile continuation scripts were not
 retained. Published results, figures and HTML remain unchanged.
+
+## Original Hessian
+
+[Download the original Hessian](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/releases/download/bet2026-hessians-20261006/diagnostic.tar.gz)
+with its matching final PAR, metadata, eigenvalue counts and calculation logs.
+The matrix has 1,997 parameters and the original PDH result.
+
+```sh
+make hessian CASE=diagnostic OUT=/absolute/bet-hessian
+```
+
+This restores saved files without running MFCL; choose a new folder outside
+the repository. [The manifest](hessians.json) pins all eight files by SHA256.
+The original compact/full gradient files have not been recovered; the
+[published uncertainty results](../results/reference/uncertainty/) remain available.

@@ -14,6 +14,12 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Check saved Hessian restoration
+        shell: bash
+        run: |
+          make hessian-verify
+          python3 -m unittest discover -s reproduce -p 'test_hessian.py' -v
+          make hessian CASE=diagnostic OUT="$RUNNER_TEMP/bet-hessian"
       - name: Check Make entry points without executing models
         run: python3 ci/check-make-entrypoints.py
       - name: Verify preserved assessment files
