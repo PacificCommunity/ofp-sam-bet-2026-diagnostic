@@ -28,11 +28,11 @@ Each prepared case has its PAR, six native inputs, executable and original
 controls and saved PAR/input files under saved names to protect them from outputs.
 The original compact [native.tar.gz](native.tar.gz) remains unchanged.
 
-Diagnostic `rerun` checks five complete original REP hashes. Profile runs use
-44 archived final PARs plus the scalar-100 Diagnostic anchor, preserving each
-original objective recipe and evaluation ceiling of one. Their objective and
-active parameter count must match; whole-profile REP equality is not asserted.
-Original generated profile continuation scripts were not retained.
+Diagnostic `rerun` checks five complete original REP hashes. Profiles use 44
+archived PARs plus scalar-100, preserving original objectives and ceiling one.
+Generated reader controls set flag50=6 (criterion 1e6) to stop before stepping.
+Observed zero counters, dimensions and original biomass targets must match;
+fit convergence/whole-profile REP equality are unclaimed; continuation recipes missing.
 
 Both ASPM replays require the complete original REP checksum. The fitted replay
 uses the original **pre-restart PAR**; its terminal PAR and restart input remain

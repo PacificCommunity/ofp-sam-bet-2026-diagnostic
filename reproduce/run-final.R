@@ -135,7 +135,7 @@ rep_values <- function(path) {
   }, numeric(1))
   list(dimensions = dimensions, values = values, average_biomass = mean(rowSums(values[["Total biomass"]])), average_biomass_rounding = sum(rounding) / dimensions[1L])
 }
-native_log <- function(path, parameters) {
+native_log <- function(path, parameters, ceiling_source = "native-log", expected_criterion = NULL) {
   need(regular(path)$size > 0, "Native log is empty")
   lines <- readLines(path, warn = FALSE)
   controls <- grep("^[[:space:]]*optfile\\.cpp[[:space:]]+", lines, value = TRUE)
@@ -149,17 +149,31 @@ native_log <- function(path, parameters) {
     }
   }
   counters <- lines[grepl("variables;", lines, fixed = TRUE)]
+  counters <- sub("^Initial statistics:[[:space:]]*", "", trimws(counters))
   pattern <- "^[[:space:]]*([0-9]+)[[:space:]]+variables;[[:space:]]+iteration[[:space:]]+([0-9]+);[[:space:]]+function[[:space:]]+evaluation[[:space:]]+([0-9]+)[[:space:]]*$"
   observed <- lapply(counters, function(line) {
     values <- regmatches(line, regexec(pattern, line))[[1L]]
     need(length(values) == 4L && identical(as.numeric(values[2:4]), c(parameters, 0, 0)), "Native parameter/iteration/function counters differ from the saved PAR and zero counters")
     as.numeric(values[2:4])
   })
-  need(ceiling > 0L && length(observed) > 0L, "Native ceiling/zero-counter evidence is missing")
+  need(length(observed) > 0L && (ceiling > 0L || identical(ceiling_source, "fixed-profile-cli")), "Native ceiling/zero-counter evidence is missing")
+  criterion_lines <- grep("converg criter", lines, value = TRUE, fixed = TRUE)
+  criterion <- vapply(criterion_lines, function(line) {
+    fields <- regmatches(line, regexec("^[[:space:]]*Exit code = [-+]?[0-9]+;[[:space:]]+converg criter[[:space:]]+([^[:space:]]+)[[:space:]]*$", line))[[1L]]
+    need(length(fields) == 2L && is.finite(suppressWarnings(as.numeric(fields[2L]))), "Malformed native gradient criterion")
+    as.numeric(fields[2L])
+  }, numeric(1))
+  gradient_lines <- grep("maximum gradient component mag", lines, value = TRUE, fixed = TRUE)
+  gradients <- vapply(gradient_lines, function(line) {
+    fields <- regmatches(line, regexec("^[[:space:]]*Function value[[:space:]]+([^[:space:]]+);[[:space:]]+maximum gradient component mag[[:space:]]+([^[:space:]]+)[[:space:]]*$", line))[[1L]]
+    need(length(fields) == 3L && all(is.finite(suppressWarnings(as.numeric(fields[2:3])))), "Malformed native gradient statistics")
+    as.numeric(fields[3L])
+  }, numeric(1))
+  if (!is.null(expected_criterion)) need(length(criterion) > 0L && all(criterion == expected_criterion) && length(gradients) > 0L, "Generated evaluation-only gradient criterion evidence differs or is missing")
   total <- grep("^[[:space:]]*Total func[[:space:]]+[^[:space:]]+[[:space:]]*$", lines, value = TRUE)
   objectives <- suppressWarnings(as.numeric(trimws(sub("^[[:space:]]*Total func[[:space:]]+", "", total))))
   need(length(objectives) > 0L && all(is.finite(objectives)), "Native objective evidence is missing or nonfinite")
-  list(objective = objectives[1L], parameters = observed[[1L]][1L], iteration = observed[[1L]][2L], function_counter = observed[[1L]][3L], counter_records = length(observed), ceiling_records = ceiling)
+  list(objective = objectives[1L], parameters = observed[[1L]][1L], iteration = observed[[1L]][2L], function_counter = observed[[1L]][3L], counter_records = length(observed), ceiling_records = ceiling, ceiling_source = if (ceiling > 0L) "native-log" else ceiling_source, gradient_criterion = if(length(criterion)) criterion[1L] else NA_real_, initial_gradient = if(length(gradients)) gradients[1L] else NA_real_)
 }
 check_report <- function(path, source, row, reference) {
   need(is.list(reference) && identical(reference$schema, "bet2026.reader_reference.v1"), "Pinned historical reader reference is missing")
@@ -256,6 +270,12 @@ prepare <- function(root, native, inventory, row, raw) {
 require_linux <- function() {
   need(Sys.info()[["sysname"]] == "Linux" && tolower(Sys.info()[["machine"]]) %in% c("x86_64", "amd64"), "Native execution requires Linux x86-64; prepare/verify do not execute MFCL")
 }
+profile_arguments <- function(row, input, result) {
+  switches <- strsplit(row$profile_switches, "|", fixed = TRUE)[[1L]]
+  need(length(switches) == 32L && identical(switches[1:2], c("-switch", "10")) && identical(switches[6:8], c("1", "1", "1")), "Original one-evaluation profile recipe differs")
+  # Reader-only stop criterion; unchanged original ten switch groups remain first.
+  c("bet.frq", input, result, "-switch", "12", switches[-c(1L, 2L)], "1", "246", "1", "1", "50", "6")
+}
 evaluate <- function(prepared, replay_aspm = FALSE) {
   output <- prepared$output; row <- prepared$row
   if (!replay_aspm) need(row$terminal_available == "TRUE", "Original terminal PAR and restart input are missing; terminal-PAR rerun refused")
@@ -268,9 +288,8 @@ evaluate <- function(prepared, replay_aspm = FALSE) {
   before <- sha256(c(source, input))
   args <- c("bet.frq", input, result)
   if (row$kind == "profile") {
-    switches <- strsplit(row$profile_switches, "|", fixed = TRUE)[[1L]]
-    need(length(switches) == 32L && identical(switches[1:2], c("-switch", "10")) && identical(switches[6:8], c("1", "1", "1")), "Original one-evaluation profile recipe differs")
-    args <- c(args, "-switch", "11", switches[-c(1L, 2L)], "1", "246", "1")
+    args <- profile_arguments(row, input, result)
+    writeLines(c("./mfclo64", args), "native-command.txt", useBytes = TRUE)
     status <- suppressWarnings(system2("./mfclo64", shQuote(args), stdout = "mfcl-native.log", stderr = "mfcl-native.log", timeout = 600L))
   } else {
     if (row$kind == "aspm") {
@@ -279,9 +298,10 @@ evaluate <- function(prepared, replay_aspm = FALSE) {
       quick <- c(sub("^1 1 10000$", "1 1 1", original), "1 246 1")
     } else {
       need(row$kind == "profile-anchor", "Unknown evaluation controls")
-      quick <- c("1 1 1", "1 246 1")
+      quick <- c("1 1 1", "1 246 1", "1 50 6")
     }
     writeLines(quick, "evaluation-controls.txt", useBytes = TRUE)
+    writeLines(c("./mfclo64", args, "-file", "-"), "native-command.txt", useBytes = TRUE)
     status <- suppressWarnings(system2("./mfclo64", shQuote(c(args, "-file", "-")), stdin = "evaluation-controls.txt", stdout = "mfcl-native.log", stderr = "mfcl-native.log", timeout = 600L))
   }
   need(status %in% c(0L, 3L), "Native evaluation failed; inspect mfcl-native.log (exit ", status, ")")
@@ -292,7 +312,8 @@ evaluate <- function(prepared, replay_aspm = FALSE) {
   need(count == scalar(source, "The number of parameters") && count > 0 && count == as.integer(count), "Active parameter count changed")
   if (row$kind == "aspm") need(count == 1L, "ASPM active parameter count differs")
   objective <- scalar(result, "Objective function value")
-  logged <- native_log("mfcl-native.log", count)
+  is_profile <- row$kind %in% c("profile", "profile-anchor")
+  logged <- native_log("mfcl-native.log", count, if (row$kind == "profile") "fixed-profile-cli" else "native-log", if(is_profile) 1e6 else NULL)
   first <- logged$objective
   expected <- as.numeric(row$objective)
   need(is.finite(first) && is.finite(expected) && max(abs(c(first, objective) - expected)) <= 1e-6, "Original native objective differs")
@@ -305,6 +326,8 @@ evaluate <- function(prepared, replay_aspm = FALSE) {
                               observed_native_parameters = logged$parameters, observed_iteration = logged$iteration,
                               observed_function_counter = logged$function_counter, native_counter_records = logged$counter_records,
                               native_ceiling_records = logged$ceiling_records, validation_scope = central$scope,
+                              function_ceiling_evidence = logged$ceiling_source, reported_gradient_criterion = logged$gradient_criterion,
+                              initial_logged_gradient = logged$initial_gradient, evaluation_only = TRUE,
                               total_average_biomass = central$report$average_biomass,
                               expected_total_average_biomass = central$expected_average_biomass,
                               total_average_biomass_abs_diff = central$average_biomass_abs_diff,
