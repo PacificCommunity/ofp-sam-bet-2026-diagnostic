@@ -9,58 +9,44 @@ report:
 	bash diagnostic-report/run.sh
 
 # Reader entry points. Existing all/report targets above are retained.
+.DEFAULT_GOAL := help
 CASE ?= profiles
 OUT ?=
-export CASE OUT
-.PHONY: help verify prepare rerun refit profiles aspm restore _check-output
+RSCRIPT ?= Rscript
+export CASE OUT ARCHIVE
+.PHONY: help list verify prepare rerun refit profiles aspm restore hessian hessian-verify
 
 help:
-	@printf '%s\n' 'make verify                         Check saved inputs and results' 'make hessian CASE=diagnostic OUT=/absolute/bet-hessian' 'make rerun OUT=/tmp/bet-final        Regenerate five original REP files' 'make refit OUT=/tmp/bet-refit        Full fit from original inputs' 'make profiles CASE=profiles OUT=/tmp/bet-profile' 'make aspm CASE=constant OUT=/tmp/bet-aspm' 'make restore CASE=profile-75 OUT=/tmp/bet-inputs' 'MFCL runs require Linux x86-64; choose a new OUT each time.'
+	@printf '%s\n' 'make verify                         Check saved inputs and results with base R' 'make list                           List Diagnostic/profile/ASPM source cases' 'make hessian CASE=diagnostic OUT=/absolute/bet-hessian' 'make prepare OUT=/tmp/bet-inputs     Copy ordinary Diagnostic MFCL files' 'make rerun OUT=/tmp/bet-final        Regenerate five original REP files' 'make refit OUT=/tmp/bet-refit        New full fit from original inputs' 'make profiles CASE=profiles OUT=/tmp/bet-profile' 'make aspm CASE=constant OUT=/tmp/bet-aspm' 'make restore CASE=profile-75 OUT=/tmp/bet-profile-inputs' 'Readers need Make, base R, tar/XZ, stat and SHA-256 tools; no Python.' 'MFCL runs require Linux x86-64; choose a new OUT each time.'
+
+list:
+	@"$(RSCRIPT)" reproduce/run-final.R list
 
 verify:
-	python3 reproduce/hessian.py --verify
-	./verify
-	python3 ci/verify-preserved-files.py
-	python3 ci/verify-mfcl-files.py
-	python3 reproduce/restore.py --verify
+	@"$(RSCRIPT)" reproduce/run-final.R verify
+	@"$(RSCRIPT)" reproduce/hessian.R --verify
 
-prepare: verify _check-output
-	@python3 -c 'import os,sys; from pathlib import Path; sys.path.insert(0,"reproduce"); import restore; names=("bet.age_length","bet.frq","bet.ini","bet.reg_scaling","bet.tag","mfcl.cfg","mfclo64","doitall.sh","final.par","run-final"); files={n:((Path("MFCL")/n).read_bytes(),0o755 if n in ("mfclo64","doitall.sh","run-final") else 0o644) for n in names}; restore.save_files(Path(os.environ["OUT"]),files,"diagnostic-working-copy")'
+prepare rerun refit:
+	@"$(RSCRIPT)" reproduce/run-final.R "$@" diagnostic "$$OUT"
 
-rerun: prepare
-	@case "$$(uname -s):$$(uname -m)" in Linux:x86_64|Linux:amd64) ;; *) echo 'MFCL requires Linux x86-64.' >&2; exit 2;; esac
-	@cd "$$OUT" && ./run-final
-
-refit: prepare
-	@case "$$(uname -s):$$(uname -m)" in Linux:x86_64|Linux:amd64) ;; *) echo 'MFCL requires Linux x86-64.' >&2; exit 2;; esac
-	@cd "$$OUT" && ./doitall.sh
-
-profiles: _check-output
-	python3 reproduce/run-native.py "$$CASE" "$$OUT"
-
-aspm: _check-output
-	python3 reproduce/replay-aspm.py "$$CASE" "$$OUT"
-
-restore: _check-output
-	python3 reproduce/restore.py "$$CASE" "$$OUT"
-
-_check-output:
-	@python3 -c 'import os; from pathlib import Path; raw=os.environ.get("OUT", ""); p=Path(raw); root=Path.cwd().resolve(); assert raw and p.is_absolute(), "Set OUT to an absolute, new directory"; assert not os.path.lexists(p), "OUT already exists; choose a new directory"; q=p.resolve(); assert q != root and (root not in q.parents or root/"outputs" in q.parents), "OUT inside the checkout must be beneath outputs/"'
-
-# Install the helper, manifest and offline tests in reproduce/.
-export CASE OUT ARCHIVE
-.PHONY: hessian hessian-verify
+profiles aspm restore:
+	@"$(RSCRIPT)" reproduce/run-final.R "$@" "$$CASE" "$$OUT"
 
 hessian:
 	@if [ -n "$$ARCHIVE" ]; then \
-		python3 reproduce/hessian.py --case "$$CASE" --out "$$OUT" --archive "$$ARCHIVE"; \
+		"$(RSCRIPT)" reproduce/hessian.R --case "$$CASE" --out "$$OUT" --archive "$$ARCHIVE"; \
 	else \
-		python3 reproduce/hessian.py --case "$$CASE" --out "$$OUT"; \
+		"$(RSCRIPT)" reproduce/hessian.R --case "$$CASE" --out "$$OUT"; \
 	fi
 
 hessian-verify:
 	@if [ -n "$$ARCHIVE" ]; then \
-		python3 reproduce/hessian.py --verify --case "$$CASE" --archive "$$ARCHIVE"; \
+		"$(RSCRIPT)" reproduce/hessian.R --verify --case "$$CASE" --archive "$$ARCHIVE"; \
 	else \
-		python3 reproduce/hessian.py --verify; \
+		"$(RSCRIPT)" reproduce/hessian.R --verify; \
 	fi
+
+.PHONY: verify-source
+verify: verify-source
+verify-source:
+	@sha256sum --quiet -c ci/PRESERVED.sha256

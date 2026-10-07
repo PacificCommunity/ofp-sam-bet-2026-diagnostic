@@ -979,6 +979,28 @@
     }
   ],
   "approved_reader_updates": {
-    "Makefile": "e56d8cce04341d69b1858a4304f8d0f302e22bb6f74f0909f976e717fd5e35e5"
-  }
+    "Makefile": "7f6aeb0d8f05f7fb2f12bbded6001ddf28dbb33f8b73f0c6b3e2115d16a122ee"
+  },
+  "approved_additions": [
+    {
+      "path": "reproduce/hessian.R",
+      "mode": "100644",
+      "sha256": "264214121fdd7f52eec851a9f720f6365272d6b012540da6526c19706c07a930"
+    },
+    {
+      "path": "reproduce/run-final.R",
+      "mode": "100644",
+      "sha256": "c95ffde5517d1fecd04bba4db041e2a7ad417a3f597b7f64b5055296ba8a85ee"
+    },
+    {
+      "path": "reproduce/bet-2026-diagnostic-readers.zip",
+      "mode": "100644",
+      "sha256": "8890d1d3ae38eae2479b402250e62f95746db8efef45e03e0055e7b4180b9664"
+    },
+    {
+      "path": "reproduce/repository-files.csv",
+      "mode": "100644",
+      "sha256": "1ac1813268a0a6a2c1d50160ea1dbf48834bdc653f7b44eeb611f7a12a3606dc"
+    }
+  ]
 }
