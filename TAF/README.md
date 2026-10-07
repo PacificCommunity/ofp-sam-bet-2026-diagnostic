@@ -1,6 +1,6 @@
 # TAF workflow
 
-This is Arni Magnusson’s TAF workflow for the saved Diagnostic fit.
+TAF workflow for the saved Diagnostic fit.
 Inputs and native outputs are read from [MFCL](../MFCL/); no download or
 model fit is needed for the default workflow.
 
