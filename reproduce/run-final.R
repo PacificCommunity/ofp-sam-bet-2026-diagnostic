@@ -97,7 +97,7 @@ rep_sections <- function(path) {
   lines <- readLines(path, warn = FALSE)
   headers <- which(grepl("^[[:space:]]*#", lines))
   labels <- trimws(sub("^[[:space:]]*#[[:space:]]*", "", lines[headers]))
-  function(label, rows = 1L, columns = 1L, tokens = FALSE) {
+  section <- function(label, rows = 1L, columns = 1L, tokens = FALSE) {
     index <- which(labels == label)
     need(length(index) == 1L, "Missing or duplicate REP section: ", label)
     first <- headers[index] + 1L
@@ -112,18 +112,23 @@ rep_sections <- function(path) {
     need(all(is.finite(numbers)), "Nonfinite REP section: ", label)
     matrix(if (tokens) fields else numbers, nrow = rows, ncol = columns, byrow = TRUE)
   }
+  attr(section, "labels") <- labels
+  section
 }
 dimension_labels <- c("Number of time periods", "Year 1", "Number of regions", "Number of species", "Number of age classes", "Number of recruitments per year")
 biomass_labels <- c("Total biomass", "Adult biomass", "Total biomass in absence of fishing", "Adult biomass in absence of fishing")
-rep_values <- function(path) {
+rep_values <- function(path, full = TRUE) {
   section <- rep_sections(path)
   dimensions <- vapply(dimension_labels, function(label) as.numeric(section(label)), numeric(1))
   need(all(dimensions > 0 & dimensions == as.integer(dimensions)) && dimensions[1L] <= 2000 && dimensions[3L] <= 100 && dimensions[6L] <= 12 && dimensions[1L] %% dimensions[6L] == 0, "Invalid REP dimensions")
   values <- setNames(as.list(dimensions), dimension_labels)
-  for (label in c(biomass_labels, "Recruitment", "Total biomass at MSY", "Adult biomass at MSY", "F multiplier at MSY")) {
+  required <- c("Total biomass", "Adult biomass", "Recruitment")
+  additional <- c(biomass_labels[3:4], "Total biomass at MSY", "Adult biomass at MSY", "F multiplier at MSY")
+  checked <- c(required, if(full) additional else additional[additional %in% attr(section, "labels")])
+  for (label in checked) {
     shape <- if (label %in% c(biomass_labels, "Recruitment")) dimensions[c(1L, 3L)] else c(1L, 1L)
     values[[label]] <- section(label, shape[1L], shape[2L])
-    need(all(values[[label]] >= 0) && (label == "Recruitment" || all(values[[label]] > 0)), "Invalid central REP quantity: ", label)
+    if (full || label %in% required) need(all(values[[label]] >= 0) && (label == "Recruitment" || all(values[[label]] > 0)), "Invalid central REP quantity: ", label)
   }
   # Half a last printed digit bounds rounding in each scientific-notation token.
   text <- section("Total biomass", dimensions[1L], dimensions[3L], tokens = TRUE)
@@ -133,7 +138,7 @@ rep_values <- function(path) {
     decimals <- if (grepl(".", parts[1L], fixed = TRUE)) nchar(sub("^[^.]*[.]", "", parts[1L])) else 0
     0.5 * 10^(exponent - decimals)
   }, numeric(1))
-  list(dimensions = dimensions, values = values, average_biomass = mean(rowSums(values[["Total biomass"]])), average_biomass_rounding = sum(rounding) / dimensions[1L])
+  list(dimensions = dimensions, values = values, checked_sections = checked, full_unfished_msy_sections = all(additional %in% checked), average_biomass = mean(rowSums(values[["Total biomass"]])), average_biomass_rounding = sum(rounding) / dimensions[1L])
 }
 native_log <- function(path, parameters, ceiling_source = "native-log", expected_criterion = NULL) {
   need(regular(path)$size > 0, "Native log is empty")
@@ -177,7 +182,9 @@ native_log <- function(path, parameters, ceiling_source = "native-log", expected
 }
 check_report <- function(path, source, row, reference) {
   need(is.list(reference) && identical(reference$schema, "bet2026.reader_reference.v1"), "Pinned historical reader reference is missing")
-  report <- rep_values(path)
+  # Original constrained-profile controls may omit unfished/MSY output modes.
+  # All present sections remain checked; the original fished fields are required.
+  report <- rep_values(path, full = row$kind != "profile")
   need(identical(report$dimensions, reference$dimensions), "Native REP dimensions differ from the original reference")
   need(sha256("bet.frq") == reference$frq_sha256 && scalar(source, "The number of age classes") == report$dimensions[5L] && scalar(source, "First year in model") == report$dimensions[2L], "Native dimensions differ from the exact saved PAR/FRQ")
   difference <- NA_real_; expected <- NA_real_; scope <- "objective-count-dimensions-finite-central-shapes"
@@ -332,6 +339,8 @@ evaluate <- function(prepared, replay_aspm = FALSE) {
                               expected_total_average_biomass = central$expected_average_biomass,
                               total_average_biomass_abs_diff = central$average_biomass_abs_diff,
                               total_average_biomass_rounding_bound = central$report$average_biomass_rounding,
+                              central_rep_sections_checked = paste(central$report$checked_sections, collapse = "|"),
+                              unfished_msy_rep_sections_complete = central$report$full_unfished_msy_sections,
                               source_par_sha256 = before[1L], report_sha256 = sha256(report), complete_rep_checked = replay_aspm,
                               source_inputs_unchanged = TRUE), "native-check.csv", row.names = FALSE)
   cat(row$case, ": original objective, dimensions and observed zero counters checked; preserved files unchanged", if (replay_aspm) "; complete REP checksum checked" else "", ".\n", sep = "")

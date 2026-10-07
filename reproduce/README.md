@@ -31,8 +31,8 @@ The original compact [native.tar.gz](native.tar.gz) remains unchanged.
 Diagnostic `rerun` checks five complete original REP hashes. Profiles use 44
 archived PARs plus scalar-100, preserving original objectives and ceiling one.
 Generated reader controls set flag50=6 (criterion 1e6) to stop before stepping.
-Observed zero counters, dimensions and original biomass targets must match;
-fit convergence/whole-profile REP equality are unclaimed; continuation recipes missing.
+Fished fields are required; available B0/MSY fields, zero counters, dimensions and original targets are checked.
+Fit convergence/whole-profile REP equality are unclaimed; continuation recipes missing.
 
 Both ASPM replays require the complete original REP checksum. The fitted replay
 uses the original **pre-restart PAR**; its terminal PAR and restart input remain

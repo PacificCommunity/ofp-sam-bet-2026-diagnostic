@@ -78,6 +78,8 @@ jobs:
             ${{ runner.temp }}/bet-native/*/native-check.csv
             ${{ runner.temp }}/bet-native/*/mfcl-native.log
             ${{ runner.temp }}/bet-native/*/native-command.txt
+            ${{ runner.temp }}/bet-native/profile-50/plot-evaluated.par.rep
+            ${{ runner.temp }}/bet-native/profile-50/evaluated.par
           if-no-files-found: error
           retention-days: 14
 
