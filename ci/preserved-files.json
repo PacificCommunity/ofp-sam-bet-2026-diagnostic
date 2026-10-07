@@ -990,12 +990,12 @@
     {
       "path": "reproduce/run-final.R",
       "mode": "100644",
-      "sha256": "c95ffde5517d1fecd04bba4db041e2a7ad417a3f597b7f64b5055296ba8a85ee"
+      "sha256": "8c91f41b7161b389c90d1a8c1481e7f6a1edc80a841f42510a698e27fd229ba6"
     },
     {
       "path": "reproduce/bet-2026-diagnostic-readers.zip",
       "mode": "100644",
-      "sha256": "8890d1d3ae38eae2479b402250e62f95746db8efef45e03e0055e7b4180b9664"
+      "sha256": "11587e8887ce602ca547ee883e2e4e4ddc5330d440cabe5692b3710813c3eadd"
     },
     {
       "path": "reproduce/repository-files.csv",

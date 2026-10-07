@@ -86,11 +86,109 @@ scalar <- function(p, label) {
   need(length(n) == 1L && is.finite(n), "Invalid PAR scalar: ", label)
   n
 }
+numeric_file <- function(path) {
+  need(regular(path)$size > 0, "Native output is empty: ", path)
+  lines <- trimws(readLines(path, warn = FALSE))
+  values <- unlist(strsplit(lines[nzchar(lines) & !startsWith(lines, "#")], "[[:space:]]+"), use.names = FALSE)
+  need(length(values) > 0L && all(is.finite(suppressWarnings(as.numeric(values)))), "Nonfinite or nonnumeric native output: ", path)
+}
+rep_sections <- function(path) {
+  numeric_file(path)
+  lines <- readLines(path, warn = FALSE)
+  headers <- which(grepl("^[[:space:]]*#", lines))
+  labels <- trimws(sub("^[[:space:]]*#[[:space:]]*", "", lines[headers]))
+  function(label, rows = 1L, columns = 1L, tokens = FALSE) {
+    index <- which(labels == label)
+    need(length(index) == 1L, "Missing or duplicate REP section: ", label)
+    first <- headers[index] + 1L
+    last <- if (index < length(headers)) headers[index + 1L] - 1L else length(lines)
+    need(first <= last, "Empty REP section: ", label)
+    text <- trimws(lines[seq.int(first, last)])
+    text <- text[nzchar(text)]
+    fields <- strsplit(text, "[[:space:]]+")
+    need(length(text) == rows && all(lengths(fields) == columns), "REP row/column count differs: ", label)
+    fields <- unlist(fields, use.names = FALSE)
+    numbers <- suppressWarnings(as.numeric(fields))
+    need(all(is.finite(numbers)), "Nonfinite REP section: ", label)
+    matrix(if (tokens) fields else numbers, nrow = rows, ncol = columns, byrow = TRUE)
+  }
+}
+dimension_labels <- c("Number of time periods", "Year 1", "Number of regions", "Number of species", "Number of age classes", "Number of recruitments per year")
+biomass_labels <- c("Total biomass", "Adult biomass", "Total biomass in absence of fishing", "Adult biomass in absence of fishing")
+rep_values <- function(path) {
+  section <- rep_sections(path)
+  dimensions <- vapply(dimension_labels, function(label) as.numeric(section(label)), numeric(1))
+  need(all(dimensions > 0 & dimensions == as.integer(dimensions)) && dimensions[1L] <= 2000 && dimensions[3L] <= 100 && dimensions[6L] <= 12 && dimensions[1L] %% dimensions[6L] == 0, "Invalid REP dimensions")
+  values <- setNames(as.list(dimensions), dimension_labels)
+  for (label in c(biomass_labels, "Recruitment", "Total biomass at MSY", "Adult biomass at MSY", "F multiplier at MSY")) {
+    shape <- if (label %in% c(biomass_labels, "Recruitment")) dimensions[c(1L, 3L)] else c(1L, 1L)
+    values[[label]] <- section(label, shape[1L], shape[2L])
+    need(all(values[[label]] >= 0) && (label == "Recruitment" || all(values[[label]] > 0)), "Invalid central REP quantity: ", label)
+  }
+  # Half a last printed digit bounds rounding in each scientific-notation token.
+  text <- section("Total biomass", dimensions[1L], dimensions[3L], tokens = TRUE)
+  rounding <- vapply(as.vector(text), function(token) {
+    parts <- strsplit(tolower(token), "e", fixed = TRUE)[[1L]]
+    exponent <- if (length(parts) == 2L) as.numeric(parts[2L]) else 0
+    decimals <- if (grepl(".", parts[1L], fixed = TRUE)) nchar(sub("^[^.]*[.]", "", parts[1L])) else 0
+    0.5 * 10^(exponent - decimals)
+  }, numeric(1))
+  list(dimensions = dimensions, values = values, average_biomass = mean(rowSums(values[["Total biomass"]])), average_biomass_rounding = sum(rounding) / dimensions[1L])
+}
+native_log <- function(path, parameters) {
+  need(regular(path)$size > 0, "Native log is empty")
+  lines <- readLines(path, warn = FALSE)
+  controls <- grep("^[[:space:]]*optfile\\.cpp[[:space:]]+", lines, value = TRUE)
+  ceiling <- 0L
+  for (line in controls) {
+    fields <- strsplit(trimws(sub("^[[:space:]]*optfile\\.cpp[[:space:]]+", "", line)), "[[:space:]]+")[[1L]]
+    need(length(fields) >= 3L && all(grepl("^[-+]?[0-9]+$", fields[1:3])), "Malformed native controls")
+    if (identical(as.numeric(fields[1:2]), c(1, 1))) {
+      need(as.numeric(fields[3L]) == 1, "Native function ceiling differs from one")
+      ceiling <- ceiling + 1L
+    }
+  }
+  counters <- lines[grepl("variables;", lines, fixed = TRUE)]
+  pattern <- "^[[:space:]]*([0-9]+)[[:space:]]+variables;[[:space:]]+iteration[[:space:]]+([0-9]+);[[:space:]]+function[[:space:]]+evaluation[[:space:]]+([0-9]+)[[:space:]]*$"
+  observed <- lapply(counters, function(line) {
+    values <- regmatches(line, regexec(pattern, line))[[1L]]
+    need(length(values) == 4L && identical(as.numeric(values[2:4]), c(parameters, 0, 0)), "Native parameter/iteration/function counters differ from the saved PAR and zero counters")
+    as.numeric(values[2:4])
+  })
+  need(ceiling > 0L && length(observed) > 0L, "Native ceiling/zero-counter evidence is missing")
+  total <- grep("^[[:space:]]*Total func[[:space:]]+[^[:space:]]+[[:space:]]*$", lines, value = TRUE)
+  objectives <- suppressWarnings(as.numeric(trimws(sub("^[[:space:]]*Total func[[:space:]]+", "", total))))
+  need(length(objectives) > 0L && all(is.finite(objectives)), "Native objective evidence is missing or nonfinite")
+  list(objective = objectives[1L], parameters = observed[[1L]][1L], iteration = observed[[1L]][2L], function_counter = observed[[1L]][3L], counter_records = length(observed), ceiling_records = ceiling)
+}
+check_report <- function(path, source, row, reference) {
+  need(is.list(reference) && identical(reference$schema, "bet2026.reader_reference.v1"), "Pinned historical reader reference is missing")
+  report <- rep_values(path)
+  need(identical(report$dimensions, reference$dimensions), "Native REP dimensions differ from the original reference")
+  need(sha256("bet.frq") == reference$frq_sha256 && scalar(source, "The number of age classes") == report$dimensions[5L] && scalar(source, "First year in model") == report$dimensions[2L], "Native dimensions differ from the exact saved PAR/FRQ")
+  difference <- NA_real_; expected <- NA_real_; scope <- "objective-count-dimensions-finite-central-shapes"
+  if (row$kind %in% c("profile", "profile-anchor")) {
+    point <- reference$profile_points[reference$profile_points$scalar == as.numeric(sub("^profile-", "", row$case)), , drop = FALSE]
+    need(nrow(point) == 1L && is.finite(point$total_average_biomass_1000_t), "Original profile biomass target is missing")
+    expected <- point$total_average_biomass_1000_t * 1000
+    difference <- abs(report$average_biomass - expected)
+    need(difference <= report$average_biomass_rounding + 1e-6, "Original profile total-average biomass differs beyond native REP printed precision")
+    scope <- "objective-count-dimensions-finite-central-shapes-original-average-biomass"
+  }
+  if (row$kind %in% c("profile-anchor", "diagnostic")) {
+    for (label in names(reference$values)) {
+      x <- report$values[[label]]; y <- reference$values[[label]]
+      need(identical(dim(x), dim(y)) && length(x) == length(y) && all(abs(x-y) <= 1e-10*pmax(1,abs(y))), "Original anchor central REP differs: ", label)
+    }
+    scope <- paste0(scope, "-anchor-central-equality")
+  }
+  list(report = report, expected_average_biomass = expected, average_biomass_abs_diff = difference, scope = scope)
+}
 kit_inventory <- function(root) {
   lines <- readLines(file.path(root, "CONTENTS.sha256"), warn = FALSE)
-  need(length(lines) == 7L && all(grepl("^[0-9a-f]{64}  [A-Za-z0-9._-]+$", lines)), "Invalid kit content ledger")
+  need(length(lines) == 8L && all(grepl("^[0-9a-f]{64}  [A-Za-z0-9._-]+$", lines)), "Invalid kit content ledger")
   names <- substring(lines, 67L)
-  need(!anyDuplicated(names) && setequal(names, c("run-final.R", "Makefile", "MODELS.csv", "FILES.csv", "native.tar.xz", "README.md", "source-manifest.json")), "Kit content roster differs")
+  need(!anyDuplicated(names) && setequal(names, c("run-final.R", "Makefile", "MODELS.csv", "FILES.csv", "native.tar.xz", "README.md", "source-manifest.json", "REFERENCE.rds")), "Kit content roster differs")
   need(identical(sha256(file.path(root, names)), substring(lines, 1L, 64L)), "Kit checksum differs")
   models <- read_csv(file.path(root, "MODELS.csv"))
   files <- read_csv(file.path(root, "FILES.csv"))
@@ -100,7 +198,9 @@ kit_inventory <- function(root) {
        "Expected Diagnostic, 45 profile points and two ASPM source cases")
   need(setequal(models$case, c("diagnostic", paste0("profile-", as.character(seq(50, 160, by = 2.5))), "aspm-constant", "aspm-fitted")), "Exact profile/ASPM case roster differs")
   need(safe_names(files$path) && !anyDuplicated(files$path), "Invalid native file inventory")
-  list(models = models, files = files)
+  reference <- readRDS(file.path(root, "REFERENCE.rds"))
+  need(is.list(reference) && identical(reference$schema, "bet2026.reader_reference.v1"), "Invalid historical reference schema")
+  list(models = models, files = files, reference = reference)
 }
 unpack <- function(root, inventory) {
   expected <- inventory$files$path
@@ -151,7 +251,7 @@ prepare <- function(root, native, inventory, row, raw) {
                paste("Original terminal PAR available:", row$terminal_available),
                "Original generated profile continuation scripts and fitted ASPM terminal/restart inputs remain unavailable."),
              file.path(output, "source-role.txt"))
-  list(output = output, files = receipt, row = row)
+  list(output = output, files = receipt, row = row, reference = inventory$reference)
 }
 require_linux <- function() {
   need(Sys.info()[["sysname"]] == "Linux" && tolower(Sys.info()[["machine"]]) %in% c("x86_64", "amd64"), "Native execution requires Linux x86-64; prepare/verify do not execute MFCL")
@@ -187,24 +287,31 @@ evaluate <- function(prepared, replay_aspm = FALSE) {
   need(status %in% c(0L, 3L), "Native evaluation failed; inspect mfcl-native.log (exit ", status, ")")
   check_files(output, prepared$files)
   need(identical(before, sha256(c(source, input))), "Saved or staged PAR changed")
+  numeric_file(result)
   count <- scalar(result, "The number of parameters")
   need(count == scalar(source, "The number of parameters") && count > 0 && count == as.integer(count), "Active parameter count changed")
   if (row$kind == "aspm") need(count == 1L, "ASPM active parameter count differs")
   objective <- scalar(result, "Objective function value")
-  log <- readLines("mfcl-native.log", warn = FALSE)
-  total <- grep("^[[:space:]]*Total func[[:space:]]+[^[:space:]]+[[:space:]]*$", log, value = TRUE)
-  first <- if (length(total)) suppressWarnings(as.numeric(trimws(sub("^[[:space:]]*Total func[[:space:]]+", "", total[1L])))) else NA_real_
+  logged <- native_log("mfcl-native.log", count)
+  first <- logged$objective
   expected <- as.numeric(row$objective)
   need(is.finite(first) && is.finite(expected) && max(abs(c(first, objective) - expected)) <= 1e-6, "Original native objective differs")
   report <- paste0("plot-", result, ".rep")
-  need(regular(report)$size > 0, "Native REP is empty")
+  central <- check_report(report, source, row, prepared$reference)
   if (replay_aspm) need(regular(report)$size == as.numeric(row$rep_bytes) && sha256(report) == row$rep_sha256, "Complete original ASPM REP checksum differs")
   utils::write.csv(data.frame(case = row$case, source_role = row$source_role, original_terminal_par_available = row$terminal_available,
                               expected_objective = expected, native_objective = objective, first_logged_objective = first,
                               active_parameters = count, native_exit_code = status, function_evaluation_ceiling = 1L,
+                              observed_native_parameters = logged$parameters, observed_iteration = logged$iteration,
+                              observed_function_counter = logged$function_counter, native_counter_records = logged$counter_records,
+                              native_ceiling_records = logged$ceiling_records, validation_scope = central$scope,
+                              total_average_biomass = central$report$average_biomass,
+                              expected_total_average_biomass = central$expected_average_biomass,
+                              total_average_biomass_abs_diff = central$average_biomass_abs_diff,
+                              total_average_biomass_rounding_bound = central$report$average_biomass_rounding,
                               source_par_sha256 = before[1L], report_sha256 = sha256(report), complete_rep_checked = replay_aspm,
                               source_inputs_unchanged = TRUE), "native-check.csv", row.names = FALSE)
-  cat(row$case, ": original objective checked; preserved files unchanged", if (replay_aspm) "; complete REP checksum checked" else "", ".\n", sep = "")
+  cat(row$case, ": original objective, dimensions and observed zero counters checked; preserved files unchanged", if (replay_aspm) "; complete REP checksum checked" else "", ".\n", sep = "")
 }
 diagnostic_run <- function(prepared, refit = FALSE) {
   check_files(prepared$output, prepared$files)
@@ -214,6 +321,20 @@ diagnostic_run <- function(prepared, refit = FALSE) {
   need(status == 0L, "Diagnostic native script failed; inspect reader-native.log")
   check_files(prepared$output, prepared$files)
   regular("11.par")
+  if (!refit) {
+    numeric_file("11.par")
+    count <- scalar("11.par", "The number of parameters")
+    need(count == scalar(prepared$row$source_par, "The number of parameters"), "Diagnostic active parameter count changed")
+    logged <- native_log("mfcl-final.log", count)
+    expected <- scalar(prepared$row$source_par, "Objective function value")
+    need(max(abs(c(scalar("11.par", "Objective function value"), logged$objective) - expected)) <= 1e-6, "Diagnostic objective differs")
+    central <- check_report("plot-11.par.rep", prepared$row$source_par, prepared$row, prepared$reference)
+    utils::write.csv(data.frame(case = prepared$row$case, function_evaluation_ceiling = 1L,
+      observed_native_parameters = logged$parameters, observed_iteration = logged$iteration,
+      observed_function_counter = logged$function_counter, native_counter_records = logged$counter_records,
+      native_ceiling_records = logged$ceiling_records, validation_scope = central$scope,
+      complete_rep_checked = TRUE, source_inputs_unchanged = TRUE), "native-check.csv", row.names = FALSE)
+  }
   cat(if (refit) "Original Diagnostic full-fit script completed; output 11.par. Full-refit equality is not established.\n" else "Original Diagnostic saved-PAR script completed and checked its five complete REP checksums.\n")
 }
 repository_package <- function(script_dir, args) {
@@ -231,7 +352,7 @@ repository_package <- function(script_dir, args) {
   regular(zip)
   members <- utils::unzip(zip, list = TRUE)$Name
   prefix <- "bet-2026-diagnostic-readers/"
-  expected <- paste0(prefix, c("run-final.R", "Makefile", "MODELS.csv", "FILES.csv", "native.tar.xz", "CONTENTS.sha256", "README.md", "source-manifest.json"))
+  expected <- paste0(prefix, c("run-final.R", "Makefile", "MODELS.csv", "FILES.csv", "native.tar.xz", "CONTENTS.sha256", "README.md", "source-manifest.json", "REFERENCE.rds"))
   need(length(members) == length(expected) && !anyDuplicated(members) && setequal(members, expected), "Diagnostic reader ZIP roster differs")
   scratch <- tempfile("bet-diagnostic-readers-"); need(dir.create(scratch, mode = "0700"), "Cannot create temporary package directory")
   on.exit(unlink(scratch, recursive = TRUE), add = TRUE)
