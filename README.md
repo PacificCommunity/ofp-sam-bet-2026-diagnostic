@@ -18,17 +18,20 @@ and 33 independent selectivity groups. The earlier τ=1 configuration remains
 on the `tau=1` branch.
 
 The repository includes the native MFCL executable, complete inputs,
-`doitall.sh` and exact fitted PAR. On 64-bit Linux, run from the repository root:
+`doitall.sh` and exact fitted PAR. Readers need Make, base R and system
+archive/hash tools. MFCL execution requires Linux x86-64. From the repository root:
 
 ```sh
 make help
 make verify
+make prepare OUT=/tmp/bet-inputs
 make rerun OUT=/tmp/bet-final
 ```
 
 `make rerun` uses the saved fit and a function-evaluation ceiling of 1 to
 regenerate five checksum-locked REP files in a new directory. Source inputs
 and published results stay in place.
+`make prepare` copies the native inputs without executing MFCL.
 
 Use `./restore-payload` to restore saved core outputs without MFCL, or
 `make refit OUT=/tmp/bet-refit` for a complete fit from the committed inputs.

@@ -61,8 +61,8 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "git_blob": "8387180ada7671f84722187030bc81af9f807e65",
-      "sha256": "bea8c76f9b8013b1de2740fce58a5c6325cd77539330b9e9c4459c3207f41587"
+      "git_blob": "96e1a72854a16422a98832859ceed8612fbeac2a",
+      "sha256": "da7c78d2b6450e5219838bb93560b550091d529d7f27c08cce25e1834461f74a"
     },
     {
       "path": "TAU2_FIXED_HEADER.sh",
@@ -976,6 +976,14 @@
       "expected_git_blob": "ee24f3856e5205bc1b52b43e3f4d86a63fc222e1",
       "exact_added_prefix": "[![Preservation checks](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/actions/workflows/verify-preserved-results.yml/badge.svg?branch=main)](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/actions/workflows/verify-preserved-results.yml?query=branch%3Amain) [![TAF checks](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/actions/workflows/check-taf.yml/badge.svg?branch=main)](https://github.com/PacificCommunity/ofp-sam-bet-2026-diagnostic/actions/workflows/check-taf.yml?query=branch%3Amain)\n\n",
       "authorization": "Task-scoped human instruction: CI\ub41c\uac83\ub4e4\uc740 \ub9ac\ub4dc\ubbf8\uc5d0 \uadf8 \uccb4\ud06c\ubc43\uc9c0\ub098 \uc774\ub7f0\uac70\ub3c4 \uc880 \ub123\uc5b4\uc8fc\uba74 \uc88b\uaca0\ub2e4"
+    },
+    {
+      "path": "README.md",
+      "reason": "Clarify existing reader commands, runtime requirements and full-fit scope; retain scientific content, result links and heading anchors.",
+      "previous_sha256": "bea8c76f9b8013b1de2740fce58a5c6325cd77539330b9e9c4459c3207f41587",
+      "previous_git_blob": "8387180ada7671f84722187030bc81af9f807e65",
+      "expected_sha256": "da7c78d2b6450e5219838bb93560b550091d529d7f27c08cce25e1834461f74a",
+      "expected_git_blob": "96e1a72854a16422a98832859ceed8612fbeac2a"
     }
   ],
   "approved_reader_updates": {
